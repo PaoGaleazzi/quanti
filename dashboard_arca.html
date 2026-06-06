@@ -172,8 +172,7 @@
     <div class="assume">
       <div class="row">
         <span class="t">Supuestos del modelo (ajústalos en vivo):</span>
-        <div class="af"><label>clientes s/EDI</label><input type="number" id="a_cli" value="120"></div>
-        <div class="af"><label>pedidos/cliente·mes</label><input type="number" id="a_ped" value="22"></div>
+        <div class="af"><label>pedidos totales/mes</label><input type="number" id="a_ped" value="2640"></div>
         <div class="af"><label>costo manual USD/pedido</label><input type="number" id="a_cost" value="10"></div>
         <div class="af"><label>costo error USD</label><input type="number" id="a_err" value="80"></div>
       </div>
@@ -314,8 +313,8 @@ const fmtM=n=>"$"+(n/1e6).toFixed(1)+"M";
 const fmt0=n=>Math.round(n).toLocaleString("es-MX");
 
 /* ===== MODELO DE IMPACTO (transparente) ===== */
-function leerSup(){return{cli:+a_cli.value||0,ped:+a_ped.value||0,cost:+a_cost.value||0,err:+a_err.value||0,fx:18,errManual:0.10,errAuto:0.002,minPed:6};}
-function modelo(){const s=leerSup();const pedAnio=s.cli*s.ped*12;const labor=pedAnio*s.cost*s.fx;const errs=pedAnio*(s.errManual-s.errAuto)*s.err*s.fx;return {s,pedAnio,total:labor+errs,labor,errs,horas:pedAnio*s.minPed/60,fte:pedAnio*s.minPed/60/1800};}
+function leerSup(){return{ped:+a_ped.value||0,cost:+a_cost.value||0,err:+a_err.value||0,fx:18,errManual:0.10,errAuto:0.002,minPed:6};}
+function modelo(){const s=leerSup();const pedAnio=s.ped*12;const labor=pedAnio*s.cost*s.fx;const errs=pedAnio*(s.errManual-s.errAuto)*s.err*s.fx;return {s,pedAnio,total:labor+errs,labor,errs,horas:pedAnio*s.minPed/60,fte:pedAnio*s.minPed/60/1800};}
 function renderImpact(){
   const m=modelo();
   const cards=[
@@ -325,11 +324,11 @@ function renderImpact(){
     {l:"Alta de cliente nuevo",v:"1 observación",s:`vs <b>meses</b> de EDI · escala sin reimplementar`},
   ];
   impact.innerHTML=cards.map(c=>`<div class="ic ${c.hot?'hot':''}"><div class="l">${c.l}</div><div class="v">${c.v}</div><div class="s">${c.s}</div></div>`).join("");
-  formula.innerHTML=`<b>${fmt0(m.pedAnio)} pedidos/año</b> = ${m.s.cli} clientes × ${m.s.ped} pedidos/mes × 12<br>
+  formula.innerHTML=`<b>${fmt0(m.pedAnio)} pedidos/año</b> = ${fmt0(m.s.ped)} pedidos/mes × 12<br>
     Labor evitada = ${fmt0(m.pedAnio)} × $${m.s.cost} USD × ${m.s.fx} (FX) = <b>${fmtM(m.labor)} MXN</b><br>
     Errores evitados = ${fmt0(m.pedAnio)} × (10% − 0.2%) × $${m.s.err} USD × ${m.s.fx} = <b>${fmtM(m.errs)} MXN</b><br>
     Total ahorro = <b>${fmtM(m.total)} MXN/año</b>
-    <span class="src2">Costos unitarios: benchmarks APQC / B2B order entry ($8–15 USD por pedido manual; error manual 3–8% vs automatizado 0.1–0.3%). El volumen de clientes es el único supuesto a validar con Arca.</span>`;
+    <span class="src2">Costos unitarios: benchmarks APQC / B2B order entry ($8–15 USD por pedido manual; error manual 3–8% vs automatizado 0.1–0.3%). El volumen total de pedidos es el único supuesto a validar con Arca.</span>`;
 }
 
 function renderSelect(){sel.innerHTML=Object.entries(PORTALES).map(([k,v])=>`<option value="${k}">${v.nombre}</option>`).join("");if(!PORTALES[CURRENT])CURRENT=Object.keys(PORTALES)[0];sel.value=CURRENT;
@@ -392,7 +391,7 @@ document.querySelectorAll(".tabs button").forEach(b=>b.addEventListener("click",
 }));
 sel.addEventListener("change",e=>{CURRENT=e.target.value;renderMap();});
 filtro.addEventListener("change",e=>{FILTRO=e.target.value;renderOrders();});
-["a_cli","a_ped","a_cost","a_err"].forEach(id=>document.getElementById(id).addEventListener("input",renderImpact));
+["a_ped","a_cost","a_err"].forEach(id=>document.getElementById(id).addEventListener("input",renderImpact));
 renderAll();renderLog();
 
 function setSrc(live){srcdot.style.background=live?"var(--ok)":"var(--warn)";srctxt.textContent=live?("Fuente: motor · "+new Date().toLocaleTimeString()):"Fuente: datos de demo";}
