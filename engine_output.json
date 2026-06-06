@@ -1,0 +1,2380 @@
+{
+  "pedidos": [
+    {
+      "id": "ORD-72",
+      "cliente": "HEB Gómez Morín",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.92,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.92,
+          1
+        ],
+        [
+          "cantidad",
+          0.92,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.92,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.92,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-71",
+      "cliente": "HEB Gómez Morín",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.95,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.95,
+          1
+        ],
+        [
+          "cantidad",
+          0.95,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.95,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.95,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-70",
+      "cliente": "HEB Gómez Morín",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.94,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.94,
+          1
+        ],
+        [
+          "cantidad",
+          0.94,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.94,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.94,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-69",
+      "cliente": "HEB Gómez Morín",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.93,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.93,
+          1
+        ],
+        [
+          "cantidad",
+          0.93,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.93,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.93,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-68",
+      "cliente": "HEB Gómez Morín",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.95,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.95,
+          1
+        ],
+        [
+          "cantidad",
+          0.95,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.95,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.95,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-67",
+      "cliente": "HEB Gómez Morín",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.94,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.94,
+          1
+        ],
+        [
+          "cantidad",
+          0.94,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.94,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.94,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-66",
+      "cliente": "HEB Gómez Morín",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.94,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.94,
+          1
+        ],
+        [
+          "cantidad",
+          0.94,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.94,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.94,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-65",
+      "cliente": "HEB Gómez Morín",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.94,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.94,
+          1
+        ],
+        [
+          "cantidad",
+          0.94,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.94,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.94,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-64",
+      "cliente": "HEB Gómez Morín",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.97,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.97,
+          1
+        ],
+        [
+          "cantidad",
+          0.97,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.97,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.97,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-63",
+      "cliente": "HEB Gómez Morín",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.95,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.95,
+          1
+        ],
+        [
+          "cantidad",
+          0.95,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.95,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.95,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-62",
+      "cliente": "HEB Gómez Morín",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.94,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.94,
+          1
+        ],
+        [
+          "cantidad",
+          0.94,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.94,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.94,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-61",
+      "cliente": "HEB Gómez Morín",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.99,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.99,
+          1
+        ],
+        [
+          "cantidad",
+          0.99,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.99,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.99,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-60",
+      "cliente": "Sanborns San Pedro",
+      "portal": "SANBORNS",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.98,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.98,
+          1
+        ],
+        [
+          "cantidad",
+          0.98,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.98,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.98,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-59",
+      "cliente": "Sanborns San Pedro",
+      "portal": "SANBORNS",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.98,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.98,
+          1
+        ],
+        [
+          "cantidad",
+          0.98,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.98,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.98,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-58",
+      "cliente": "Sanborns San Pedro",
+      "portal": "SANBORNS",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.98,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.98,
+          1
+        ],
+        [
+          "cantidad",
+          0.98,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.98,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.98,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-57",
+      "cliente": "Sanborns San Pedro",
+      "portal": "SANBORNS",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.98,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.98,
+          1
+        ],
+        [
+          "cantidad",
+          0.98,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.98,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.98,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-56",
+      "cliente": "Sanborns San Pedro",
+      "portal": "SANBORNS",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.98,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.98,
+          1
+        ],
+        [
+          "cantidad",
+          0.98,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.98,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.98,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-55",
+      "cliente": "Sanborns San Pedro",
+      "portal": "SANBORNS",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.98,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.98,
+          1
+        ],
+        [
+          "cantidad",
+          0.98,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.98,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.98,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-54",
+      "cliente": "Sanborns San Pedro",
+      "portal": "SANBORNS",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.99,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.99,
+          1
+        ],
+        [
+          "cantidad",
+          0.99,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.99,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.99,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-53",
+      "cliente": "Sanborns San Pedro",
+      "portal": "SANBORNS",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.99,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.99,
+          1
+        ],
+        [
+          "cantidad",
+          0.99,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.99,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.99,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-52",
+      "cliente": "Sanborns San Pedro",
+      "portal": "SANBORNS",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.93,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.93,
+          1
+        ],
+        [
+          "cantidad",
+          0.93,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.93,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.93,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-51",
+      "cliente": "Sanborns San Pedro",
+      "portal": "SANBORNS",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.99,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.99,
+          1
+        ],
+        [
+          "cantidad",
+          0.99,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.99,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.99,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-50",
+      "cliente": "Sanborns San Pedro",
+      "portal": "SANBORNS",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.96,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.96,
+          1
+        ],
+        [
+          "cantidad",
+          0.96,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.96,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.96,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-49",
+      "cliente": "Sanborns San Pedro",
+      "portal": "SANBORNS",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.92,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.92,
+          1
+        ],
+        [
+          "cantidad",
+          0.92,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.92,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.92,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-48",
+      "cliente": "HEB Cumbres",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.96,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.96,
+          1
+        ],
+        [
+          "cantidad",
+          0.96,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.96,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.96,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-47",
+      "cliente": "HEB Cumbres",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.94,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.94,
+          1
+        ],
+        [
+          "cantidad",
+          0.94,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.94,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.94,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-46",
+      "cliente": "HEB Cumbres",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.97,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.97,
+          1
+        ],
+        [
+          "cantidad",
+          0.97,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.97,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.97,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-45",
+      "cliente": "HEB Cumbres",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.97,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.97,
+          1
+        ],
+        [
+          "cantidad",
+          0.97,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.97,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.97,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-44",
+      "cliente": "HEB Cumbres",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.99,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.99,
+          1
+        ],
+        [
+          "cantidad",
+          0.99,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.99,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.99,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-43",
+      "cliente": "HEB Cumbres",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.99,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.99,
+          1
+        ],
+        [
+          "cantidad",
+          0.99,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.99,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.99,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-42",
+      "cliente": "HEB Cumbres",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.97,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.97,
+          1
+        ],
+        [
+          "cantidad",
+          0.97,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.97,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.97,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-41",
+      "cliente": "HEB Cumbres",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.96,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.96,
+          1
+        ],
+        [
+          "cantidad",
+          0.96,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.96,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.96,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-40",
+      "cliente": "HEB Cumbres",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.99,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.99,
+          1
+        ],
+        [
+          "cantidad",
+          0.99,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.99,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.99,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-39",
+      "cliente": "HEB Cumbres",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.93,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.93,
+          1
+        ],
+        [
+          "cantidad",
+          0.93,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.93,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.93,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-38",
+      "cliente": "HEB Cumbres",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.92,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.92,
+          1
+        ],
+        [
+          "cantidad",
+          0.92,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.92,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.92,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-37",
+      "cliente": "HEB Cumbres",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.93,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.93,
+          1
+        ],
+        [
+          "cantidad",
+          0.93,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.93,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.93,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-36",
+      "cliente": "Sanborns Centro",
+      "portal": "SANBORNS",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.95,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.95,
+          1
+        ],
+        [
+          "cantidad",
+          0.95,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.95,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.95,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-35",
+      "cliente": "Sanborns Centro",
+      "portal": "SANBORNS",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.92,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.92,
+          1
+        ],
+        [
+          "cantidad",
+          0.92,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.92,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.92,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-34",
+      "cliente": "Sanborns Centro",
+      "portal": "SANBORNS",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.98,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.98,
+          1
+        ],
+        [
+          "cantidad",
+          0.98,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.98,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.98,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-33",
+      "cliente": "Sanborns Centro",
+      "portal": "SANBORNS",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.92,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.92,
+          1
+        ],
+        [
+          "cantidad",
+          0.92,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.92,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.92,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-32",
+      "cliente": "Sanborns Centro",
+      "portal": "SANBORNS",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.94,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.94,
+          1
+        ],
+        [
+          "cantidad",
+          0.94,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.94,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.94,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-31",
+      "cliente": "Sanborns Centro",
+      "portal": "SANBORNS",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.94,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.94,
+          1
+        ],
+        [
+          "cantidad",
+          0.94,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.94,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.94,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-30",
+      "cliente": "Sanborns Centro",
+      "portal": "SANBORNS",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.99,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.99,
+          1
+        ],
+        [
+          "cantidad",
+          0.99,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.99,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.99,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-29",
+      "cliente": "Sanborns Centro",
+      "portal": "SANBORNS",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.95,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.95,
+          1
+        ],
+        [
+          "cantidad",
+          0.95,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.95,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.95,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-28",
+      "cliente": "Sanborns Centro",
+      "portal": "SANBORNS",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.96,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.96,
+          1
+        ],
+        [
+          "cantidad",
+          0.96,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.96,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.96,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-27",
+      "cliente": "Sanborns Centro",
+      "portal": "SANBORNS",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.97,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.97,
+          1
+        ],
+        [
+          "cantidad",
+          0.97,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.97,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.97,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-26",
+      "cliente": "Sanborns Centro",
+      "portal": "SANBORNS",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.94,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.94,
+          1
+        ],
+        [
+          "cantidad",
+          0.94,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.94,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.94,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-25",
+      "cliente": "Sanborns Centro",
+      "portal": "SANBORNS",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.96,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.96,
+          1
+        ],
+        [
+          "cantidad",
+          0.96,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.96,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.96,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-24",
+      "cliente": "HEB Valle Oriente",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.97,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.97,
+          1
+        ],
+        [
+          "cantidad",
+          0.97,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.97,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.97,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-23",
+      "cliente": "HEB Valle Oriente",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.94,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.94,
+          1
+        ],
+        [
+          "cantidad",
+          0.94,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.94,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.94,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-22",
+      "cliente": "HEB Valle Oriente",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.98,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.98,
+          1
+        ],
+        [
+          "cantidad",
+          0.98,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.98,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.98,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-21",
+      "cliente": "HEB Valle Oriente",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.99,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.99,
+          1
+        ],
+        [
+          "cantidad",
+          0.99,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.99,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.99,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-20",
+      "cliente": "HEB Valle Oriente",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.94,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.94,
+          1
+        ],
+        [
+          "cantidad",
+          0.94,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.94,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.94,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-19",
+      "cliente": "HEB Valle Oriente",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.93,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.93,
+          1
+        ],
+        [
+          "cantidad",
+          0.93,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.93,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.93,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-18",
+      "cliente": "HEB Valle Oriente",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.96,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.96,
+          1
+        ],
+        [
+          "cantidad",
+          0.96,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.96,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.96,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-17",
+      "cliente": "HEB Valle Oriente",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.93,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.93,
+          1
+        ],
+        [
+          "cantidad",
+          0.93,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.93,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.93,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-16",
+      "cliente": "HEB Valle Oriente",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.98,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.98,
+          1
+        ],
+        [
+          "cantidad",
+          0.98,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.98,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.98,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-15",
+      "cliente": "HEB Valle Oriente",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.95,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.95,
+          1
+        ],
+        [
+          "cantidad",
+          0.95,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.95,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.95,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-14",
+      "cliente": "HEB Valle Oriente",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.99,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.99,
+          1
+        ],
+        [
+          "cantidad",
+          0.99,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.99,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.99,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-13",
+      "cliente": "HEB Valle Oriente",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.96,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.96,
+          1
+        ],
+        [
+          "cantidad",
+          0.96,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.96,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.96,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-12",
+      "cliente": "HEB Valle Oriente",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.94,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.94,
+          1
+        ],
+        [
+          "cantidad",
+          0.94,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.94,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.94,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-11",
+      "cliente": "HEB Valle Oriente",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.92,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.92,
+          1
+        ],
+        [
+          "cantidad",
+          0.92,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.92,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.92,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-10",
+      "cliente": "HEB Valle Oriente",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.99,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.99,
+          1
+        ],
+        [
+          "cantidad",
+          0.99,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.99,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.99,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-9",
+      "cliente": "HEB Valle Oriente",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.97,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.97,
+          1
+        ],
+        [
+          "cantidad",
+          0.97,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.97,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.97,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-8",
+      "cliente": "HEB Valle Oriente",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.94,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.94,
+          1
+        ],
+        [
+          "cantidad",
+          0.94,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.94,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.94,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-7",
+      "cliente": "HEB Valle Oriente",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.92,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.92,
+          1
+        ],
+        [
+          "cantidad",
+          0.92,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.92,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.92,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-6",
+      "cliente": "HEB Valle Oriente",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.95,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.95,
+          1
+        ],
+        [
+          "cantidad",
+          0.95,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.95,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.95,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-5",
+      "cliente": "HEB Valle Oriente",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.98,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.98,
+          1
+        ],
+        [
+          "cantidad",
+          0.98,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.98,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.98,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-4",
+      "cliente": "HEB Valle Oriente",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.97,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.97,
+          1
+        ],
+        [
+          "cantidad",
+          0.97,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.97,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.97,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-3",
+      "cliente": "HEB Valle Oriente",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.96,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.96,
+          1
+        ],
+        [
+          "cantidad",
+          0.96,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.96,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.96,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-2",
+      "cliente": "HEB Valle Oriente",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.95,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.95,
+          1
+        ],
+        [
+          "cantidad",
+          0.95,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.95,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.95,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "ORD-1",
+      "cliente": "HEB Valle Oriente",
+      "portal": "HEB",
+      "modo": "auto_IA",
+      "fields": [
+        [
+          "client_id",
+          0.94,
+          1
+        ],
+        [
+          "producto_nombre",
+          0.94,
+          1
+        ],
+        [
+          "cantidad",
+          0.94,
+          1
+        ],
+        [
+          "precio_unitario",
+          0.94,
+          1
+        ],
+        [
+          "fecha_entrega_estimada",
+          0.94,
+          1
+        ]
+      ]
+    }
+  ]
+}

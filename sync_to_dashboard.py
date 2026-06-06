@@ -1,16 +1,14 @@
 """
-sync_to_dashboard.py — jala los pedidos de la BD de Arca y escribe
-engine_output.json, que es justo lo que tu tablero relee solo cada 4 s.
+sync_to_dashboard.py — lee la BD real de Arca (Supabase) y escribe
+engine_output.json, que es lo que el tablero relee solo cada 4 s.
 
+USO:
     uv run python sync_to_dashboard.py            # una vez
-    uv run python sync_to_dashboard.py --loop     # cada 4 s, modo demo en vivo
+    uv run python sync_to_dashboard.py --loop     # cada 4 s (demo en vivo)
 
-Y para que el navegador pueda leer el JSON, sirve la carpeta:
+Y para que el navegador pueda leer el JSON, en OTRA pestaña del Terminal:
     uv run python -m http.server 8000
-    # abre http://localhost:8000/dashboard_arca.html
-
-OJO: los nombres de tabla/columna de abajo son los del esquema documentado.
-Corre primero inspect_db.py; si Pao los nombró distinto, ajusta el bloque MAP.
+    # luego abre http://localhost:8000/dashboard_arca.html
 """
 import os, json, time, sys
 import psycopg2
@@ -18,19 +16,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# ---- ajusta esto a lo que veas en inspect_db.py ----
-MAP = {
-    "tabla_pedidos":   "pedidos",
-    "col_id":          "numero_orden",
-    "col_cliente_fk":  "client_id",
-    "col_confiab":     "confiabilidad_llenado",   # 0-1 que escribe el motor
-    "col_origen":      "origen_captura",          # 'auto_IA' / 'manual'
-    "tabla_clientes":  "clientes",
-    "col_cli_id":      "client_id",
-    "col_cli_nombre":  "nombre_cliente",
-    "col_cli_portal":  "portal_origen",           # qué portal usó
-}
-# campos Arca que muestra el tablero (orden = como se pintan)
 ARCA_FIELDS = ["client_id", "producto_nombre", "cantidad", "precio_unitario", "fecha_entrega_estimada"]
 
 
@@ -44,42 +29,37 @@ def conn():
 
 def build():
     c = conn(); cur = c.cursor()
-    q = f"""
-        SELECT p."{MAP['col_id']}", cl."{MAP['col_cli_nombre']}",
-               COALESCE(cl."{MAP['col_cli_portal']}", 'DESCONOCIDO'),
-               COALESCE(p."{MAP['col_origen']}", 'auto_IA'),
-               COALESCE(p."{MAP['col_confiab']}", 0.9)
-        FROM "{MAP['tabla_pedidos']}" p
-        LEFT JOIN "{MAP['tabla_clientes']}" cl
-          ON cl."{MAP['col_cli_id']}" = p."{MAP['col_cliente_fk']}"
-        ORDER BY p."{MAP['col_id']}" DESC
+    cur.execute("""
+        SELECT  p.numero_orden,
+                cl.nombre_cliente,
+                COALESCE(cl.portal_origen, 'Arca'),
+                COALESCE(p.origen_captura, 'auto_IA'),
+                COALESCE(p.confiabilidad_llenado, 95)
+        FROM pedidos p
+        JOIN clientes cl ON cl.client_id = p.client_id
+        ORDER BY p.numero_orden DESC
         LIMIT 200;
-    """
-    cur.execute(q)
+    """)
     pedidos = []
-    for oid, cliente, portal, modo, conf in cur.fetchall():
-        conf = float(conf)
-        # si la BD sólo guarda confiabilidad por pedido (no por campo),
-        # repartimos esa confianza a cada campo. valid=1 si conf>=0.66.
+    for oid, cliente, portal, modo, conf100 in cur.fetchall():
+        conf = float(conf100) / 100.0 if float(conf100) > 1 else float(conf100)
         fields = [[f, round(conf, 2), 1 if conf >= 0.66 else 0] for f in ARCA_FIELDS]
         pedidos.append({
-            "id": str(oid), "cliente": cliente or str(oid),
-            "portal": str(portal), "modo": str(modo), "fields": fields,
+            "id": f"ORD-{oid}", "cliente": cliente,
+            "portal": (portal or "Arca").upper(), "modo": modo, "fields": fields,
         })
-    c.close()
 
     out = {"pedidos": pedidos}
-    # 'portales' (el mapa aprendido) lo produce el motor de Pao, no la BD.
-    # Si Pao lo deja en un archivo aparte, lo mezclamos aquí:
     try:
         with open("mapa_aprendido.json", encoding="utf-8") as f:
             out["portales"] = json.load(f)
     except FileNotFoundError:
-        pass  # el tablero usa su demo de portales si no hay mapa real
+        pass
 
     with open("engine_output.json", "w", encoding="utf-8") as f:
         json.dump(out, f, ensure_ascii=False, indent=2)
-    print(f"escrito engine_output.json · {len(pedidos)} pedidos")
+    c.close()
+    print(f"OK - engine_output.json escrito con {len(pedidos)} pedidos")
 
 
 if __name__ == "__main__":
@@ -88,7 +68,7 @@ if __name__ == "__main__":
         try:
             build()
         except Exception as e:
-            print("error:", e)
+            print("ERROR:", e)
         if not loop:
             break
         time.sleep(4)
