@@ -77,10 +77,11 @@
   .tag{font-family:var(--mono);font-size:10px;color:#fff;background:var(--ink);padding:5px 11px;border-radius:var(--pill);letter-spacing:.5px}
   .pad{padding:20px 22px}
 
-  .ministats{display:grid;grid-template-columns:repeat(4,1fr)}
+  .ministats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
   @media(max-width:640px){.ministats{grid-template-columns:repeat(2,1fr)}}
   .ms{padding:16px 18px;border-right:1px solid var(--line)}
   .ms:last-child{border-right:0}
+  .ms.click{cursor:pointer;transition:background .12s} .ms.click:hover{background:#fdf6f6}
   .ms .l{font-size:11px;color:var(--muted);font-weight:600}
   .ms .v{font-family:var(--disp);font-weight:800;font-size:23px;margin-top:6px;letter-spacing:-.5px}
   .ms .d{font-family:var(--mono);font-size:10px;margin-top:5px}
@@ -234,12 +235,21 @@
   .botstate{display:flex;align-items:center;gap:12px;background:var(--beige2);border:1px solid var(--line2);border-radius:12px;padding:13px 15px}
   .botstate .bled{width:12px;height:12px;border-radius:50%;flex:none}
   .botstate .bt{font-weight:700;font-size:13.5px} .botstate .bm{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:2px}
-  .iabox{background:#fff;border:1px solid var(--line2);border-left:3px solid var(--arca);border-radius:12px;padding:16px}
-  .iaout{font-size:13.5px;line-height:1.6} .iaout ul{margin:4px 0 0;padding-left:18px} .iaout li{margin:6px 0}
+  .iabox{background:linear-gradient(140deg,#fff 0%,var(--arca-soft) 100%);border:1px solid #f3c9cd;border-left:4px solid var(--arca);border-radius:14px;padding:18px;box-shadow:0 10px 30px -16px rgba(237,28,46,.45)}
+  .iahdr{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:#fff;background:var(--grad);padding:5px 12px;border-radius:var(--pill);margin-bottom:13px;box-shadow:0 3px 10px rgba(237,28,46,.3)}
+  .iaout{font-size:13.5px;line-height:1.55}
+  .iaout ul{list-style:none;margin:2px 0 0;padding-left:0}
+  .iaout li{position:relative;padding-left:22px;margin:10px 0}
+  .iaout li:before{content:"✦";position:absolute;left:0;top:0;color:var(--arca);font-size:12px;font-weight:700}
   .iabtn{font-family:var(--sans);font-weight:700;font-size:13px;color:#fff;background:var(--grad);border:0;border-radius:var(--pill);padding:10px 20px;cursor:pointer}
   .iabtn:disabled{opacity:.55;cursor:default}
   .iakey{font-family:var(--mono);font-size:12px;border:1.5px solid var(--line2);border-radius:10px;padding:9px 11px;width:100%;margin-top:10px}
   .iahint{font-size:11.5px;color:var(--muted);margin-top:8px}
+
+  /* ===== tarjetas de cliente (confianza de captura) ===== */
+  .capt-row{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:var(--muted);margin-bottom:6px}
+  .capt-row b{font-family:var(--mono);font-size:13px}
+  .cli-meta{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10.5px;color:var(--dim);margin-top:12px}
 </style>
 </head>
 <body>
@@ -252,6 +262,7 @@
 
   <div class="tabs">
     <button data-tab="resumen" class="on">Resumen</button>
+    <button data-tab="clientes">Clientes <span class="count" id="tabCliCount">0</span></button>
     <button data-tab="facturacion">Facturación <span class="count" id="tabFactCount">0</span></button>
     <button data-tab="abandono">Abandono <span class="count" id="tabRetCount">0</span></button>
   </div>
@@ -293,9 +304,17 @@
     </div>
   </section>
 
+  <!-- ============ CLIENTES (atención personalizada + confianza del bot) ============ -->
+  <section class="panel" id="tab-clientes">
+    <div class="label first">Cada cliente, atendido al detalle</div>
+    <p style="font-size:13px;color:var(--muted);margin:0 2px 16px;max-width:760px">Qué tan bien está capturando el bot los pedidos de cada cliente y su nivel de riesgo. Da clic en uno para ver su historial, qué consume y la recomendación para atenderlo mejor.</p>
+    <div class="churngrid" id="clientesgrid"></div>
+  </section>
+
   <!-- ============ ABANDONO (modelo de riesgo) ============ -->
   <section class="panel" id="tab-abandono">
     <div class="label first">Clientes en riesgo de dejar de comprar</div>
+    <p style="font-size:13px;color:var(--muted);margin:0 2px 16px;max-width:780px">El riesgo combina <b>4 señales</b> del historial de cada cliente: <b>caída de volumen</b> (gasto reciente vs. histórico), <b>menos pedidos</b>, <b>tendencia a la baja</b> (regresión de su gasto mensual) y <b>días sin pedir</b> contra su ritmo habitual. Por eso dos clientes con caídas parecidas en la gráfica pueden tener un riesgo distinto: pesa también qué tan seguido pedían y hace cuánto no piden.</p>
     <div class="acounts" id="riskcounts"></div>
     <div class="churngrid" id="churngrid"></div>
   </section>
@@ -420,12 +439,12 @@ function confianzaCaptura(){
 }
 
 /* ===== etapa del ciclo de cada pedido ===== */
-const CICLO=["Registrado","En camino","Entregado","Facturado"];
+const CICLO=["Registrado","En camino","Entregado y facturado"];
 function cicloIdx(p){
-  if(p.estatus_factura==="facturado")return 3;
-  if(p.estatus_entrega==="no_entregado")return -1;       // stopper
-  if(p.estatus_entrega==="entregado")return 2;
-  return 1;                                              // pendiente → en camino
+  // la factura se emite SIEMPRE al entregar (entrega ~2 días después del pedido)
+  if(p.estatus_factura==="facturado"||p.estatus_entrega==="entregado")return 3;  // entregado y facturado: todo listo
+  if(p.estatus_entrega==="no_entregado")return -1;                                // se frena
+  return 1;                                                                       // en camino (por entregar y facturar)
 }
 
 /* ===== MODELO DE RIESGO DE ABANDONO (matemático) =====
@@ -473,7 +492,7 @@ function computeRiesgo(){
     const riesgo=sigmoid(9*(score-0.42));
     const ingresoRiesgo=baseAvg*riesgo;     // gasto mensual esperado en juego
     const fac=[["menos volumen",dropVol*0.34],["menos pedidos",dropFreq*0.20],["tendencia a la baja",trend*0.26],["se atrasó vs su ritmo",overdue*0.20]].sort((a,b)=>b[1]-a[1]);
-    out.push({cliente:cli,portal:d.portal,client_id:d.client_id,riesgo,ingresoRiesgo,baseAvg,recAvg,daysSince,typGap,serie:serieM,razon:fac[0][0]});
+    out.push({cliente:cli,portal:d.portal,client_id:d.client_id,riesgo,ingresoRiesgo,baseAvg,recAvg,daysSince,typGap,serie:serieM,razon:fac[0][0],dropVol,dropFreq,trend,overdue});
   });
   return out.sort((a,b)=>b.riesgo-a.riesgo);
 }
@@ -484,11 +503,9 @@ function kpis(){
   const clientes=new Set();
   PEDIDOS.forEach(p=>{
     clientes.add(p.cliente);const m=+p.monto||0,i=cicloIdx(p);
-    if(i===3){facturado+=m;nFact++;}
-    else if(i===2)porFacturar+=m;
+    if(i===3){facturado+=m;nFact++;entreg++;}
     else if(i===-1)noEnt++;
-    else enCamino++;
-    if(p.estatus_entrega==="entregado")entreg++;
+    else{enCamino++;porFacturar+=m;}        // en camino: se facturará al entregar
   });
   const cumpl=(entreg+noEnt)>0?entreg/(entreg+noEnt):1;
   const riesgo=computeRiesgo();
@@ -503,18 +520,20 @@ function renderKPIs(){
   const k=kpis();
   const cards=[
     {hot:1,l:"Facturación capturada",v:money(k.facturado),s:`${fmt0(k.nFact)} facturas emitidas`},
-    {l:"Por facturar",v:money(k.porFacturar),s:"entregado, en espera de SAP"},
+    {l:"Por facturar",v:money(k.porFacturar),s:`${fmt0(k.enCamino)} pedidos en camino · se factura al entregar`},
     {l:"Cumplimiento de entrega",v:pct(k.cumpl),s:`${fmt0(k.noEnt)} pedidos sin entregar`},
     {l:"Ingreso mensual en riesgo",v:money(k.ingresoRiesgo),s:`<span class="arrow2" style="color:#ffd9dc">▼</span> ${k.enRiesgo.length} clientes en riesgo`},
   ];
   impact.innerHTML=cards.map(c=>`<div class="ic ${c.hot?'hot':''}"><div class="l">${c.l}</div><div class="v">${c.v}</div><div class="s">${c.s}</div></div>`).join("");
+  const lowCapt=clientesResumen().filter(c=>c.captura<0.80).length;
   const ms=[
     {l:"Pedidos del periodo",v:fmt0(k.total),d:"capturados automáticamente",c:"neutral"},
     {l:"Clientes activos",v:fmt0(k.clientes),d:"con compras recientes",c:"up"},
-    {l:"Clientes en riesgo",v:fmt0(k.enRiesgo.length),d:k.enRiesgo.length?"requieren seguimiento":"todo en orden",c:k.enRiesgo.length?"down":"up"},
+    {l:"Clientes en riesgo",v:fmt0(k.enRiesgo.length),d:k.enRiesgo.length?"requieren seguimiento · ver":"todo en orden",c:k.enRiesgo.length?"down":"up",jump:"abandono"},
+    {l:"Captura por revisar",v:fmt0(lowCapt),d:lowCapt?"clientes <80% · ver":"todos arriba de 80%",c:lowCapt?"down":"up",jump:"clientes"},
     {l:"Captura sin errores",v:pct(k.conf),d:k.conf>=0.85?"sin intervención manual":"revisar captura",c:k.conf>=0.85?"up":"down"},
   ];
-  ministats.innerHTML=ms.map(x=>`<div class="ms"><div class="l">${x.l}</div><div class="v">${x.v}</div><div class="d ${x.c}">${x.c==="up"?"▲":x.c==="down"?"▼":"●"} ${x.d}</div></div>`).join("");
+  ministats.innerHTML=ms.map(x=>`<div class="ms ${x.jump?'click':''}" ${x.jump?`data-jump="${x.jump}"`:''}><div class="l">${x.l}</div><div class="v">${x.v}</div><div class="d ${x.c}">${x.c==="up"?"▲":x.c==="down"?"▼":"●"} ${x.d}</div></div>`).join("");
   tabFactCount.textContent=k.total;
   renderAtencion(k);
 }
@@ -528,20 +547,21 @@ function renderAtencion(k){
   if(atrasadas.length)al.push({sev:"warn",t:`${atrasadas.length} facturas pendientes`,d:"Entregadas hace más de 2 días que SAP todavía no factura.",kind:"facturación"});
   k.riesgo.filter(r=>r.riesgo>=0.66).slice(0,4).forEach(r=>al.push({sev:"bad",cli:r.cliente,t:r.cliente,d:`Alto riesgo de dejar de comprar (${Math.round(r.riesgo*100)}%) — ${r.razon}.`,kind:"abandono"}));
   k.riesgo.filter(r=>r.riesgo>=0.45&&r.riesgo<0.66).slice(0,3).forEach(r=>al.push({sev:"warn",cli:r.cliente,t:r.cliente,d:`Viene a la baja (${Math.round(r.riesgo*100)}%) — ${r.razon}.`,kind:"abandono"}));
+  clientesResumen().filter(c=>c.captura<0.80).sort((a,b)=>a.captura-b.captura).slice(0,4).forEach(c=>al.push({sev:"warn",cli:c.nombre,t:c.nombre,d:`Captura de sus pedidos en ${Math.round(c.captura*100)}% — conviene revisar cómo el bot lo está leyendo.`,kind:"captura"}));
   atnTag.textContent=al.length;
   alist.innerHTML=al.length?al.map(a=>`<div class="alert ${a.cli?'click':''}" ${a.cli?`data-cli="${a.cli}"`:''}><div class="ico ${a.sev==="bad"?"i-bad":"i-warn"}">${a.sev==="bad"?"!":"•"}</div><div class="tx"><b>${a.t}</b><span>${a.d}</span><div class="kind">${a.kind}</div></div>${a.cli?'<span class="chev">›</span>':''}</div>`).join(""):`<div class="pad" style="color:var(--muted)">Nada urgente por ahora. Todo en orden.</div>`;
 }
 
 /* ===== facturación · ciclo pedido→entrega→factura ===== */
 function renderFacturacion(){
-  let cam=0,ent=0,fac=0,noent=0,montoFac=0;
-  PEDIDOS.forEach(p=>{const i=cicloIdx(p);if(i===-1)noent++;else if(i===3){fac++;montoFac+=+p.monto||0;}else if(i===2)ent++;else cam++;});
+  let cam=0,fac=0,noent=0,montoCam=0,montoFac=0;
+  PEDIDOS.forEach(p=>{const i=cicloIdx(p),m=+p.monto||0;if(i===-1)noent++;else if(i===3){fac++;montoFac+=m;}else{cam++;montoCam+=m;}});
   fstats.innerHTML=`
-    <div class="acard"><div class="n" style="color:var(--arca)">${cam}</div><div class="t">Van en camino</div></div>
-    <div class="acard c-warn"><div class="n">${ent}</div><div class="t">Ya llegaron, falta facturar</div></div>
-    <div class="acard c-ok"><div class="n">${fac}</div><div class="t">Ya facturados · ${money(montoFac)}</div></div>
+    <div class="acard c-warn"><div class="n">${cam}</div><div class="t">En camino · por facturar ${money(montoCam)}</div></div>
+    <div class="acard c-ok"><div class="n">${fac}</div><div class="t">Entregados y facturados · ${money(montoFac)}</div></div>
     <div class="acard c-bad"><div class="n">${noent}</div><div class="t">No se entregaron</div></div>`;
-  const list=PEDIDOS.filter(p=>FFILTRO==="ALL"||p.portal===FFILTRO).slice().reverse();
+  const list=PEDIDOS.filter(p=>FFILTRO==="ALL"||p.portal===FFILTRO).slice()
+    .sort((a,b)=>(b.fecha||"").localeCompare(a.fecha||"")||((b.numero_orden||0)-(a.numero_orden||0)));  // más recientes arriba
   factbody.innerHTML=list.map(p=>{
     const i=cicloIdx(p);
     let pipe="";
@@ -553,8 +573,8 @@ function renderFacturacion(){
       pipe+=`<div class="pstep ${cls}"><div class="pdot">${ic}</div><div class="pl">${s}</div></div>`;
       if(si<CICLO.length-1)pipe+=`<div class="pconn ${(i!==-1&&si<i)?'on':''}"></div>`;
     });
-    const facCell=p.numero_factura?`<span class="badge b-ok">${p.numero_factura}</span>`
-      :(p.estatus_entrega==="no_entregado"?`<span class="badge b-bad">cancelado</span>`:`<span class="badge b-warn">pendiente</span>`);
+    const facCell=i===3?`<span class="badge b-ok">${p.numero_factura||"facturado"}</span>`
+      :i===-1?`<span class="badge b-bad">cancelado</span>`:`<span class="badge b-warn">por facturar</span>`;
     return `<tr class="frow click" data-cli="${p.cliente}"><td style="font-family:var(--mono);font-size:11px;color:var(--dim)">${p.id}</td><td style="font-weight:700">${p.cliente}</td><td><div class="pipe">${pipe}</div></td><td>${facCell}</td><td style="text-align:right;font-family:var(--mono);font-size:12px">${money(+p.monto||0)}</td></tr>`;
   }).join("")||`<tr><td colspan="5" style="color:var(--muted)">Sin pedidos.</td></tr>`;
 }
@@ -590,15 +610,18 @@ function renderAbandono(){
   churngrid.innerHTML=all.length?show.map(r=>{
     const lv=r.riesgo>=0.66?"bad":r.riesgo>=0.45?"warn":"ok";
     const col=lv==="bad"?"var(--bad)":lv==="warn"?"#a9740a":"var(--ok)";
-    const s=r.serie, ult=s[s.length-1], pen=s.length>1?s[s.length-2]:ult;
-    const chg=pen>0?(ult-pen)/pen:0;                       // cambio del último mes vs el anterior (consistente con la línea)
-    const chgTxt=`Último mes ${money(ult)} · ${chg>=0?"▲":"▼"} ${Math.round(Math.abs(chg)*100)}% vs mes anterior`;
-    const spkCol=chg>=0?"var(--ok)":"var(--bad)";          // la línea sube=verde, baja=rojo (coherente con el texto)
+    const f=[];
+    if(r.dropVol>=0.15)f.push(`volumen ▼${Math.round(r.dropVol*100)}%`);
+    if(r.dropFreq>=0.15)f.push(`pedidos ▼${Math.round(r.dropFreq*100)}%`);
+    if(r.trend>=0.15)f.push("tendencia a la baja");
+    if(r.overdue>=0.25)f.push(`${Math.round(r.daysSince)} d sin pedir`);
+    const bd=f.length?f.join(" · "):"comportamiento estable";
+    const spkCol=r.trend>=0.15?"var(--bad)":(r.dropVol>=0.15?"#a9740a":"var(--ok)");  // la línea refleja la tendencia que mide el modelo
     return `<div class="ccard click ${lv==="ok"?"":"risk-"+lv}" data-cli="${r.cliente}">
       <div class="cnm">${r.cliente}</div>
-      <div class="cpt">${(PORTALES[r.portal]||{}).nombre||r.portal}</div>
+      <div class="cpt">${(PORTALES[r.portal]||{}).nombre||r.portal} · gasto mensual</div>
       <div class="cdrop" style="color:${col}">${Math.round(r.riesgo*100)}% riesgo</div>
-      <div class="csub">${chgTxt}</div>
+      <div class="csub">${bd}</div>
       ${sparkline(r.serie,spkCol)}
       <div class="csub" style="margin-top:10px;color:var(--ink)">${r.riesgo>=0.45?accionRiesgo(r)+` · ~${money(r.ingresoRiesgo)}/mes en juego`:"Comprando estable."}</div>
       <div class="cardlink">Ver detalle →</div>
@@ -666,18 +689,24 @@ function buildPrompt(nombre,r,prods,dropped,nuevos){
 Consumo: ${top}.
 Productos que dejó de pedir: ${drop}.
 Productos del catálogo afines que NO ha comprado: ${nuev}.
-Dame 3 recomendaciones CONCRETAS y accionables para retener a este cliente (una promoción específica sobre lo que dejó de comprar, o proponer un producto nuevo afín). Español de México, tono ejecutivo, una sola línea por recomendación, sin explicar tu razonamiento. Formato: viñetas que empiecen con "- ".`;
+Dame 3 recomendaciones CONCRETAS y accionables para retener a este cliente (una promoción específica sobre lo que dejó de comprar, o proponer un producto nuevo afín). Español de México, tono ejecutivo, una sola línea por recomendación. NO escribas introducción ni cierre ni texto adicional: responde ÚNICAMENTE con 3 viñetas, cada una empezando con "- ".`;
 }
 async function callGemini(prompt){
   const key=geminiKey();if(!key)throw new Error("nokey");
   const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEM_MODEL}:generateContent?key=`+encodeURIComponent(key),
-    {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0.7,maxOutputTokens:400}})});
+    {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0.7,maxOutputTokens:700,thinkingConfig:{thinkingBudget:0}}})});
   if(!r.ok){const t=await r.text();throw new Error(r.status+" "+t.slice(0,140));}
   const j=await r.json();
   const txt=((((j.candidates||[])[0]||{}).content||{}).parts||[]).map(p=>p.text).join("");
   if(!txt)throw new Error("respuesta vacía");return txt;
 }
-function fmtIA(txt){const ls=txt.split("\n").map(l=>l.replace(/^[-*•]\s?/,"").trim()).filter(Boolean);return `<ul>${ls.map(l=>`<li>${l}</li>`).join("")}</ul>`;}
+function fmtIA(txt){
+  const ls=txt.split("\n").map(l=>l.trim()).filter(Boolean)
+    .filter(l=>!/:\s*$/.test(l))                                  // quita líneas de introducción ("...:")
+    .map(l=>l.replace(/^[-*•]\s?/,"").replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").trim())
+    .filter(Boolean);
+  return ls.length?`<ul>${ls.map(l=>`<li>${l}</li>`).join("")}</ul>`:`<div>${txt}</div>`;
+}
 async function generarIA(ctx){
   const out=document.getElementById("iaout");if(!out)return;
   if(!geminiKey()){                                  // sin key: se queda la recomendación automática, sin molestar
@@ -708,7 +737,8 @@ function openCliente(nombre){
   const fms=mp?(((mp.mapa_json||{}).field_mappings)||mp.field_mappings||[]):[];
   const est=conf>=0.85?["Operando solo","var(--ok)"]:conf>=0.70?["Operando con supervisión","var(--warn)"]:["Necesita reentrenarse","var(--bad)"];
   let h="";
-  h+=`<div class="msec"><h3>Estado del bot de captura</h3><div class="botstate"><span class="bled" style="background:${est[1]}"></span><div><div class="bt">${est[0]} · confianza ${Math.round(conf*100)}%</div><div class="bm">${mp?("modelo "+(mp.modelo_llm||"—")+" · "+fms.length+" campos mapeados"):"sin mapa registrado para esta cadena"}</div></div></div></div>`;
+  h+=`<div class="msec"><h3>Cómo lo está atendiendo el bot</h3>
+    <div class="botstate"><span class="bled" style="background:${est[1]}"></span><div style="flex:1"><div class="bt">${est[0]} · confianza ${Math.round(conf*100)}%</div><div class="bm">${mp?("entiende los pedidos de "+((PORTALES[portal]||{}).nombre||portal)+" · modelo "+(mp.modelo_llm||"—")+" · "+fms.length+" campos mapeados"):"sin mapa registrado para esta cadena"}</div></div></div></div>`;
   h+=`<div class="msec"><h3>Qué compra y cómo va</h3>`;
   h+=prods.length?prods.slice(0,8).map(p=>{
     const a=p.tend==="down"?`<span class="ptrend t-down">▼ ${Math.round(Math.abs(p.delta)*100)}%</span>`:p.tend==="up"?`<span class="ptrend t-up">▲ ${Math.round(p.delta*100)}%</span>`:`<span class="ptrend t-flat">estable</span>`;
@@ -723,18 +753,52 @@ function openCliente(nombre){
   }).join("")||`<tr><td colspan="4" style="color:var(--muted)">Sin pedidos.</td></tr>`;
   h+=`</tbody></table></div>`;
   if(fms.length){
-    h+=`<div class="msec"><h3>Cómo el bot lee los pedidos de ${(PORTALES[portal]||{}).nombre||portal}</h3>`;
-    h+=fms.slice(0,6).map(f=>`<div class="reason"><div class="rmap">${f.campo_origen} → ${f.campo_destino} <span style="color:var(--dim)">· ${f.transformacion} · ${Math.round((f.confianza||0)*100)}%</span></div><div class="rtxt">${f.razonamiento||""}</div></div>`).join("");
+    h+=`<div class="msec"><h3>Por qué confiamos · cómo el bot lee los pedidos de ${(PORTALES[portal]||{}).nombre||portal}</h3>`;
+    h+=fms.map(f=>`<div class="reason"><div class="rmap">${f.campo_origen} → ${f.campo_destino} <span style="color:var(--dim)">· ${f.transformacion} · ${Math.round((f.confianza||0)*100)}%</span></div><div class="rtxt">${f.razonamiento||""}</div></div>`).join("");
     h+=`</div>`;
   }
-  h+=`<div class="msec"><h3>Recomendación para retenerlo</h3><div class="iabox"><div class="iaout" id="iaout">${recomendacionLocal(r,prods,dropped,nuevos)}<div class="iahint" id="iahint">${geminiKey()?"✦ Analizando con IA…":"Sugerencia automática."}</div></div></div></div>`;
+  h+=`<div class="msec"><h3>Recomendación para retenerlo</h3><div class="iabox"><div class="iahdr">✦ Recomendación con IA · Gemini</div><div class="iaout" id="iaout">${recomendacionLocal(r,prods,dropped,nuevos)}<div class="iahint" id="iahint">${geminiKey()?"✦ Analizando con IA…":"Sugerencia automática."}</div></div></div></div>`;
   mbd.innerHTML=h;
   modal.classList.add("show");
   generarIA({nombre,r,prods,dropped,nuevos});   // corre sola, sin botón ni preguntar
 }
 function closeModal(){modal.classList.remove("show");}
 
-function renderAll(){renderSelect();renderKPIs();renderChart();renderFacturacion();renderAbandono();}
+/* ===== clientes · confianza de captura por cliente (qué tan bien lo atiende el bot) ===== */
+function clientesResumen(){
+  const risk=Object.fromEntries(computeRiesgo().map(r=>[r.cliente,r]));
+  const by={};
+  PEDIDOS.forEach(p=>{
+    const c=(by[p.cliente]=by[p.cliente]||{nombre:p.cliente,portal:p.portal,n:0,ult:"",monto:0});
+    c.n++;c.monto+=(+p.monto||0);
+    if((p.fecha||"")>c.ult)c.ult=p.fecha||"";
+  });
+  return Object.values(by).map(c=>{
+    const captura=(MAPAMAP[c.portal]&&+MAPAMAP[c.portal].confianza_global)||confianzaCaptura();  // confianza del mapa aprendido
+    const r=risk[c.nombre];
+    return Object.assign(c,{captura,riesgo:r?r.riesgo:0});
+  }).sort((a,b)=>b.monto-a.monto);
+}
+function renderClientes(){
+  const list=clientesResumen();
+  tabCliCount.textContent=list.length;
+  clientesgrid.innerHTML=list.length?list.map(c=>{
+    const cc=c.captura,col=cc>=0.9?"var(--ok)":cc>=0.8?"var(--warn)":"var(--bad)";
+    const rlv=c.riesgo>=0.66?"var(--bad)":c.riesgo>=0.45?"#a9740a":"var(--ok)";
+    return `<div class="ccard click" data-cli="${c.nombre}">
+      <div class="cnm">${c.nombre}</div>
+      <div class="cpt">${(PORTALES[c.portal]||{}).nombre||c.portal} · ${c.n} pedidos · ${money(c.monto)}</div>
+      <div style="margin-top:14px">
+        <div class="capt-row"><span>Confianza del bot (mapa aprendido)</span><b style="color:${col}">${Math.round(cc*100)}%</b></div>
+        <div class="bar"><i style="width:${Math.round(cc*100)}%;background:${col}"></i></div>
+      </div>
+      <div class="cli-meta"><span>Último pedido: ${c.ult||"—"}</span><span style="color:${rlv};font-weight:700">${Math.round(c.riesgo*100)}% riesgo</span></div>
+      <div class="cardlink">Ver atención al detalle →</div>
+    </div>`;
+  }).join(""):`<div class="pad" style="color:var(--muted)">Sin clientes con pedidos.</div>`;
+}
+
+function renderAll(){renderSelect();renderKPIs();renderChart();renderClientes();renderFacturacion();renderAbandono();}
 
 /* tabs */
 document.querySelectorAll(".tabs button").forEach(b=>b.addEventListener("click",()=>{
@@ -744,7 +808,10 @@ document.querySelectorAll(".tabs button").forEach(b=>b.addEventListener("click",
 }));
 ffiltro.addEventListener("change",e=>{FFILTRO=e.target.value;renderFacturacion();});
 /* interactividad: clic en cualquier elemento con data-cli abre su detalle */
-document.addEventListener("click",e=>{const el=e.target.closest("[data-cli]");if(el)openCliente(el.getAttribute("data-cli"));});
+document.addEventListener("click",e=>{
+  const jp=e.target.closest("[data-jump]");if(jp){const btn=document.querySelector(`.tabs button[data-tab="${jp.getAttribute("data-jump")}"]`);if(btn){btn.click();window.scrollTo({top:0,behavior:"smooth"});}return;}
+  const el=e.target.closest("[data-cli]");if(el)openCliente(el.getAttribute("data-cli"));
+});
 mclose.onclick=closeModal;
 modal.addEventListener("click",e=>{if(e.target===modal)closeModal();});
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal();});
@@ -774,7 +841,7 @@ async function pullFromSupabase(){
   renderAll();setSrc(true);
 }
 
-function setSrc(live){srcdot.style.background=live?"var(--ok)":"var(--warn)";srctxt.textContent=live?("Datos en vivo · "+new Date().toLocaleTimeString("es-MX")):"Sin conexión — mostrando ejemplo";}
+function setSrc(live){const t=new Date().toLocaleTimeString("es-MX",{hour:"2-digit",minute:"2-digit"});srcdot.style.background=live?"var(--ok)":"var(--warn)";srctxt.textContent=live?("Datos en vivo · sincronizado "+t):"Sin conexión — mostrando ejemplo";refresh.textContent=live?("↻ Actualizar · "+t):"↻ Reintentar";}
 /* engine_output.json (lo escribe el motor) — el tablero lee:
    { "pedidos":[{cliente,portal,fecha,monto,estatus_entrega,estatus_factura,numero_factura}],
      "mapas":[{cliente_portal, confianza_global}] }   // alimenta la confiabilidad de captura */
