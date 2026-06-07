@@ -329,19 +329,48 @@ else:
 
 
 # ---------------------------------------------------------------------------
-# 4) PLACEHOLDER — Captura por imagen (proximamente). NO funcional.
+# 4) CAPTURA POR IMAGEN — sube la foto del pedido y previsualiza. La extraccion
+#    con Vertex AI aun NO esta conectada (pendiente de credenciales de Google
+#    Cloud); por ahora solo se sube y se muestra la imagen.
 # ---------------------------------------------------------------------------
 st.divider()
-st.markdown('<div class="sec-title">Captura por imagen (proximamente)</div>',
-            unsafe_allow_html=True)
-st.markdown(
-    """
-    <div class="cv-card">
-      <div class="t">Captura por imagen — proximamente</div>
-      <div>Espacio reservado para vision computacional: tomar la foto de un pedido
-      y convertirla en un pedido estructurado. Aun no funcional; lo integrara el
-      equipo mas adelante.</div>
-    </div>
-    """,
-    unsafe_allow_html=True,
+st.markdown('<div class="sec-title">Captura por imagen</div>', unsafe_allow_html=True)
+st.caption(
+    "Sube una foto del pedido y el sistema la convertira en un pedido de Arca. "
+    "La extraccion con Vertex AI se conecta en el siguiente paso."
 )
+
+img = st.file_uploader(
+    "Foto del pedido (PNG o JPG)", type=["png", "jpg", "jpeg"],
+    label_visibility="collapsed",
+)
+
+col_img, col_info = st.columns([1, 1])
+with col_img:
+    if img is not None:
+        st.image(img, caption=img.name, use_container_width=True)
+    else:
+        st.markdown(
+            '<div class="cv-card"><div class="t">Arrastra o elige una foto</div>'
+            '<div>PNG o JPG del pedido del cliente.</div></div>',
+            unsafe_allow_html=True,
+        )
+with col_info:
+    st.markdown("**Campos que se extraeran (formato Arca):**")
+    st.markdown(
+        "- **client_id** (del ID de cliente de arriba)\n"
+        "- **fecha_entrega_estimada**\n"
+        "- por producto: **producto_nombre**, **cantidad**, **unidad**, **precio_unitario**\n"
+        "- **sku** (se resuelve solo del catalogo por nombre)"
+    )
+
+procesar = st.button(
+    "Extraer y llenar Arca (Vertex AI)", type="primary",
+    use_container_width=True, disabled=(img is None),
+)
+if procesar:
+    st.info(
+        "Imagen recibida. La extraccion con Vertex AI todavia no esta conectada "
+        "(pendiente de credenciales de Google Cloud). En cuanto se conecte, de aqui "
+        "saldra el pedido en formato Arca y se llenara el portal automaticamente."
+    )

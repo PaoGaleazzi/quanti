@@ -191,6 +191,55 @@
   .insight .iact{display:inline-block;margin-top:8px;font-size:11.5px;font-weight:700;color:var(--arca);background:var(--arca-soft);border-radius:var(--pill);padding:4px 12px}
   .gemtag{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;color:var(--muted)}
   .gembadge{font-family:var(--mono);font-size:9.5px;font-weight:700;background:var(--ink);color:#fff;padding:3px 9px;border-radius:var(--pill);letter-spacing:.5px}
+
+  /* ===== interactividad ===== */
+  .ccard.click,.alert.click,.frow.click{cursor:pointer}
+  .ccard.click{transition:transform .12s,box-shadow .15s}
+  .ccard.click:hover{transform:translateY(-2px);box-shadow:0 1px 2px rgba(169,15,24,.06),0 18px 44px -18px rgba(169,15,24,.32)}
+  .alert.click:hover{background:#fdf6f6}
+  .frow.click:hover td{background:#fdf6f6}
+  .alert .chev,.ccard .cardlink{color:var(--arca);font-weight:700}
+  .alert .chev{margin-left:auto;align-self:center;font-size:14px}
+  .ccard .cardlink{font-size:11.5px;margin-top:10px}
+
+  /* ===== modal detalle de cliente ===== */
+  .modal{position:fixed;inset:0;background:rgba(60,8,10,.42);backdrop-filter:blur(3px);display:none;align-items:flex-start;justify-content:center;z-index:120;padding:32px 16px;overflow:auto}
+  .modal.show{display:flex}
+  .mbox{background:#fff;border-radius:var(--r);width:min(880px,100%);box-shadow:0 30px 90px -24px rgba(60,8,10,.5);position:relative;overflow:hidden;animation:rise .22s ease}
+  @keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  .mhead{background:var(--grad);color:#fff;padding:24px 28px;position:relative;min-height:84px}
+  .mhead h2{font-family:var(--disp);font-size:24px;font-weight:800;letter-spacing:-.5px;margin:0;max-width:76%}
+  .mhead .msub{font-family:var(--mono);font-size:12px;opacity:.92;margin-top:5px}
+  .mhead .mrisk{position:absolute;right:64px;top:24px;text-align:right}
+  .mhead .mrisk .rv{font-family:var(--disp);font-weight:800;font-size:32px;line-height:1}
+  .mhead .mrisk .rl{font-family:var(--mono);font-size:10px;opacity:.92}
+  .mclose{position:absolute;right:16px;top:16px;width:34px;height:34px;border-radius:50%;border:0;background:rgba(255,255,255,.22);color:#fff;font-size:15px;cursor:pointer;z-index:2}
+  .mclose:hover{background:rgba(255,255,255,.4)}
+  .mbd{padding:22px 28px;max-height:64vh;overflow:auto}
+  .msec{margin-bottom:24px} .msec:last-child{margin-bottom:4px}
+  .msec>h3{font-family:var(--mono);font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--dim);font-weight:700;margin:0 0 11px}
+  .prow{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}
+  .prow:last-child{border-bottom:0}
+  .prow .pn{font-weight:700;font-size:13.5px}
+  .prow .pc{font-family:var(--mono);font-size:10.5px;color:var(--dim);margin-top:2px}
+  .ptrend{font-family:var(--mono);font-size:12px;font-weight:700;min-width:78px;text-align:right}
+  .t-down{color:var(--bad)} .t-up{color:var(--ok)} .t-flat{color:var(--muted)}
+  .mtab{width:100%;border-collapse:collapse}
+  .mtab th{font-family:var(--mono);font-size:9.5px;letter-spacing:.4px;text-transform:uppercase;color:var(--dim);text-align:left;padding:8px;border-bottom:1px solid var(--line)}
+  .mtab td{font-size:12.5px;padding:9px 8px;border-bottom:1px solid var(--line)}
+  .mtab tr:last-child td{border-bottom:0}
+  .reason{background:var(--beige2);border:1px solid var(--line2);border-radius:12px;padding:11px 13px;margin-bottom:8px}
+  .reason .rmap{font-family:var(--mono);font-size:12px;font-weight:700}
+  .reason .rtxt{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.5}
+  .botstate{display:flex;align-items:center;gap:12px;background:var(--beige2);border:1px solid var(--line2);border-radius:12px;padding:13px 15px}
+  .botstate .bled{width:12px;height:12px;border-radius:50%;flex:none}
+  .botstate .bt{font-weight:700;font-size:13.5px} .botstate .bm{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:2px}
+  .iabox{background:#fff;border:1px solid var(--line2);border-left:3px solid var(--arca);border-radius:12px;padding:16px}
+  .iaout{font-size:13.5px;line-height:1.6} .iaout ul{margin:4px 0 0;padding-left:18px} .iaout li{margin:6px 0}
+  .iabtn{font-family:var(--sans);font-weight:700;font-size:13px;color:#fff;background:var(--grad);border:0;border-radius:var(--pill);padding:10px 20px;cursor:pointer}
+  .iabtn:disabled{opacity:.55;cursor:default}
+  .iakey{font-family:var(--mono);font-size:12px;border:1.5px solid var(--line2);border-radius:10px;padding:9px 11px;width:100%;margin-top:10px}
+  .iahint{font-size:11.5px;color:var(--muted);margin-top:8px}
 </style>
 </head>
 <body>
@@ -260,6 +309,8 @@
     Arca Continental · Always on Shelf — datos en vivo del sistema de pedidos.
   </div>
 </div>
+
+<div class="modal" id="modal"><div class="mbox"><div class="mhead" id="mhead"></div><button class="mclose" id="mclose">✕</button><div class="mbd" id="mbd"></div></div></div>
 
 <script>
 const PORTALES_DEMO={
@@ -348,6 +399,9 @@ let PORTALES=PORTALES_DEMO;
 let PEDIDOS=genPedidos(PORTALES);
 let FFILTRO="ALL";              // filtro de la pestaña Facturación (por cadena)
 let MAPAS=[];                   // confianza de captura por portal (mapas_aprendidos.confianza_global)
+let MAPAMAP={};                 // mapa_json completo por portal (field_mappings + razonamiento del bot)
+let PRODUCTOS={};               // catálogo: sku -> {nombre, categoria, precio}
+const GEM_MODEL="gemini-2.5-flash";
 
 /* ===== utilidades ===== */
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
@@ -389,7 +443,7 @@ function pendiente(ys){ // pendiente de regresión lineal por índice
 function computeRiesgo(){
   const today=HOY().getTime();
   const byCli={};
-  PEDIDOS.forEach(p=>{if(!p.fecha)return;const c=(byCli[p.cliente]=byCli[p.cliente]||{portal:p.portal,rows:[]});c.rows.push({f:p.fecha,m:+p.monto||0,t:new Date(p.fecha).getTime()});});
+  PEDIDOS.forEach(p=>{if(!p.fecha)return;const c=(byCli[p.cliente]=byCli[p.cliente]||{portal:p.portal,client_id:p.client_id,rows:[]});c.rows.push({f:p.fecha,m:+p.monto||0,t:new Date(p.fecha).getTime()});});
   const out=[];
   Object.entries(byCli).forEach(([cli,d])=>{
     const rows=d.rows.sort((a,b)=>a.t-b.t);
@@ -418,7 +472,7 @@ function computeRiesgo(){
     const riesgo=sigmoid(9*(score-0.42));
     const ingresoRiesgo=baseAvg*riesgo;     // gasto mensual esperado en juego
     const fac=[["menos volumen",dropVol*0.34],["menos pedidos",dropFreq*0.20],["tendencia a la baja",trend*0.26],["se atrasó vs su ritmo",overdue*0.20]].sort((a,b)=>b[1]-a[1]);
-    out.push({cliente:cli,portal:d.portal,riesgo,ingresoRiesgo,baseAvg,recAvg,daysSince,typGap,serie:serieM,razon:fac[0][0]});
+    out.push({cliente:cli,portal:d.portal,client_id:d.client_id,riesgo,ingresoRiesgo,baseAvg,recAvg,daysSince,typGap,serie:serieM,razon:fac[0][0]});
   });
   return out.sort((a,b)=>b.riesgo-a.riesgo);
 }
@@ -471,10 +525,10 @@ function renderAtencion(k){
   const today=HOY();
   const atrasadas=PEDIDOS.filter(p=>p.estatus_entrega==="entregado"&&p.estatus_factura!=="facturado"&&p.fecha_entrega_estimada&&(today-new Date(p.fecha_entrega_estimada))/864e5>3);
   if(atrasadas.length)al.push({sev:"warn",t:`${atrasadas.length} facturas pendientes`,d:"Entregadas hace más de 2 días que SAP todavía no factura.",kind:"facturación"});
-  k.riesgo.filter(r=>r.riesgo>=0.66).slice(0,4).forEach(r=>al.push({sev:"bad",t:r.cliente,d:`Alto riesgo de dejar de comprar (${Math.round(r.riesgo*100)}%) — ${r.razon}.`,kind:"abandono"}));
-  k.riesgo.filter(r=>r.riesgo>=0.45&&r.riesgo<0.66).slice(0,3).forEach(r=>al.push({sev:"warn",t:r.cliente,d:`Viene a la baja (${Math.round(r.riesgo*100)}%) — ${r.razon}.`,kind:"abandono"}));
+  k.riesgo.filter(r=>r.riesgo>=0.66).slice(0,4).forEach(r=>al.push({sev:"bad",cli:r.cliente,t:r.cliente,d:`Alto riesgo de dejar de comprar (${Math.round(r.riesgo*100)}%) — ${r.razon}.`,kind:"abandono"}));
+  k.riesgo.filter(r=>r.riesgo>=0.45&&r.riesgo<0.66).slice(0,3).forEach(r=>al.push({sev:"warn",cli:r.cliente,t:r.cliente,d:`Viene a la baja (${Math.round(r.riesgo*100)}%) — ${r.razon}.`,kind:"abandono"}));
   atnTag.textContent=al.length;
-  alist.innerHTML=al.length?al.map(a=>`<div class="alert"><div class="ico ${a.sev==="bad"?"i-bad":"i-warn"}">${a.sev==="bad"?"!":"•"}</div><div class="tx"><b>${a.t}</b><span>${a.d}</span><div class="kind">${a.kind}</div></div></div>`).join(""):`<div class="pad" style="color:var(--muted)">Nada urgente por ahora. Todo en orden.</div>`;
+  alist.innerHTML=al.length?al.map(a=>`<div class="alert ${a.cli?'click':''}" ${a.cli?`data-cli="${a.cli}"`:''}><div class="ico ${a.sev==="bad"?"i-bad":"i-warn"}">${a.sev==="bad"?"!":"•"}</div><div class="tx"><b>${a.t}</b><span>${a.d}</span><div class="kind">${a.kind}</div></div>${a.cli?'<span class="chev">›</span>':''}</div>`).join(""):`<div class="pad" style="color:var(--muted)">Nada urgente por ahora. Todo en orden.</div>`;
 }
 
 /* ===== facturación · ciclo pedido→entrega→factura ===== */
@@ -500,7 +554,7 @@ function renderFacturacion(){
     });
     const facCell=p.numero_factura?`<span class="badge b-ok">${p.numero_factura}</span>`
       :(p.estatus_entrega==="no_entregado"?`<span class="badge b-bad">cancelado</span>`:`<span class="badge b-warn">pendiente</span>`);
-    return `<tr><td style="font-family:var(--mono);font-size:11px;color:var(--dim)">${p.id}</td><td style="font-weight:700">${p.cliente}</td><td><div class="pipe">${pipe}</div></td><td>${facCell}</td><td style="text-align:right;font-family:var(--mono);font-size:12px">${money(+p.monto||0)}</td></tr>`;
+    return `<tr class="frow click" data-cli="${p.cliente}"><td style="font-family:var(--mono);font-size:11px;color:var(--dim)">${p.id}</td><td style="font-weight:700">${p.cliente}</td><td><div class="pipe">${pipe}</div></td><td>${facCell}</td><td style="text-align:right;font-family:var(--mono);font-size:12px">${money(+p.monto||0)}</td></tr>`;
   }).join("")||`<tr><td colspan="5" style="color:var(--muted)">Sin pedidos.</td></tr>`;
 }
 
