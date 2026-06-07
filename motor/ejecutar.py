@@ -184,12 +184,13 @@ def aplicar_transformaciones(pedido, mapa, cur):
     # --- PRODUCTOS (un item por cada producto del pedido) ---
     datos["items"] = []
     for prod in pedido["productos"]:
-        # Resolvemos el NOMBRE primero, porque conversion_unidad y lookup_catalogo
-        # lo necesitan para consultar el catálogo.
+        # El NOMBRE del producto se toma DIRECTO de su campo origen: es el nombre
+        # tal cual. (Las transformaciones de catálogo/conversión aplican a sku y
+        # cantidad, no al nombre; así somos robustos aunque el LLM etiquete el
+        # nombre como 'lookup_catalogo'.) Lo resolvemos primero porque sku y
+        # conversion_unidad lo necesitan para consultar el catálogo.
         info_nombre = indice["producto_nombre"]
-        nombre = aplicar_transformacion(
-            info_nombre["transf"], prod.get(info_nombre["origen"]), None, cur
-        )
+        nombre = prod.get(info_nombre["origen"])
 
         item = {"producto_nombre": nombre}
         for campo in ["cantidad", "precio_unitario", "sku"]:
@@ -340,30 +341,43 @@ def llenar_portal_arca(cliente_portal, datos, pedido_origen, mapa, numero_orden)
 # guiado por el navigation_flow, transforma y llena Arca. GENÉRICO: sirve igual
 # para Sanborns (1 pantalla) que para HEB (varias). No tiene pasos hardcodeados.
 # ---------------------------------------------------------------------------
-def ejecutar_desde_portal(cliente_portal, url_origen):
+def ejecutar_desde_portal(cliente_portal, url_origen, esperar_listo=False):
     """
-    1) Lee el mapa del cliente (para guiar la navegación).
-    2) Recorre el portal origen SOLO según el navigation_flow y lee los datos.
-    3) Transforma y guarda en la base (reusa ejecutar()).
-    4) Llena el portal de Arca en pantalla.
+    1) Lee el mapa del cliente (para guiar la navegación / lectura).
+    2) Lee el portal origen:
+         - esperar_listo=False -> el bot RECORRE solo el portal según navigation_flow
+           (la data ya está en el portal; modo autónomo).
+         - esperar_listo=True  -> abre el portal, ESPERA a que la persona llene un
+           pedido nuevo y haga clic en '✅ Listo', y entonces lee esa ventana.
+    3) Valida que el pedido no venga vacío (guard).
+    4) Transforma y guarda en la base (reusa ejecutar()).
+    5) Llena el portal de Arca en pantalla.
     Devuelve (pedido, lecturas, datos, numero_orden, monto_total).
     """
-    from leer_portal_guiado import leer_portal_segun_flujo
+    from leer_portal_guiado import (
+        leer_portal_segun_flujo, leer_portal_con_confirmacion, validar_pedido,
+    )
 
-    # 1) El mapa primero: contiene el navigation_flow que guía el recorrido.
+    # 1) El mapa primero: contiene el navigation_flow / los campos a leer.
     conn = psycopg2.connect(**DB_CONFIG)
     try:
         mapa = leer_mapa(cliente_portal, conn.cursor())
     finally:
         conn.close()
 
-    # 2) Recorrer el portal origen y leer (Playwright, guiado por el mapa).
-    pedido, lecturas = leer_portal_segun_flujo(url_origen, mapa)
+    # 2) Leer el portal origen (esperando a la persona, o recorriéndolo solo).
+    if esperar_listo:
+        pedido, lecturas = leer_portal_con_confirmacion(url_origen, mapa)
+    else:
+        pedido, lecturas = leer_portal_segun_flujo(url_origen, mapa)
 
-    # 3) Transformar + guardar (la misma función que ya usa Sanborns).
+    # 3) Guard: si llegó vacío, avisa claro (no truena con un error feo después).
+    validar_pedido(pedido)
+
+    # 4) Transformar + guardar (la misma función que ya usa Sanborns).
     datos, numero_orden, monto_total, mapa = ejecutar(cliente_portal, pedido)
 
-    # 4) Llenar el portal de Arca en pantalla.
+    # 5) Llenar el portal de Arca en pantalla.
     llenar_portal_arca(cliente_portal, datos, pedido, mapa, numero_orden)
 
     return pedido, lecturas, datos, numero_orden, monto_total

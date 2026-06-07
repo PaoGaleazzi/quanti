@@ -196,7 +196,13 @@
 
     <!-- Lineas del pedido (renglones los crea el bot con nuevoPedido(n)) -->
     <div class="section">
-      <div class="sechd"><h3>Lineas del pedido</h3><span class="stag" id="nitems">0 PRODUCTOS</span></div>
+      <div class="sechd">
+        <h3>Lineas del pedido</h3>
+        <div style="display:flex;align-items:center;gap:12px">
+          <span class="stag" id="nitems">0 PRODUCTOS</span>
+          <button class="btn-sec" onclick="agregarRenglon()" style="padding:6px 12px;font-size:12px">+ Agregar renglon</button>
+        </div>
+      </div>
       <table class="items-table">
         <thead><tr>
           <th>SKU</th><th>Producto</th><th>Cantidad</th><th>Unidad</th><th>Precio unit.</th><th>Importe</th>
@@ -224,28 +230,47 @@
 </div>
 
 <script>
-// Crea N renglones VACIOS en la tabla. Lo llama el bot antes de teclear.
+// HTML de UN renglón (lo comparten el bot y el botón manual).
+function _filaHTML(i){
+  return '<td><input type="text" id="f_sku'+i+'" placeholder="&mdash;" '
+      + 'style="font-family:var(--mono);font-size:11px;background:var(--beige2);'
+      + 'border:1px solid var(--line);border-radius:7px;padding:5px 8px;color:var(--ink)" '
+      + 'oninput="this.classList.add(\'filled\')"></td>'
+    + '<td><input type="text" id="f_nom'+i+'" placeholder="&mdash;" oninput="this.classList.add(\'filled\')"></td>'
+    + '<td><input type="text" id="f_qty'+i+'" placeholder="&mdash;" '
+      + 'oninput="this.classList.add(\'filled\');recalc()">'
+      + '<div class="conv-badge" id="conv'+i+'"></div></td>'
+    + '<td style="font-family:var(--mono);font-size:12px;color:var(--muted)">pieza</td>'
+    + '<td><input type="text" id="f_precio'+i+'" placeholder="&mdash;" '
+      + 'oninput="this.classList.add(\'filled\');recalc()"></td>'
+    + '<td style="font-weight:700" id="f_imp'+i+'">&mdash;</td>';
+}
+
+function _actualizarConteo(){
+  const n = document.querySelectorAll('#itemsbody tr').length;
+  document.getElementById('nitems').textContent = n + ' PRODUCTOS';
+}
+
+// Crea N renglones VACIOS (borra los previos). Lo llama el BOT antes de teclear.
 function nuevoPedido(n){
   const tb = document.getElementById('itemsbody');
   tb.innerHTML = '';
   for(let i=0;i<n;i++){
     const tr = document.createElement('tr');
-    tr.innerHTML =
-      '<td><input type="text" id="f_sku'+i+'" placeholder="&mdash;" '
-        + 'style="font-family:var(--mono);font-size:11px;background:var(--beige2);'
-        + 'border:1px solid var(--line);border-radius:7px;padding:5px 8px;color:var(--ink)" '
-        + 'oninput="this.classList.add(\'filled\')"></td>'
-      + '<td><input type="text" id="f_nom'+i+'" placeholder="&mdash;" oninput="this.classList.add(\'filled\')"></td>'
-      + '<td><input type="text" id="f_qty'+i+'" placeholder="&mdash;" '
-        + 'oninput="this.classList.add(\'filled\');recalc()">'
-        + '<div class="conv-badge" id="conv'+i+'"></div></td>'
-      + '<td style="font-family:var(--mono);font-size:12px;color:var(--muted)">pieza</td>'
-      + '<td><input type="text" id="f_precio'+i+'" placeholder="&mdash;" '
-        + 'oninput="this.classList.add(\'filled\');recalc()"></td>'
-      + '<td style="font-weight:700" id="f_imp'+i+'">&mdash;</td>';
+    tr.innerHTML = _filaHTML(i);
     tb.appendChild(tr);
   }
-  document.getElementById('nitems').textContent = n + ' PRODUCTOS';
+  _actualizarConteo();
+}
+
+// Agrega UN renglón al final (para que una PERSONA capture varios productos).
+function agregarRenglon(){
+  const tb = document.getElementById('itemsbody');
+  const i = tb.querySelectorAll('tr').length;   // siguiente índice
+  const tr = document.createElement('tr');
+  tr.innerHTML = _filaHTML(i);
+  tb.appendChild(tr);
+  _actualizarConteo();
 }
 
 // Muestra el badge de conversion con el factor REAL (generico, NO hay x24 fijo).
@@ -291,6 +316,10 @@ function registrar(){
   const s=document.getElementById('success'); if(s) s.classList.add('show');
   document.getElementById('btnSubmit').style.display='none';
 }
+
+// Al cargar, mostramos UN renglón vacío para que una persona pueda capturar de
+// inmediato. El bot, cuando ejecuta, llama nuevoPedido(n) y lo reemplaza.
+document.addEventListener('DOMContentLoaded', () => nuevoPedido(1));
 </script>
 </body>
 </html>

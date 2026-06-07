@@ -33,14 +33,21 @@ from playwright.sync_api import sync_playwright
 CAMPOS_PRODUCTO_DESTINO = {"producto_nombre", "cantidad", "precio_unitario", "sku"}
 
 
-def _resolver(page, campo):
+def _resolver(page, campo, solo_visibles=True):
     """
     Encuentra en el DOM el/los elementos de un campo, probando de forma genérica
-    por id, luego por clase, luego por atributo name. Devuelve solo los VISIBLES.
+    por id, luego por clase, luego por atributo name.
     Un campo de tabla (ej. 'qty' en HEB) devuelve varios; uno simple, uno.
+
+    solo_visibles=True  -> solo los visibles en este momento (recorrido guiado).
+    solo_visibles=False -> todos los presentes en el DOM (lectura tras confirmar,
+                           cuando la persona ya navegó y otras pantallas quedaron
+                           ocultas pero sus valores siguen en el DOM).
     """
     for selector in (f"#{campo}", f".{campo}", f"[name='{campo}']"):
-        elementos = [e for e in page.query_selector_all(selector) if e.is_visible()]
+        elementos = page.query_selector_all(selector)
+        if solo_visibles:
+            elementos = [e for e in elementos if e.is_visible()]
         if elementos:
             return elementos
     return []
@@ -128,4 +135,122 @@ def leer_portal_segun_flujo(url, mapa, headless=False, slow_mo=700):
         browser.close()
 
     pedido["productos"] = _armar_productos(columnas_item)
+    return pedido, lecturas
+
+
+# ===========================================================================
+# LECTURA CON CONFIRMACIÓN (para la fase EJECUTAR del demo en vivo)
+# ===========================================================================
+# Aquí la PERSONA llena un pedido nuevo en la ventana y avisa con un botón
+# "✅ Listo". El bot NO navega (la persona ya recorrió las pantallas); solo
+# espera la confirmación y LEE todos los campos del mapa presentes en el DOM.
+
+class PedidoIncompletoError(Exception):
+    """Se lanza cuando el pedido leído tiene campos de producto vacíos."""
+
+
+# Botón flotante "Listo" que se inyecta en la página y avisa a Python al clic.
+_BOTON_LISTO_JS = r"""
+() => {
+  if (document.getElementById('__demo_listo_btn')) return;
+  const b = document.createElement('button');
+  b.id = '__demo_listo_btn';
+  b.textContent = '✅ Listo (ya llené el pedido)';
+  b.style.cssText = 'position:fixed;top:10px;right:10px;z-index:2147483647;' +
+    'background:#0a7d32;color:#fff;border:none;padding:12px 16px;border-radius:8px;' +
+    'cursor:pointer;font:14px sans-serif;box-shadow:0 2px 10px rgba(0,0,0,.3)';
+  b.onclick = () => { b.textContent = 'Leyendo...'; b.disabled = true;
+                      try { window.__demo_listo(); } catch (e) {} };
+  document.body.appendChild(b);
+}
+"""
+
+
+def _leer_todo(page, mappings):
+    """
+    Lee TODOS los campos del mapa presentes en el DOM (visibles u ocultos), porque
+    la persona pudo navegar varias pantallas y dejar las anteriores ocultas pero
+    con sus valores. Agrupa lo leído por pantalla_origen para mostrarlo.
+    """
+    pedido = {}
+    columnas_item = {}
+    por_pantalla = {}
+    for m in mappings:
+        campo = m.get("campo_origen")
+        if not campo:
+            continue
+        elementos = _resolver(page, campo, solo_visibles=False)
+        if not elementos:
+            continue
+        pantalla = m.get("pantalla_origen") or "pantalla"
+        if m.get("campo_destino") in CAMPOS_PRODUCTO_DESTINO:
+            valores = [e.input_value() for e in elementos]
+            columnas_item[campo] = valores
+            por_pantalla.setdefault(pantalla, {})[campo] = (
+                valores if len(valores) > 1 else (valores[0] if valores else "")
+            )
+        else:
+            valor = elementos[0].input_value()
+            pedido[campo] = valor
+            por_pantalla.setdefault(pantalla, {})[campo] = valor
+
+    pedido["productos"] = _armar_productos(columnas_item)
+    lecturas = [{"pantalla": k, "leido": v} for k, v in por_pantalla.items()]
+    return pedido, lecturas
+
+
+def validar_pedido(pedido):
+    """
+    Guard: avisa CLARO si el pedido llegó con campos de producto vacíos, en vez
+    de tronar feo más adelante (ej. 'No hay SKU para None').
+    """
+    productos = pedido.get("productos", [])
+    if not productos:
+        raise PedidoIncompletoError(
+            "No se leyó ningún producto. Revisa que el portal esté lleno "
+            "antes de hacer clic en '✅ Listo'."
+        )
+    for i, prod in enumerate(productos, start=1):
+        for campo, valor in prod.items():
+            if valor is None or str(valor).strip() == "":
+                raise PedidoIncompletoError(
+                    f"Campo de producto vacío (renglón {i}: '{campo}'). "
+                    f"Revisa que el portal esté lleno antes de confirmar."
+                )
+
+
+def leer_portal_con_confirmacion(url, mapa, headless=False, slow_mo=0, _auto=None):
+    """
+    Abre `url`, deja que la PERSONA llene un pedido nuevo y ESPERA su clic en
+    '✅ Listo'. Recién entonces lee los campos de ESA misma ventana.
+    Devuelve (pedido, lecturas).
+
+    `_auto` es solo para pruebas: una función que recibe la página, la llena y
+    hace clic en Listo (emula a la persona). En vivo se deja en None.
+    """
+    mappings = mapa.get("field_mappings", [])
+    estado = {"listo": False}
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=headless, slow_mo=slow_mo)
+        page = browser.new_page()
+        # Función Python visible desde el navegador: el botón la llama al hacer clic.
+        page.expose_function("__demo_listo", lambda: estado.update(listo=True))
+        page.goto(url)
+        page.evaluate("(" + _BOTON_LISTO_JS + ")()")  # inyecta el botón "Listo"
+
+        print("   >> Llena el pedido NUEVO en la ventana y haz clic en "
+              "'✅ Listo' cuando termines (sin prisa)...")
+
+        if _auto:
+            _auto(page)  # SOLO pruebas: llena y confirma automáticamente
+
+        # Espera a la confirmación de la persona (o a que cierre la ventana).
+        while not estado["listo"] and not page.is_closed():
+            page.wait_for_timeout(200)
+
+        pedido, lecturas = _leer_todo(page, mappings)
+        if not page.is_closed():
+            browser.close()
+
     return pedido, lecturas
