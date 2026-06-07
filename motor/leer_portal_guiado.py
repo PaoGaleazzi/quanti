@@ -1,29 +1,4 @@
-"""
-Lector guiado por navigation_flow — Always on Shelf · Pao
-========================================================
-
-Lee un portal de cliente en la fase EJECUTAR, recorriéndolo SOLO según el
-navigation_flow que el cerebro aprendió. Es GENÉRICO: el mismo código sirve
-para un portal de UNA pantalla (Sanborns) o de VARIAS (HEB), porque no tiene
-pasos hardcodeados — sigue el plan del mapa.
-
-Cómo se guía (sin LLM):
-  - navigation_flow: la SECUENCIA de pasos. Cada paso trae:
-        accion = "leer_datos"  -> en esta pantalla hay que LEER campos
-                 "click"/otro  -> hay que hacer CLIC para avanzar de pantalla
-        selector_referencia    -> a qué esperar (pantalla) o qué clicar (botón)
-  - field_mappings: de aquí salen los CAMPOS a leer (campo_origen) y si cada
-        uno es de cabecera o de producto (según su campo_destino fijo de Arca).
-
-Cómo decide qué leer en cada pantalla (robusto):
-  En cada paso "leer_datos" intenta leer TODOS los campos del mapa que estén
-  VISIBLES en ese momento. Como cada pantalla muestra/oculta sus campos, solo
-  se leen los de la pantalla actual. Así no dependemos de que el nombre de la
-  pantalla coincida exactamente entre navigation_flow y field_mappings.
-
-Devuelve el pedido en la MISMA forma que consume ejecutar.py:
-    { <campo_cabecera>: valor, ..., "productos": [ {<campo_item>: valor, ...}, ... ] }
-"""
+"""Lee un portal de una o varias pantallas siguiendo el flujo de navegacion aprendido."""
 
 from playwright.sync_api import sync_playwright
 

@@ -1,22 +1,4 @@
-"""
-Primer script de Playwright — leer el portal HEB dummy (multi-pantalla)
-Pao · Always on Shelf
-
-Qué hace (solo la parte de CAPTURA, fase Observación):
-  - Abre el portal HEB en el navegador.
-  - Lee los productos de la pantalla 1.
-  - Navega a la pantalla 2 (entrega) y lee la fecha.
-  - Devuelve un dict con los datos crudos.
-
-Esto es SOLO la captura. El mapeo con LLM y el llenado de Arca vienen después.
-El objetivo aquí es que veas cómo Playwright navega y lee.
-
-Cómo correr:
-  1. uv add playwright
-  2. uv run playwright install chromium
-  3. Servir el portal:  python -m http.server 3000   (desde la carpeta fronts_dummy)
-  4. uv run python leer_portal_heb.py
-"""
+"""Lee un pedido del portal de HEB con Playwright y devuelve los datos crudos."""
 
 from playwright.sync_api import sync_playwright
 

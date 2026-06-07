@@ -1,33 +1,4 @@
-"""
-Aprender (flujo completo, escalable) — Always on Shelf · Pao
-===========================================================
-
-Orquesta la fase de APRENDER de punta a punta, conectando las dos piezas que
-ya existían por separado:
-
-    grabar_acciones.py  ->  captura {traza, snapshot} de un portal
-    cerebro_aprender.py ->  con Gemini infiere el mapa (navigation_flow + field_mappings)
-
-Pasos:
-  1. Graba la observación del portal ORIGEN (cliente)  -> {traza, snapshot}
-  2. Graba la observación del portal DESTINO (Arca)    -> {traza, snapshot}
-  3. Pasa AMBAS observaciones al cerebro (Gemini) para inferir el mapa_json:
-       - navigation_flow : la secuencia de pantallas (sale de la traza)
-       - field_mappings  : qué dato del origen va a qué campo de Arca
-  4. Guarda el mapa en la tabla mapas_aprendidos (upsert por cliente).
-
-Anti-hardcoding: al cerebro NUNCA se le da la correspondencia campo-a-campo;
-la infiere comparando los snapshots de ambos lados. Por eso sirve para
-cualquier portal nuevo.
-
-Uso (modo real, una persona llena los dos portales a mano):
-    # 1) servir los portales:  python -m http.server 3000 -d fronts
-    # 2) aprender:
-    uv run python motor/aprender_flujo.py Sanborns sanborns arca
-       (args: <cliente_portal> <alias_o_url_origen> <alias_o_url_destino>)
-
-NO toca el .env directamente (lo hacen los módulos que importa). Solo orquesta.
-"""
+"""Orquesta la fase de aprendizaje: observa el portal de origen y el de Arca, infiere el mapeo de campos y lo guarda."""
 
 import sys
 import json

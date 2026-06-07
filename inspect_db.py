@@ -1,10 +1,4 @@
-"""
-inspect_db.py — conéctate a la BD de Pao y lista qué hay realmente.
-Corre esto PRIMERO para ver los nombres reales de tablas y columnas.
-
-    uv add psycopg2-binary python-dotenv   # si no están en el proyecto
-    uv run python inspect_db.py
-"""
+"""Lista las tablas y columnas existentes en la base de datos."""
 import os
 import psycopg2
 from dotenv import load_dotenv

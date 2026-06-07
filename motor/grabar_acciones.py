@@ -1,46 +1,4 @@
-"""
-Grabador de Acciones — Always on Shelf · Pao
-============================================
-
-Esta es la fase de OBSERVACIÓN rediseñada para ser ESCALABLE a cualquier
-portal SIN instrucciones previas.
-
-La idea (ver docs/Diseno_Observacion_Escalable.md):
-  No leemos el estado FINAL del formulario (eso obligaría a saber de antemano
-  qué campos hay y cuántas pantallas). En vez de eso GRABAMOS, en orden, cada
-  ACCIÓN que la persona realiza mientras llena el portal a mano. La estructura
-  (campos, pantallas, transiciones) EMERGE de esa traza; no se programa.
-
-Cómo lo logra (Camino A del diseño):
-  - page.expose_function(...)  -> crea una función de Python visible desde el
-    navegador (window.__grab_evento). Cada vez que el JS la llama, el evento
-    llega a Python y se agrega a la traza, en orden.
-  - page.add_init_script(...)  -> inyecta JS que corre en CADA página ANTES de
-    que carguen los scripts del portal. Ese JS instala los "escuchas"
-    (listeners) del DOM y, cuando ocurre algo, llama a window.__grab_evento.
-
-Qué captura el listener (todo genérico, nada específico de un portal):
-  - "input"      -> la persona escribió/cambió un campo (selector + valor)
-  - "click"      -> la persona hizo clic en un botón/enlace (selector + texto)
-  - "navegacion" -> cambió de pantalla. Dos formas, ambas genéricas:
-        a) cambió la URL/hash (portales multipágina clásicos)
-        b) un contenedor antes oculto se volvió VISIBLE (portales de una sola
-           página que muestran/ocultan "pantallas" con CSS, como HEB)
-
-La traza resultante es una lista ordenada de dicts:
-    {orden, tipo, selector, valor, url, label}
-
-Uso por una persona (modo real):
-    # 1) servir los portales:  python -m http.server 3000 -d fronts
-    # 2) grabar:
-    uv run python motor/grabar_acciones.py sanborns
-    uv run python motor/grabar_acciones.py heb
-  Se abre el navegador, la persona llena el portal y al terminar hace clic en
-  el botón flotante "✅ Listo" (arriba a la derecha) o cierra la ventana.
-
-NOTA: este archivo NO toca el .env, ni la base de datos, ni el LLM. Solo graba.
-El siguiente paso (otro día) será pasar las trazas al cerebro.
-"""
+"""Captura la observacion de un portal: registra las acciones del usuario y el estado de los campos."""
 
 import sys
 import json

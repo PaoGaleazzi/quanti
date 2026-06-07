@@ -1,29 +1,4 @@
-"""
-ALWAYS ON SHELF — Generador de datos simulados
-Equipo: Fer · Xime · Steff · Pao
-
-Qué hace:
-  - Crea catálogo de productos (bebidas/botanas tipo Arca).
-  - Crea clientes (HEB super, Sanborns cafetería, + otros para el modelo).
-  - Genera ~12 semanas de pedidos con PATRONES CLAROS:
-      * cada cliente pide ciertos SKUs con cierta frecuencia y día típico.
-      * UN cliente (Sanborns) DECAE en el tiempo -> señal para el churn.
-  - Inserta todo en Supabase (Postgres).
-
-Cómo usar:
-  1. pip install psycopg2-binary python-dotenv
-  2. Crear archivo .env con los campos de conexión de Supabase:
-        DB_HOST=db.xxxxx.supabase.co
-        DB_PORT=5432
-        DB_NAME=postgres
-        DB_USER=postgres
-        DB_PASSWORD=tuContraseñaTalCual   (con símbolos, sin escapar)
-  3. Ejecutar primero 01_esquema.sql en el SQL Editor de Supabase.
-  4. python 02_seed_datos.py
-
-IMPORTANTE: SEMILLA FIJA (random.seed) -> los datos son IDÉNTICOS para las 4.
-Si cambian el patrón, hacen push del script; las demás hacen pull y re-ejecutan.
-"""
+"""Genera y carga datos de prueba (catalogo de productos, clientes y pedidos historicos) en la base de datos."""
 
 import os
 import random

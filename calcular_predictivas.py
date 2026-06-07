@@ -1,12 +1,4 @@
-"""
-calcular_predictivas.py
-Calcula patron_cliente, alertas_riesgo y borradores
-a partir del historial que ya está en Supabase.
-Correr DESPUÉS de 02_seed_datos.py.
-
-Uso:
-  python calcular_predictivas.py
-"""
+"""Calcula las tablas predictivas (patron de cliente, alertas de riesgo y borradores) a partir del historial de pedidos."""
 
 import os, json
 from datetime import date, timedelta

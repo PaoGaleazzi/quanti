@@ -1,17 +1,4 @@
-"""
-sync_to_dashboard.py — jala los pedidos de la BD de Arca y escribe
-engine_output.json, que es justo lo que tu tablero relee solo cada 4 s.
-
-    uv run python sync_to_dashboard.py            # una vez
-    uv run python sync_to_dashboard.py --loop     # cada 4 s, modo demo en vivo
-
-Y para que el navegador pueda leer el JSON, sirve la carpeta:
-    uv run python -m http.server 8000
-    # abre http://localhost:8000/dashboard_arca.html
-
-OJO: los nombres de tabla/columna de abajo son los del esquema documentado.
-Corre primero inspect_db.py; si Pao los nombró distinto, ajusta el bloque MAP.
-"""
+"""Exporta los pedidos de la base de datos a un archivo JSON que consume el dashboard."""
 import os, json, time, sys
 import psycopg2
 from dotenv import load_dotenv

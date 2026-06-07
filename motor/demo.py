@@ -1,31 +1,4 @@
-"""
-DEMO EN VIVO — Always on Shelf · Pao
-====================================
-
-Corre el ciclo completo para presentar al jurado, partiendo de CERO:
-
-  FASE 0  DESAPRENDER  -> borra el mapa del cliente (sistema sin conocimiento).
-  FASE 1  OBSERVAR Y APRENDER -> la persona llena el portal del cliente y el de
-          Arca a mano UNA vez; el bot observa, el cerebro infiere el mapa y lo
-          guarda. Se muestra qué aprendió (pantallas + mapeos con razonamiento).
-  FASE 2  EJECUTAR SOLO -> la persona pone un pedido NUEVO; el bot recorre el
-          portal solo, lee, transforma y llena Arca en automático.
-
-Es GENÉRICO: el mismo script sirve para Sanborns (1 pantalla) o HEB (varias),
-sin código específico. Solo ORQUESTA piezas que ya existen:
-  - grabar_acciones.grabar_acciones        (observación: traza + snapshot)
-  - cerebro vía aprender_desde_observaciones (inferir y guardar el mapa)
-  - ejecutar.ejecutar_desde_portal          (recorrer el portal y llenar Arca)
-
-Uso:
-    # 1) servir los portales:
-    python -m http.server 3000 -d fronts
-    # 2) correr el demo:
-    uv run python motor/demo.py sanborns
-    uv run python motor/demo.py heb
-
-No toca .env ni la lógica del motor; solo guía el demo con pausas y mensajes.
-"""
+"""Ejecuta el ciclo completo (observar, aprender, ejecutar) desde la terminal."""
 
 import os
 import sys

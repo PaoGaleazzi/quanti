@@ -1,29 +1,4 @@
-"""
-Interfaz Streamlit — Always on Shelf · Arca Continental
-=======================================================
-
-Envuelve el demo de terminal (motor/demo.py) en botones, para que un asesor de
-tienda lo opere sin terminal ni Enters. NO reescribe el motor: solo llama a las
-funciones que YA existen.
-
-  - "Iniciar observación (aprender)" -> aprender_flujo(nombre, url_origen, URL_ARCA, True)
-  - "Ejecutar (llenar Arca)"         -> ejecutar_desde_portal(nombre, url_origen, esperar_listo=True)
-  - "Desaprender"                    -> fase0_desaprender(nombre)
-
-El asesor solo escribe su ID de cliente. Los IDs 2, 5 y 9 son tiendas Sanborns;
-cualquier otro es HEB. De ahi se deduce el portal a usar (no se muestran URLs).
-
-El llenado manual del portal sigue pasando en la ventana de Playwright: la
-persona llena ahi y hace clic en el boton flotante "Listo" que el motor ya
-inyecta. Este Streamlit solo DISPARA la fase y espera con un spinner; cuando la
-funcion retorna (= se hizo clic en Listo), pinta el resultado.
-
-Detalle tecnico: la Sync API de Playwright choca con el event-loop de asyncio
-de Streamlit. Por eso cada llamada al motor corre en un threading.Thread NUEVO
-(sin event-loop) y capturamos stdout/stderr para mostrar en pantalla.
-
-NO toca .env, ni el dashboard, ni demo.py (que sigue sirviendo como respaldo).
-"""
+"""Interfaz web (Streamlit) para operar el flujo de aprendizaje y ejecucion con botones."""
 
 import os
 import sys

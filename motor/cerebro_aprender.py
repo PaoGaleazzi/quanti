@@ -1,25 +1,4 @@
-"""
-Cerebro de Aprender — Always on Shelf · Pao
-============================================
-
-Pieza CORE del motor. Recibe lo que el usuario llenó en AMBOS portales
-durante la observación (origen = cliente, destino = Arca) y le pide a
-Gemini Flash que INFIERA la correspondencia entre campos. Luego guarda
-ese "mapa aprendido" en Supabase para reutilizarlo sin volver a llamar al LLM.
-
-REGLA DE ORO (anti-hardcoding):
-  El prompt explica la TAREA y los campos FIJOS de Arca (destino conocido),
-  pero NUNCA dice qué campo de origen va a qué campo de destino.
-  Esa correspondencia la deduce el LLM viendo el ejemplo. Por eso funciona
-  con cualquier portal de cliente nuevo.
-
-Librería: google-genai (SDK oficial vigente; reemplaza al deprecado
-          google-generativeai).
-Modelo:   gemini-3.5-flash(estable y barato).
-
-Cómo correr la prueba con datos dummy:
-    uv run python motor/cerebro_aprender.py
-"""
+"""Infiere con un modelo de lenguaje el mapeo de campos entre el portal de origen y el de Arca, y lo guarda."""
 
 import os
 import json

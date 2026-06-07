@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Renombra SKU-0019 a nombre estilo Arca y resuelve agua limon VIA LLM (queda en cache)."""
+"""Script auxiliar para registrar un producto y resolver su equivalencia en el catalogo."""
 import sys; sys.path.insert(0, ".")
 import psycopg2
 from ejecutar import DB_CONFIG

@@ -1,7 +1,4 @@
-# whatsapp_alerta.py
-# Se llama solo cuando confianza_global < 0.80.
-# Lee credenciales del .env — nunca las pongas en el código.
-# Uso: python whatsapp_alerta.py  (lo llama el motor de Pao)
+# Envia una alerta por WhatsApp mediante Twilio, usando credenciales del entorno.
 
 import os, json
 from dotenv import load_dotenv

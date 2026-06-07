@@ -1,30 +1,4 @@
-"""
-Fase EJECUTAR — Always on Shelf · Pao
-=====================================
-
-Toma un pedido NUEVO de un cliente y lo registra en Arca aplicando el mapa
-que ya se aprendió antes (tabla mapas_aprendidos).
-
-DIFERENCIA CLAVE con la fase "aprender":
-  - "aprender" llama al LLM UNA vez por cliente para inferir el mapa.
-  - "ejecutar" NO llama al LLM. Solo LEE el mapa guardado y lo aplica
-    mecánicamente. Por eso cada pedido es gratis y rápido.
-
-Qué hace, en orden:
-  1. Lee el mapa_json del cliente desde Supabase.
-  2. Aplica la transformación de cada campo (directa, conversion_unidad,
-     lookup_catalogo, formato_fecha, calculado).
-  3. Devuelve los datos ya listos para Arca.
-  4. Guarda el pedido en las tablas pedidos y pedido_detalle.
-
-NOTA anti-hardcoding: aquí SÍ conocemos la estructura FIJA de Arca (qué campos
-son de cabecera y cuáles de cada producto) — eso es legítimo porque Arca es
-nuestro destino fijo. Lo que NUNCA está hardcodeado es la correspondencia
-origen→destino: esa la leemos del mapa que infirió el LLM.
-
-Cómo correr la prueba con un pedido dummy de Sanborns:
-    uv run python motor/ejecutar.py
-"""
+"""Aplica el mapeo aprendido a un pedido nuevo y lo registra en la base de datos de Arca."""
 
 import os
 from datetime import datetime, date

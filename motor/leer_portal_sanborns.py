@@ -1,28 +1,4 @@
-"""
-Lector del portal de Sanborns con Playwright — Always on Shelf · Pao
-===================================================================
-
-Esta es la pieza de CAPTURA de la fase ejecutar: abre el portal del cliente
-(Sanborns) en el navegador y LEE los datos del pedido directamente del DOM.
-
-Reusa el mismo patrón que leer_portal_heb.py:
-  - headless=False + slow_mo para VER al bot leer (importante para el demo).
-  - page.input_value("#id") para leer el valor de cada campo.
-
-Sanborns es una sola pantalla con UN producto. Devolvemos el pedido con la
-MISMA forma que ya consume ejecutar.py:
-    {
-      "client_id": "...",
-      "productos": [{"articulo": ..., "unidades_pedidas": ..., "costo": ...}],
-      "fecha_requerida": "..."
-    }
-
-OJO: aquí NO transformamos nada ni llamamos al LLM. Solo leemos texto crudo
-del portal, tal cual está escrito (las cantidades vienen en CAJAS).
-
-Antes de correr, hay que servir los portales:
-    python -m http.server 3000 -d fronts
-"""
+"""Lee un pedido del portal de Sanborns con Playwright."""
 
 from playwright.sync_api import sync_playwright
 

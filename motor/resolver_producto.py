@@ -1,24 +1,4 @@
-"""
-Resolución de productos (equivalencia semántica) — Always on Shelf · Pao
-=======================================================================
-
-El portal del CLIENTE usa nombres propios ("Refresco Cola 600 ml") que no
-existen así en el catálogo de Arca ("Coca-Cola 600ml"). Esta capa resuelve el
-nombre del cliente al producto correcto del catálogo, en este orden (forma B):
-
-  1) CACHÉ  — si ya lo resolvimos antes (clave: nombre del cliente NORMALIZADO),
-              lo reusa. No vuelve a llamar al LLM. Aguanta variaciones de
-              escritura del cliente entre pedidos.
-  2) NORMALIZADO — compara minúsculas/sin acentos/sin puntuación contra el
-              catálogo. Atrapa diferencias de solo formato, sin LLM, instantáneo.
-  3) LLM    — solo si lo anterior falla: Gemini recibe el nombre del cliente + el
-              catálogo de Arca y elige el producto que corresponde POR SIGNIFICADO.
-              Si la confianza es baja, AVISA en vez de adivinar.
-
-Anti-hardcoding: el catálogo se le pasa al LLM como contexto (destino fijo,
-legítimo). NO hay equivalencias escritas en el código. Cada resolución se guarda
-con su confianza y razonamiento (evidencia para el dashboard y el jurado).
-"""
+"""Traduce el nombre de producto del cliente al del catalogo de Arca (formato, cache y modelo de lenguaje)."""
 
 import re
 import unicodedata

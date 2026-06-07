@@ -1,11 +1,4 @@
-"""
-Prueba automatizada del grabador. Reusa instalar_grabador() pero, en vez de
-esperar a una persona, SIMULA sus acciones con Playwright (escribir en campos
-y hacer clics). Sirve para verificar que el listener captura bien la traza,
-incluidas las transiciones de pantalla de HEB.
-
-No es parte del producto: es solo verificación. Corre headless.
-"""
+"""Prueba del grabador de acciones: simula las acciones de un usuario con Playwright."""
 import json
 from playwright.sync_api import sync_playwright
 from grabar_acciones import instalar_grabador, PORTALES
