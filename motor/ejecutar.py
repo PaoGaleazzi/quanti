@@ -32,6 +32,10 @@ from datetime import datetime, date
 from dotenv import load_dotenv
 import psycopg2
 
+# Capa que traduce el nombre del cliente -> producto del catálogo de Arca
+# (match normalizado y, si falla, el LLM). Ver motor/resolver_producto.py.
+from resolver_producto import resolver_producto
+
 # URL del portal de Arca NUEVO (el de las compañeras). Se sirve en localhost.
 URL_ARCA = "http://localhost:3000/portal_arca.html"
 
@@ -108,6 +112,11 @@ def _piezas_por_caja(cur, producto_nombre):
     return fila[0]
 
 
+def _es_caja(unidad):
+    """True si la unidad indica CAJA (entonces cantidad y precio vienen por caja)."""
+    return (unidad or "").strip().lower() in ("caja", "cajas")
+
+
 def _buscar_sku(cur, producto_nombre):
     """Busca el SKU interno de Arca por el nombre del producto (lookup_catalogo)."""
     cur.execute(
@@ -168,7 +177,7 @@ def aplicar_transformacion(transformacion, valor, producto_nombre, cur, unidad=N
     raise ValueError(f"Transformación desconocida en el mapa: {transformacion}")
 
 
-def aplicar_transformaciones(pedido, mapa, cur):
+def aplicar_transformaciones(pedido, mapa, cur, cliente_portal=None):
     """
     Aplica el mapa completo al pedido nuevo y devuelve los datos listos para Arca:
 
@@ -193,13 +202,16 @@ def aplicar_transformaciones(pedido, mapa, cur):
     # --- PRODUCTOS (un item por cada producto del pedido) ---
     datos["items"] = []
     for prod in pedido["productos"]:
-        # El NOMBRE del producto se toma DIRECTO de su campo origen: es el nombre
-        # tal cual. (Las transformaciones de catálogo/conversión aplican a sku y
-        # cantidad, no al nombre; así somos robustos aunque el LLM etiquete el
-        # nombre como 'lookup_catalogo'.) Lo resolvemos primero porque sku y
-        # conversion_unidad lo necesitan para consultar el catálogo.
+        # Nombre tal como lo escribió el CLIENTE (puede no existir en el catálogo).
         info_nombre = indice["producto_nombre"]
-        nombre = prod.get(info_nombre["origen"])
+        nombre_cliente = prod.get(info_nombre["origen"])
+
+        # RESOLUCIÓN: traducimos el nombre del cliente al producto del catálogo de
+        # Arca (match normalizado y, si falla, el LLM). Usamos el nombre canónico
+        # resuelto para TODO lo demás, así sku y conversion_unidad (que buscan por
+        # nombre en el catálogo) encuentran sin cambios.
+        prod_cat = resolver_producto(cur, nombre_cliente, cliente_portal)
+        nombre = prod_cat["nombre_catalogo"]
 
         # Unidad del origen para este producto (si el mapa la capturó). Decide el
         # factor de conversion_unidad. Si no hay, se asume Caja (compatibilidad).
@@ -212,6 +224,15 @@ def aplicar_transformaciones(pedido, mapa, cur):
             item[campo] = aplicar_transformacion(
                 info["transf"], valor_origen, nombre, cur, unidad
             )
+
+        # PRECIO POR PIEZA: si la unidad es Caja, el precio venía POR CAJA, así
+        # que lo pasamos a precio por pieza dividiendo por piezas_por_caja del
+        # catálogo (mismo factor que la cantidad). Genérico: solo cuando la unidad
+        # lo indica (los dummies y HEB no traen unidad 'Caja' -> no se toca).
+        if _es_caja(unidad) and item.get("precio_unitario") not in (None, ""):
+            ppc = _piezas_por_caja(cur, nombre)
+            item["precio_unitario"] = round(float(item["precio_unitario"]) / ppc, 2)
+
         datos["items"].append(item)
 
     return datos
@@ -273,7 +294,7 @@ def ejecutar(cliente_portal, pedido_nuevo):
     try:
         cur = conn.cursor()
         mapa = leer_mapa(cliente_portal, cur)
-        datos = aplicar_transformaciones(pedido_nuevo, mapa, cur)
+        datos = aplicar_transformaciones(pedido_nuevo, mapa, cur, cliente_portal)
         numero_orden, monto_total = guardar_pedido(datos, cur)
         conn.commit()
         return datos, numero_orden, monto_total, mapa
