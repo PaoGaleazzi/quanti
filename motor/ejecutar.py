@@ -176,6 +176,26 @@ def aplicar_transformacion(transformacion, valor, producto_nombre, cur, unidad=N
     return valor
 
 
+class MapaIncompletoError(Exception):
+    """El mapa aprendido no trae un campo que Arca necesita (LLM no determinista)."""
+
+
+def _exigir(indice, campo):
+    """
+    Devuelve el mapeo de un campo que SÍ depende del mapa aprendido (cantidad,
+    precio, nombre…). Si el LLM no lo incluyó esta vez, avisa CLARO qué falta y
+    cómo resolverlo, en vez de tronar con un KeyError pelón.
+    """
+    if campo not in indice:
+        disponibles = ", ".join(sorted(indice)) or "(ninguno)"
+        raise MapaIncompletoError(
+            f"El mapa aprendido no incluye el campo '{campo}'. "
+            f"Campos que sí mapeó: {disponibles}. "
+            f"Vuelve a aprender el portal (Fase 1) para regenerar el mapa."
+        )
+    return indice[campo]
+
+
 def aplicar_transformaciones(pedido, mapa, cur):
     """
     Aplica el mapa completo al pedido nuevo y devuelve los datos listos para Arca:
@@ -206,7 +226,7 @@ def aplicar_transformaciones(pedido, mapa, cur):
         # cantidad, no al nombre; así somos robustos aunque el LLM etiquete el
         # nombre como 'lookup_catalogo'.) Lo resolvemos primero porque sku y
         # conversion_unidad lo necesitan para consultar el catálogo.
-        info_nombre = indice["producto_nombre"]
+        info_nombre = _exigir(indice, "producto_nombre")
         nombre = prod.get(info_nombre["origen"])
 
         # Unidad del origen para este producto (si el mapa la capturó). Decide el
@@ -214,12 +234,20 @@ def aplicar_transformaciones(pedido, mapa, cur):
         unidad = prod.get(indice["unidad"]["origen"]) if "unidad" in indice else None
 
         item = {"producto_nombre": nombre}
-        for campo in ["cantidad", "precio_unitario", "sku"]:
-            info = indice[campo]
+        # cantidad y precio SÍ dependen del mapa aprendido -> se exigen con aviso
+        # claro si el LLM no los mapeó (en vez de un KeyError feo).
+        for campo in ["cantidad", "precio_unitario"]:
+            info = _exigir(indice, campo)
             valor_origen = prod.get(info["origen"])
             item[campo] = aplicar_transformacion(
                 info["transf"], valor_origen, nombre, cur, unidad
             )
+        # sku NO depende del mapa: es estructura FIJA de Arca y SIEMPRE se resuelve
+        # del catálogo por nombre de producto. Así el pedido se registra aunque el
+        # LLM (no determinista) no haya incluido el mapeo 'sku' esta vez. No es
+        # hardcodear el mapeo origen->destino; es la estructura fija de Arca, igual
+        # que CAMPOS_PRODUCTO_DESTINO.
+        item["sku"] = _buscar_sku(cur, nombre)
         datos["items"].append(item)
 
     return datos
