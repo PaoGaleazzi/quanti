@@ -312,6 +312,7 @@
 
 <div class="modal" id="modal"><div class="mbox"><div class="mhead" id="mhead"></div><button class="mclose" id="mclose">✕</button><div class="mbd" id="mbd"></div></div></div>
 
+<script src="secrets.js" onerror="void 0"></script>
 <script>
 const PORTALES_DEMO={
   HEB:{nombre:"HEB · supermercado",map:[
@@ -589,13 +590,18 @@ function renderAbandono(){
   churngrid.innerHTML=all.length?show.map(r=>{
     const lv=r.riesgo>=0.66?"bad":r.riesgo>=0.45?"warn":"ok";
     const col=lv==="bad"?"var(--bad)":lv==="warn"?"#a9740a":"var(--ok)";
-    return `<div class="ccard ${lv==="ok"?"":"risk-"+lv}">
+    const s=r.serie, ult=s[s.length-1], pen=s.length>1?s[s.length-2]:ult;
+    const chg=pen>0?(ult-pen)/pen:0;                       // cambio del último mes vs el anterior (consistente con la línea)
+    const chgTxt=`Último mes ${money(ult)} · ${chg>=0?"▲":"▼"} ${Math.round(Math.abs(chg)*100)}% vs mes anterior`;
+    const spkCol=chg>=0?"var(--ok)":"var(--bad)";          // la línea sube=verde, baja=rojo (coherente con el texto)
+    return `<div class="ccard click ${lv==="ok"?"":"risk-"+lv}" data-cli="${r.cliente}">
       <div class="cnm">${r.cliente}</div>
       <div class="cpt">${(PORTALES[r.portal]||{}).nombre||r.portal}</div>
       <div class="cdrop" style="color:${col}">${Math.round(r.riesgo*100)}% riesgo</div>
-      <div class="csub">${r.riesgo>=0.45?`~${money(r.ingresoRiesgo)} al mes en juego · ${r.razon}`:`~${money(r.baseAvg)} al mes · comprando estable`}</div>
-      ${sparkline(r.serie,col)}
-      ${r.riesgo>=0.45?`<div class="csub" style="margin-top:10px;color:var(--ink)">${accionRiesgo(r)}</div>`:""}
+      <div class="csub">${chgTxt}</div>
+      ${sparkline(r.serie,spkCol)}
+      <div class="csub" style="margin-top:10px;color:var(--ink)">${r.riesgo>=0.45?accionRiesgo(r)+` · ~${money(r.ingresoRiesgo)}/mes en juego`:"Comprando estable."}</div>
+      <div class="cardlink">Ver detalle →</div>
     </div>`;
   }).join(""):`<div class="pad" style="color:var(--muted)">Aún no hay suficiente historial de pedidos para evaluar el riesgo.</div>`;
 }
@@ -618,6 +624,116 @@ function renderChart(){
   chart.innerHTML=`<svg class="chart" viewBox="0 0 ${W_} ${H}"><defs><linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#e8233a"/><stop offset="100%" stop-color="#b0111b"/></linearGradient></defs>${grid}${bars}</svg>`;
 }
 
+/* ===== detalle por cliente (consumo por producto + tendencia) ===== */
+function prodTrends(nombre){
+  const peds=PEDIDOS.filter(p=>p.cliente===nombre);
+  const prod={};
+  peds.forEach(p=>{(p.lineas||[]).forEach(l=>{
+    const pr=(prod[l.sku]=prod[l.sku]||{sku:l.sku,nombre:l.nombre,cat:(PRODUCTOS[l.sku]||{}).categoria||"",tot:0,m:{}});
+    pr.tot+=l.cantidad;const k=(p.fecha||"").slice(0,7);pr.m[k]=(pr.m[k]||0)+l.cantidad;
+  });});
+  return Object.values(prod).map(pr=>{
+    const keys=Object.keys(pr.m).sort(),serie=keys.map(k=>pr.m[k]);
+    let rec=0,base=0,delta=0,tend="flat";
+    if(serie.length>=2){const r=serie.slice(-2),b=serie.slice(0,-2).length?serie.slice(0,-2):serie.slice(0,-1);
+      rec=r.reduce((a,b)=>a+b,0)/r.length;base=b.reduce((a,b)=>a+b,0)/b.length;
+      delta=base>0?(rec-base)/base:0;tend=delta<=-0.2?"down":delta>=0.2?"up":"flat";}
+    return Object.assign(pr,{serie,rec,base,delta,tend});
+  }).sort((a,b)=>b.tot-a.tot);
+}
+function sugerirNuevos(arr){
+  const cats=new Set(arr.map(p=>p.cat).filter(Boolean)),tiene=new Set(arr.map(p=>p.sku));
+  return Object.entries(PRODUCTOS).filter(([sku,p])=>cats.has(p.categoria)&&!tiene.has(sku)).map(([sku,p])=>Object.assign({sku},p)).slice(0,3);
+}
+
+/* ===== recomendación local (sin IA) ===== */
+function recomendacionLocal(r,prods,dropped,nuevos){
+  const items=[];
+  if(dropped.length){const d=dropped[0];items.push(`Lánzale una promoción de <b>${d.nombre}</b>: cayó ${Math.round(Math.abs(d.delta)*100)}% (antes ~${fmt0(d.base)} pzas/mes, ahora ~${fmt0(d.rec)}).`);}
+  if((r.daysSince||0)>Math.max(20,(r.typGap||30)*1.5))items.push(`Lleva <b>${Math.round(r.daysSince)} días</b> sin pedir (suele cada ${Math.round(r.typGap||30)}). Conviene llamarlo esta semana.`);
+  if(nuevos.length)items.push(`Ofrécele <b>${nuevos[0].nombre}</b> (${nuevos[0].categoria}): va con lo que ya consume y no lo ha probado.`);
+  if(!items.length)items.push("Cliente estable. Mantener seguimiento y asegurar disponibilidad de sus productos clave.");
+  return `<ul>${items.map(i=>`<li>${i}</li>`).join("")}</ul>`;
+}
+
+/* ===== Gemini (insight con base en el historial de consumo) ===== */
+function geminiKey(){return (window.GEMINI_KEY&&window.GEMINI_KEY!=="TU_GEMINI_API_KEY_AQUI"?window.GEMINI_KEY:"")||localStorage.getItem("gemini_key")||"";}
+function buildPrompt(nombre,r,prods,dropped,nuevos){
+  const top=prods.slice(0,6).map(p=>`${p.nombre}: ${fmt0(p.tot)} pzas total, ${p.tend==="down"?"a la baja "+Math.round(Math.abs(p.delta)*100)+"%":p.tend==="up"?"al alza":"estable"}`).join("; ")||"sin detalle";
+  const drop=dropped.map(p=>p.nombre).join(", ")||"ninguno";
+  const nuev=nuevos.map(p=>`${p.nombre} (${p.categoria})`).join(", ")||"—";
+  return `Eres analista comercial de Arca Continental (bebidas). Cliente: ${nombre}. Riesgo de abandono: ${Math.round((r.riesgo||0)*100)}% (${r.razon||"sin señal fuerte"}). Días sin pedir: ${Math.round(r.daysSince||0)}.
+Consumo: ${top}.
+Productos que dejó de pedir: ${drop}.
+Productos del catálogo afines que NO ha comprado: ${nuev}.
+Dame 3 recomendaciones CONCRETAS y accionables para retener a este cliente (una promoción específica sobre lo que dejó de comprar, o proponer un producto nuevo afín). Español de México, tono ejecutivo, una sola línea por recomendación, sin explicar tu razonamiento. Formato: viñetas que empiecen con "- ".`;
+}
+async function callGemini(prompt){
+  const key=geminiKey();if(!key)throw new Error("nokey");
+  const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEM_MODEL}:generateContent?key=`+encodeURIComponent(key),
+    {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0.7,maxOutputTokens:400}})});
+  if(!r.ok){const t=await r.text();throw new Error(r.status+" "+t.slice(0,140));}
+  const j=await r.json();
+  const txt=((((j.candidates||[])[0]||{}).content||{}).parts||[]).map(p=>p.text).join("");
+  if(!txt)throw new Error("respuesta vacía");return txt;
+}
+function fmtIA(txt){const ls=txt.split("\n").map(l=>l.replace(/^[-*•]\s?/,"").trim()).filter(Boolean);return `<ul>${ls.map(l=>`<li>${l}</li>`).join("")}</ul>`;}
+async function generarIA(ctx){
+  const out=document.getElementById("iaout");if(!out)return;
+  if(!geminiKey()){                                  // sin key: se queda la recomendación automática, sin molestar
+    const h=document.getElementById("iahint");if(h)h.textContent="Sugerencia automática (configura secrets.js para activar Gemini).";
+    return;
+  }
+  const h=document.getElementById("iahint");if(h)h.textContent="✦ Analizando con IA…";
+  try{
+    const txt=await callGemini(buildPrompt(ctx.nombre,ctx.r,ctx.prods,ctx.dropped,ctx.nuevos));
+    out.innerHTML=fmtIA(txt)+`<div class="iahint" style="margin-top:8px">✦ Generado con IA · Gemini (${GEM_MODEL}) · con base en su historial de consumo</div>`;
+  }catch(e){
+    if(h)h.innerHTML=`<span style="color:var(--bad)">No se pudo generar con IA (${e.message}). Mostrando sugerencia automática.</span>`;
+  }
+}
+
+/* ===== modal detalle de cliente ===== */
+function openCliente(nombre){
+  const r=computeRiesgo().find(x=>x.cliente===nombre)||{};
+  const peds=PEDIDOS.filter(p=>p.cliente===nombre).slice().sort((a,b)=>(a.fecha<b.fecha?1:-1));
+  const portal=(peds[0]||{}).portal||r.portal||"—";
+  const prods=prodTrends(nombre),dropped=prods.filter(p=>p.tend==="down"),nuevos=sugerirNuevos(prods);
+  const riesgo=r.riesgo||0,lv=riesgo>=0.66?"bad":riesgo>=0.45?"warn":"ok";
+  const histo=peds.reduce((a,p)=>a+(+p.monto||0),0);
+  mhead.innerHTML=`<div class="mrisk"><div class="rv">${Math.round(riesgo*100)}%</div><div class="rl">riesgo de abandono</div></div>
+    <h2>${nombre}</h2><div class="msub">${(PORTALES[portal]||{}).nombre||portal} · ${peds.length} pedidos · ${money(histo)} histórico</div>`;
+  const mp=MAPAMAP[portal]||null;
+  const conf=mp?(+mp.confianza_global||0):confianzaCaptura();
+  const fms=mp?(((mp.mapa_json||{}).field_mappings)||mp.field_mappings||[]):[];
+  const est=conf>=0.85?["Operando solo","var(--ok)"]:conf>=0.70?["Operando con supervisión","var(--warn)"]:["Necesita reentrenarse","var(--bad)"];
+  let h="";
+  h+=`<div class="msec"><h3>Estado del bot de captura</h3><div class="botstate"><span class="bled" style="background:${est[1]}"></span><div><div class="bt">${est[0]} · confianza ${Math.round(conf*100)}%</div><div class="bm">${mp?("modelo "+(mp.modelo_llm||"—")+" · "+fms.length+" campos mapeados"):"sin mapa registrado para esta cadena"}</div></div></div></div>`;
+  h+=`<div class="msec"><h3>Qué compra y cómo va</h3>`;
+  h+=prods.length?prods.slice(0,8).map(p=>{
+    const a=p.tend==="down"?`<span class="ptrend t-down">▼ ${Math.round(Math.abs(p.delta)*100)}%</span>`:p.tend==="up"?`<span class="ptrend t-up">▲ ${Math.round(p.delta*100)}%</span>`:`<span class="ptrend t-flat">estable</span>`;
+    return `<div class="prow"><div style="flex:1"><div class="pn">${p.nombre}</div><div class="pc">${p.cat||p.sku} · ${fmt0(p.tot)} pzas en total</div></div>${a}</div>`;
+  }).join(""):`<div style="color:var(--muted);font-size:13px">Sin detalle de productos para este cliente.</div>`;
+  h+=`</div>`;
+  h+=`<div class="msec"><h3>Pedidos recientes</h3><table class="mtab"><thead><tr><th>Fecha</th><th>Monto</th><th>Entrega</th><th>Factura</th></tr></thead><tbody>`;
+  h+=peds.slice(0,12).map(p=>{
+    const eb=p.estatus_entrega==="entregado"?`<span class="badge b-ok">entregado</span>`:p.estatus_entrega==="no_entregado"?`<span class="badge b-bad">no entregado</span>`:`<span class="badge b-warn">en camino</span>`;
+    const fb=p.estatus_factura==="facturado"?`<span class="badge b-ok">${p.numero_factura||"facturado"}</span>`:`<span class="badge b-warn">pendiente</span>`;
+    return `<tr><td style="font-family:var(--mono);font-size:11.5px">${p.fecha||"—"}</td><td style="font-family:var(--mono)">${money(+p.monto||0)}</td><td>${eb}</td><td>${fb}</td></tr>`;
+  }).join("")||`<tr><td colspan="4" style="color:var(--muted)">Sin pedidos.</td></tr>`;
+  h+=`</tbody></table></div>`;
+  if(fms.length){
+    h+=`<div class="msec"><h3>Cómo el bot lee los pedidos de ${(PORTALES[portal]||{}).nombre||portal}</h3>`;
+    h+=fms.slice(0,6).map(f=>`<div class="reason"><div class="rmap">${f.campo_origen} → ${f.campo_destino} <span style="color:var(--dim)">· ${f.transformacion} · ${Math.round((f.confianza||0)*100)}%</span></div><div class="rtxt">${f.razonamiento||""}</div></div>`).join("");
+    h+=`</div>`;
+  }
+  h+=`<div class="msec"><h3>Recomendación para retenerlo</h3><div class="iabox"><div class="iaout" id="iaout">${recomendacionLocal(r,prods,dropped,nuevos)}<div class="iahint" id="iahint">${geminiKey()?"✦ Analizando con IA…":"Sugerencia automática."}</div></div></div></div>`;
+  mbd.innerHTML=h;
+  modal.classList.add("show");
+  generarIA({nombre,r,prods,dropped,nuevos});   // corre sola, sin botón ni preguntar
+}
+function closeModal(){modal.classList.remove("show");}
+
 function renderAll(){renderSelect();renderKPIs();renderChart();renderFacturacion();renderAbandono();}
 
 /* tabs */
@@ -627,22 +743,34 @@ document.querySelectorAll(".tabs button").forEach(b=>b.addEventListener("click",
   document.getElementById("tab-"+b.dataset.tab).classList.add("on");
 }));
 ffiltro.addEventListener("change",e=>{FFILTRO=e.target.value;renderFacturacion();});
+/* interactividad: clic en cualquier elemento con data-cli abre su detalle */
+document.addEventListener("click",e=>{const el=e.target.closest("[data-cli]");if(el)openCliente(el.getAttribute("data-cli"));});
+mclose.onclick=closeModal;
+modal.addEventListener("click",e=>{if(e.target===modal)closeModal();});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal();});
 renderAll();
 
 async function pullFromSupabase(){
-  const [rP,rC,rM]=await Promise.all([
-    fetch(SB_URL+"/rest/v1/pedidos?select=numero_orden,client_id,fecha_pedido,estatus_entrega,estatus_factura,numero_factura,monto_total,fecha_entrega_estimada&order=fecha_pedido.desc&limit=800",{headers:SBH}),
-    fetch(SB_URL+"/rest/v1/clientes?select=client_id,nombre_cliente,portal_origen",{headers:SBH}),
-    fetch(SB_URL+"/rest/v1/mapas_aprendidos?select=cliente_portal,confianza_global",{headers:SBH}),
+  const [rP,rC,rM,rD,rPr]=await Promise.all([
+    fetch(SB_URL+"/rest/v1/pedidos?select=numero_orden,client_id,fecha_pedido,estatus_entrega,estatus_factura,numero_factura,monto_total,fecha_entrega_estimada,confiabilidad_llenado&order=fecha_pedido.desc&limit=1000",{headers:SBH}),
+    fetch(SB_URL+"/rest/v1/clientes?select=client_id,nombre_cliente,portal_origen,tipo_canal",{headers:SBH}),
+    fetch(SB_URL+"/rest/v1/mapas_aprendidos?select=cliente_portal,confianza_global,modelo_llm,mapa_json",{headers:SBH}),
+    fetch(SB_URL+"/rest/v1/pedido_detalle?select=numero_orden,sku,producto_nombre,cantidad,precio_unitario,importe&limit=5000",{headers:SBH}),
+    fetch(SB_URL+"/rest/v1/productos?select=sku,nombre,categoria,precio_lista",{headers:SBH}),
   ]);
   if(!rP.ok||!rC.ok) throw new Error("SB "+rP.status);
-  const [peds,clis,maps]=await Promise.all([rP.json(),rC.json(),rM.ok?rM.json():Promise.resolve([])]);
+  const [peds,clis,maps,det,prods]=await Promise.all([rP.json(),rC.json(),rM.ok?rM.json():[],rD.ok?rD.json():[],rPr.ok?rPr.json():[]]);
   const cm=Object.fromEntries(clis.map(c=>[c.client_id,c]));
+  PRODUCTOS=Object.fromEntries((prods||[]).map(p=>[p.sku,{nombre:p.nombre,categoria:p.categoria,precio:+p.precio_lista||0}]));
+  const byOrden={};(det||[]).forEach(l=>{(byOrden[l.numero_orden]=byOrden[l.numero_orden]||[]).push({sku:l.sku,nombre:l.producto_nombre,cantidad:+l.cantidad||0,importe:+l.importe||0});});
   PEDIDOS=peds.map(p=>{const c=cm[p.client_id]||{};
-    return {id:"ORD-"+p.numero_orden,cliente:c.nombre_cliente||("Cliente "+p.client_id),portal:c.portal_origen||"—",
-      fecha:p.fecha_pedido,monto:+p.monto_total||0,
-      estatus_entrega:p.estatus_entrega,estatus_factura:p.estatus_factura,numero_factura:p.numero_factura,fecha_entrega_estimada:p.fecha_entrega_estimada};});
-  MAPAS=Array.isArray(maps)?maps:[];
+    return {id:"ORD-"+p.numero_orden,numero_orden:p.numero_orden,client_id:p.client_id,
+      cliente:c.nombre_cliente||("Cliente "+p.client_id),portal:c.portal_origen||"—",tipo_canal:c.tipo_canal||"",
+      fecha:p.fecha_pedido,monto:+p.monto_total||0,conf:(+p.confiabilidad_llenado||0)/100,
+      estatus_entrega:p.estatus_entrega,estatus_factura:p.estatus_factura,numero_factura:p.numero_factura,fecha_entrega_estimada:p.fecha_entrega_estimada,
+      lineas:byOrden[p.numero_orden]||[]};});
+  MAPAS=(maps||[]).map(m=>({cliente_portal:m.cliente_portal,confianza_global:m.confianza_global}));
+  MAPAMAP={};(maps||[]).forEach(m=>{MAPAMAP[m.cliente_portal]={confianza_global:m.confianza_global,modelo_llm:m.modelo_llm,mapa_json:m.mapa_json};});
   renderAll();setSrc(true);
 }
 
@@ -650,7 +778,12 @@ function setSrc(live){srcdot.style.background=live?"var(--ok)":"var(--warn)";src
 /* engine_output.json (lo escribe el motor) — el tablero lee:
    { "pedidos":[{cliente,portal,fecha,monto,estatus_entrega,estatus_factura,numero_factura}],
      "mapas":[{cliente_portal, confianza_global}] }   // alimenta la confiabilidad de captura */
-async function pull(){try{const r=await fetch("engine_output.json",{cache:"no-store"});if(!r.ok)throw 0;const j=await r.json();if(j.portales)PORTALES=j.portales;if(j.pedidos)PEDIDOS=j.pedidos;if(j.mapas)MAPAS=j.mapas;renderAll();setSrc(true);}catch(e){try{await pullFromSupabase();}catch(e2){setSrc(false);}}}
+async function pull(){try{const r=await fetch("engine_output.json",{cache:"no-store"});if(!r.ok)throw 0;const j=await r.json();
+  if(j.portales)PORTALES=j.portales;
+  if(j.pedidos)PEDIDOS=j.pedidos;
+  if(j.productos)PRODUCTOS=j.productos;
+  if(j.mapas){MAPAS=j.mapas;MAPAMAP={};j.mapas.forEach(m=>{MAPAMAP[m.cliente_portal]={confianza_global:m.confianza_global,modelo_llm:m.modelo_llm,mapa_json:m.mapa_json||m};});}
+  renderAll();setSrc(true);}catch(e){try{await pullFromSupabase();}catch(e2){setSrc(false);}}}
 refresh.addEventListener("click",pull);setInterval(pull,8000);pull();
 </script>
 </body>

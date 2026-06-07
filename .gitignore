@@ -1,4 +1,6 @@
 .env
+secrets.js
+fronts/secrets.js
 .venv/
 __pycache__/
 *.db
