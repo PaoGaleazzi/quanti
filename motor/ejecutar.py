@@ -336,6 +336,40 @@ def llenar_portal_arca(cliente_portal, datos, pedido_origen, mapa, numero_orden)
 
 
 # ---------------------------------------------------------------------------
+# CICLO COMPLETO SOLO: el bot recorre el portal origen (1 o varias pantallas)
+# guiado por el navigation_flow, transforma y llena Arca. GENÉRICO: sirve igual
+# para Sanborns (1 pantalla) que para HEB (varias). No tiene pasos hardcodeados.
+# ---------------------------------------------------------------------------
+def ejecutar_desde_portal(cliente_portal, url_origen):
+    """
+    1) Lee el mapa del cliente (para guiar la navegación).
+    2) Recorre el portal origen SOLO según el navigation_flow y lee los datos.
+    3) Transforma y guarda en la base (reusa ejecutar()).
+    4) Llena el portal de Arca en pantalla.
+    Devuelve (pedido, lecturas, datos, numero_orden, monto_total).
+    """
+    from leer_portal_guiado import leer_portal_segun_flujo
+
+    # 1) El mapa primero: contiene el navigation_flow que guía el recorrido.
+    conn = psycopg2.connect(**DB_CONFIG)
+    try:
+        mapa = leer_mapa(cliente_portal, conn.cursor())
+    finally:
+        conn.close()
+
+    # 2) Recorrer el portal origen y leer (Playwright, guiado por el mapa).
+    pedido, lecturas = leer_portal_segun_flujo(url_origen, mapa)
+
+    # 3) Transformar + guardar (la misma función que ya usa Sanborns).
+    datos, numero_orden, monto_total, mapa = ejecutar(cliente_portal, pedido)
+
+    # 4) Llenar el portal de Arca en pantalla.
+    llenar_portal_arca(cliente_portal, datos, pedido, mapa, numero_orden)
+
+    return pedido, lecturas, datos, numero_orden, monto_total
+
+
+# ---------------------------------------------------------------------------
 # FLUJO COMPLETO de Sanborns:
 #   leer portal cliente -> transformar (mapa) -> guardar en BD -> llenar portal Arca.
 # NO se llama al LLM aquí: solo lectura + aplicar el mapa ya aprendido.
@@ -344,25 +378,41 @@ def llenar_portal_arca(cliente_portal, datos, pedido_origen, mapa, numero_orden)
 #   python -m http.server 3000 -d fronts
 # ---------------------------------------------------------------------------
 if __name__ == "__main__":
+    import sys
     import json
-    from leer_portal_sanborns import leer_portal_sanborns
 
-    # 1) LEER: el bot abre el portal de Sanborns y lee el pedido del DOM.
-    print("Paso 1: leyendo el portal de Sanborns con Playwright...\n")
-    pedido_sanborns = leer_portal_sanborns()
-    print("DATOS LEÍDOS DEL PORTAL (crudos, en cajas):")
-    print(json.dumps(pedido_sanborns, indent=2, ensure_ascii=False))
+    cual = sys.argv[1] if len(sys.argv) > 1 else "sanborns"
 
-    # 2) y 3) TRANSFORMAR + GUARDAR: aplica el mapa aprendido y registra en la base.
-    print("\nPaso 2: aplicando el mapa y guardando en la base (sin LLM)...\n")
-    datos, numero_orden, monto_total, mapa = ejecutar("Sanborns", pedido_sanborns)
+    if cual == "heb":
+        # HEB: el bot recorre SOLO las 3 pantallas guiado por el navigation_flow.
+        print("Ejecutando HEB: el bot recorre el portal multi-pantalla solo...\n")
+        pedido, lecturas, datos, numero_orden, monto_total = ejecutar_desde_portal(
+            "HEB", "http://localhost:3000/heb_portal.html"
+        )
+        print("DATOS LEÍDOS POR PANTALLA:")
+        print(json.dumps(lecturas, indent=2, ensure_ascii=False))
+        print("\nPEDIDO ARMADO (de todas las pantallas):")
+        print(json.dumps(pedido, indent=2, ensure_ascii=False))
+        print("\nDATOS TRANSFORMADOS (listos para Arca):")
+        print(json.dumps(datos, indent=2, ensure_ascii=False))
+        print(f"\nGuardado OK -> numero_orden = {numero_orden}, monto_total = {monto_total}")
 
-    print("DATOS TRANSFORMADOS (listos para Arca):")
-    print(json.dumps(datos, indent=2, ensure_ascii=False))
-    print(f"\nGuardado OK -> pedidos.numero_orden = {numero_orden}, "
-          f"monto_total = {monto_total}")
+    else:
+        # Sanborns (1 pantalla): flujo original con su lector dedicado. Intacto.
+        from leer_portal_sanborns import leer_portal_sanborns
 
-    # 4) LLENAR EL PORTAL DE ARCA en pantalla (el bot teclea solo, para el demo).
-    print("\nPaso 3: el bot llena el portal de Arca (mira la ventana)...")
-    llenar_portal_arca("Sanborns", datos, pedido_sanborns, mapa, numero_orden)
-    print("Portal de Arca llenado y registrado.")
+        print("Paso 1: leyendo el portal de Sanborns con Playwright...\n")
+        pedido_sanborns = leer_portal_sanborns()
+        print("DATOS LEÍDOS DEL PORTAL (crudos, en cajas):")
+        print(json.dumps(pedido_sanborns, indent=2, ensure_ascii=False))
+
+        print("\nPaso 2: aplicando el mapa y guardando en la base (sin LLM)...\n")
+        datos, numero_orden, monto_total, mapa = ejecutar("Sanborns", pedido_sanborns)
+        print("DATOS TRANSFORMADOS (listos para Arca):")
+        print(json.dumps(datos, indent=2, ensure_ascii=False))
+        print(f"\nGuardado OK -> pedidos.numero_orden = {numero_orden}, "
+              f"monto_total = {monto_total}")
+
+        print("\nPaso 3: el bot llena el portal de Arca (mira la ventana)...")
+        llenar_portal_arca("Sanborns", datos, pedido_sanborns, mapa, numero_orden)
+        print("Portal de Arca llenado y registrado.")
