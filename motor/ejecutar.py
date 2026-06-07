@@ -27,15 +27,16 @@ Cómo correr la prueba con un pedido dummy de Sanborns:
 """
 
 import os
-import unicodedata
 from datetime import datetime, date
 
 from dotenv import load_dotenv
 import psycopg2
 
 # Capa que traduce el nombre del cliente -> producto del catálogo de Arca
-# (match normalizado y, si falla, el LLM). Ver motor/resolver_producto.py.
-from resolver_producto import resolver_producto
+# (caché -> match normalizado -> LLM). Ver motor/resolver_producto.py.
+# Reusamos su normalizador (_normalizar) como _norm para NO tener dos lógicas de
+# normalización distintas: una sola fuente de verdad para comparar nombres.
+from resolver_producto import resolver_producto, _normalizar as _norm
 
 # URL del portal de Arca NUEVO (el de las compañeras). Se sirve en localhost.
 URL_ARCA = "http://localhost:3000/arca_portal.html"
@@ -101,22 +102,9 @@ def _indexar_mapa(mapa):
 # ---------------------------------------------------------------------------
 # 2. LAS TRANSFORMACIONES (el corazón de ejecutar)
 # ---------------------------------------------------------------------------
-def _norm(s):
-    """
-    Normaliza un nombre de producto para comparar SOLO por FORMATO: minúsculas,
-    sin acentos y SIN espacios. Quitar todos los espacios (no solo colapsarlos)
-    es necesario para que 'Coca-Cola 600 ml' (con espacio, como viene del front)
-    matchee 'Coca-Cola 600ml' del catálogo: la diferencia es justo ese espacio.
-
-    NO hace match difuso ni por substring: nombres genuinamente distintos
-    ('Refresco Cola' de Sanborns vs 'Coca-Cola') NO matchean y siguen
-    resolviéndose por el LLM (no se meten nombres-disfraz al catálogo).
-    """
-    if s is None:
-        return ""
-    s = unicodedata.normalize("NFKD", str(s))
-    s = "".join(c for c in s if not unicodedata.combining(c))   # quita acentos
-    return "".join(s.lower().split())                           # minúsculas + sin espacios
+# _norm es resolver_producto._normalizar (ver import arriba): minúsculas, sin
+# acentos y solo alfanuméricos. Es el MISMO criterio que usa la caché semántica,
+# así que el match por formato aquí y el de resolver_producto son consistentes.
 
 
 def _buscar_producto(cur, producto_nombre):
@@ -125,6 +113,10 @@ def _buscar_producto(cur, producto_nombre):
     tolerante al FORMATO (ver _norm). Devuelve (sku, piezas_por_caja).
     El catálogo es chico, así que traemos las filas y comparamos normalizado.
     Lanza ValueError claro si no hay coincidencia (exacta tras normalizar).
+
+    OJO: esto resuelve SOLO formato. La resolución por SIGNIFICADO (nombres
+    distintos como 'Refresco Cola' -> 'Coca-Cola') la hace resolver_producto
+    (caché + LLM), que se llama en aplicar_transformaciones ANTES de llegar aquí.
     """
     objetivo = _norm(producto_nombre)
     cur.execute("select sku, nombre, piezas_por_caja from productos")
