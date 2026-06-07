@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sanborns · Abastecimiento de Proveedores</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0B3D62; --navy2:#0A2E49; --blue:#1773B0; --amber:#E8821E; --amber-soft:#FCEEDD;
+    --ink:#1a2230; --muted:#5e6b7e; --line:#e2e7ee; --soft:#f3f6fa; --bg:#eef2f7;
+    --ok:#0d7d4d; --ok-soft:#e6f4ee;
+    --sans:'Mulish',system-ui,sans-serif; --mono:'IBM Plex Mono',monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--sans);background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;min-height:100vh}
+
+  .topbar{background:var(--navy);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 30px;position:sticky;top:0;z-index:50}
+  .brand{display:flex;align-items:center;gap:13px}
+  .brand .logo{font-weight:800;font-size:18px;color:#fff;letter-spacing:.3px}
+  .brand .logo span{color:var(--amber)}
+  .brand .mod{font-family:var(--mono);font-size:10.5px;color:rgba(255,255,255,.5);letter-spacing:.5px;border-left:1px solid rgba(255,255,255,.2);padding-left:13px}
+  .sess{font-size:12px;color:rgba(255,255,255,.65)}
+
+  .shell{max-width:1000px;margin:26px auto;padding:0 24px 60px}
+
+  /* stepper */
+  .stepper{display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 26px;margin-bottom:22px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+  .step{display:flex;align-items:center;gap:11px;flex:1;position:relative}
+  .step:not(:last-child)::after{content:"";position:absolute;top:17px;left:46px;right:14px;height:2px;background:var(--line)}
+  .step.done:not(:last-child)::after{background:var(--blue)}
+  .scirc{width:34px;height:34px;border-radius:50%;background:var(--soft);border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:var(--muted);flex-shrink:0;z-index:1;transition:.2s}
+  .step.active .scirc{background:var(--navy);border-color:var(--navy);color:#fff}
+  .step.done .scirc{background:var(--blue);border-color:var(--blue);color:#fff}
+  .slabel{font-size:11.5px;font-weight:700;color:var(--muted);line-height:1.25}
+  .step.active .slabel,.step.done .slabel{color:var(--ink)}
+
+  .panel{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 1px 3px rgba(0,0,0,.04),0 8px 26px rgba(0,0,0,.05);overflow:hidden;display:none}
+  .panel.show{display:block;animation:fade .25s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .phd{padding:20px 28px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#fff,#fafcfe)}
+  .phd .ph-fase{font-family:var(--mono);font-size:10.5px;color:var(--amber);font-weight:600;letter-spacing:.6px;text-transform:uppercase}
+  .phd h2{font-size:19px;font-weight:800;margin-top:4px}
+  .phd p{font-size:13px;color:var(--muted);margin-top:4px}
+  .pbd{padding:26px 28px}
+
+  label{display:block;font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:7px}
+  input,select{width:100%;font-family:var(--sans);font-size:14px;font-weight:600;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:10px;padding:11px 13px;transition:.15s}
+  input:focus,select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(23,115,176,.12)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px}
+  .field{margin-bottom:20px}.field:last-child{margin-bottom:0}
+
+  /* catalog */
+  .search{margin-bottom:16px}
+  .catalog{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .citem{display:flex;align-items:center;gap:13px;border:1.5px solid var(--line);border-radius:12px;padding:13px 15px;cursor:pointer;transition:.15s}
+  .citem:hover{border-color:var(--blue);background:var(--soft)}
+  .citem.sel{border-color:var(--blue);background:#eef6fc}
+  .cchk{width:22px;height:22px;border-radius:6px;border:2px solid var(--line);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;font-weight:800}
+  .citem.sel .cchk{background:var(--blue);border-color:var(--blue)}
+  .cinfo .cn{font-weight:700;font-size:13.5px}
+  .cinfo .cc{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:2px}
+  .selcount{margin-top:14px;font-size:12.5px;color:var(--muted)}
+  .selcount b{color:var(--navy)}
+
+  /* qty rows */
+  .qrow{display:grid;grid-template-columns:1fr 130px 130px 140px;gap:14px;align-items:end;padding:14px 0;border-bottom:1px solid var(--soft)}
+  .qrow:last-child{border-bottom:none}
+  .qrow .qn{font-weight:700;font-size:14px}
+  .qrow .qc{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:3px}
+  .hintbox{margin-top:18px;background:var(--amber-soft);border:1px solid #f0cda0;border-radius:10px;padding:12px 15px;font-size:12.5px;color:#8a5212}
+
+  /* review */
+  .rev{width:100%;border-collapse:collapse;margin-bottom:18px}
+  .rev th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);font-weight:700;padding:9px 12px;background:var(--soft);border-bottom:1px solid var(--line)}
+  .rev td{padding:11px 12px;font-size:13px;border-bottom:1px solid var(--soft)}
+  .rev .mono{font-family:var(--mono);font-size:12px}
+  .revmeta{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:6px}
+  .rm-item{background:var(--soft);border-radius:10px;padding:12px 15px}
+  .rm-item .l{font-size:10.5px;text-transform:uppercase;letter-spacing:.3px;color:var(--muted);font-weight:700}
+  .rm-item .v{font-weight:700;font-size:14px;margin-top:3px}
+
+  .nav{display:flex;justify-content:space-between;align-items:center;padding:18px 28px;border-top:1px solid var(--line);background:#fafcfe}
+  .btn{font-family:var(--sans);font-weight:800;font-size:14px;border:none;border-radius:999px;padding:12px 28px;cursor:pointer;transition:.15s}
+  .btn-primary{background:var(--navy);color:#fff;box-shadow:0 3px 12px rgba(11,61,98,.25)}
+  .btn-primary:hover{background:var(--navy2)}
+  .btn-amber{background:var(--amber);color:#fff;box-shadow:0 3px 12px rgba(232,130,30,.3)}
+  .btn-amber:hover{filter:brightness(1.05)}
+  .btn-ghost{background:#fff;color:var(--ink);border:1.5px solid var(--line)}
+  .btn-ghost:hover{border-color:var(--muted)}
+  .btn:disabled{opacity:.4;cursor:default}
+
+  /* success */
+  .done-screen{display:none;background:#fff;border:1px solid var(--line);border-radius:16px;padding:48px;text-align:center;box-shadow:0 8px 26px rgba(0,0,0,.05)}
+  .done-screen.show{display:block}
+  .done-screen .ring{width:64px;height:64px;border-radius:50%;background:var(--ok-soft);border:2px solid #a8e6c9;color:var(--ok);display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:800;margin:0 auto 18px}
+  .done-screen h2{font-size:22px;font-weight:800}
+  .done-screen p{font-size:14px;color:var(--muted);margin-top:8px}
+  .done-screen .folio{font-family:var(--mono);font-size:13px;color:var(--navy);margin-top:14px;background:var(--soft);display:inline-block;padding:8px 16px;border-radius:8px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <span class="logo">San<span>borns</span></span>
+    <span class="mod">ABASTECIMIENTO DE PROVEEDORES · v3</span>
+  </div>
+  <div class="sess">Comprador institucional · Sesión 0x7F</div>
+</div>
+
+<div class="shell">
+
+  <!-- STEPPER -->
+  <div class="stepper" id="stepper">
+    <div class="step" data-i="0"><div class="scirc">1</div><div class="slabel">Identificación</div></div>
+    <div class="step" data-i="1"><div class="scirc">2</div><div class="slabel">Catálogo</div></div>
+    <div class="step" data-i="2"><div class="scirc">3</div><div class="slabel">Cantidades</div></div>
+    <div class="step" data-i="3"><div class="scirc">4</div><div class="slabel">Programación</div></div>
+    <div class="step" data-i="4"><div class="scirc">5</div><div class="slabel">Revisión</div></div>
+  </div>
+
+  <!-- FASE 1 -->
+  <div class="panel" data-step="0">
+    <div class="phd"><div class="ph-fase">Fase 1 de 5</div><h2>Identificación del cliente</h2><p>Selecciona la cuenta institucional que emite el pedido.</p></div>
+    <div class="pbd">
+      <div class="grid2">
+        <div class="field"><label>Cuenta / cliente</label>
+          <select id="client_id" data-field="client_id">
+            <option value="2">2 — Sanborns Centro Histórico</option>
+            <option value="5">5 — Sanborns Plaza Galerías</option>
+            <option value="9">9 — Sanborns San Ángel</option>
+          </select>
+        </div>
+        <div class="field"><label>Comprador responsable</label><input id="comprador" value="L. Hernández · Abastecimiento"></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>Centro de recepción</label><input id="centro" value="Almacén Central — Vallejo"></div>
+        <div class="field"><label>Proveedor</label><input value="Arca Continental S.A.B. de C.V." readonly></div>
+      </div>
+    </div>
+    <div class="nav"><span></span><button class="btn btn-primary" id="next0" onclick="next(0)">Siguiente</button></div>
+  </div>
+
+  <!-- FASE 2 -->
+  <div class="panel" data-step="1">
+    <div class="phd"><div class="ph-fase">Fase 2 de 5</div><h2>Selección de artículos</h2><p>Agrega los artículos del catálogo del proveedor. Los nombres son los del catálogo Sanborns.</p></div>
+    <div class="pbd">
+      <div class="search"><input id="buscar" placeholder="Buscar artículo…" oninput="renderCat()"></div>
+      <div class="catalog" id="catalog"></div>
+      <div class="selcount">Seleccionados: <b id="seln">0</b> artículo(s)</div>
+    </div>
+    <div class="nav"><button class="btn btn-ghost" onclick="back(1)">Atrás</button><button class="btn btn-primary" id="next1" onclick="next(1)">Siguiente</button></div>
+  </div>
+
+  <!-- FASE 3 -->
+  <div class="panel" data-step="2">
+    <div class="phd"><div class="ph-fase">Fase 3 de 5</div><h2>Cantidades por artículo</h2><p>Captura las unidades solicitadas. La unidad de compra de Sanborns es la CAJA.</p></div>
+    <div class="pbd">
+      <div id="qrows"></div>
+      <div class="hintbox">Nota del sistema: las cantidades se registran en cajas, tal como las maneja Sanborns. El proveedor es responsable de la conversión a su unidad interna.</div>
+    </div>
+    <div class="nav"><button class="btn btn-ghost" onclick="back(2)">Atrás</button><button class="btn btn-primary" onclick="next(2)">Siguiente</button></div>
+  </div>
+
+  <!-- FASE 4 -->
+  <div class="panel" data-step="3">
+    <div class="phd"><div class="ph-fase">Fase 4 de 5</div><h2>Programación de entrega</h2><p>Define las fechas y la ventana logística del pedido.</p></div>
+    <div class="pbd">
+      <div class="grid3">
+        <div class="field"><label>Fecha de solicitud</label><input id="fecha_solicitud" readonly></div>
+        <div class="field"><label>Fecha requerida</label><input type="date" id="fecha_requerida" data-field="fecha_requerida"></div>
+        <div class="field"><label>Ventana de entrega</label>
+          <select id="ventana"><option>Matutina (07:00–11:00)</option><option>Vespertina (13:00–17:00)</option></select>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>Prioridad</label>
+          <select id="prioridad"><option>Normal</option><option>Alta — reposición crítica</option></select>
+        </div>
+        <div class="field"><label>Días de crédito</label><input value="45 días" readonly></div>
+      </div>
+    </div>
+    <div class="nav"><button class="btn btn-ghost" onclick="back(3)">Atrás</button><button class="btn btn-primary" onclick="next(3)">Siguiente</button></div>
+  </div>
+
+  <!-- FASE 5 -->
+  <div class="panel" data-step="4">
+    <div class="phd"><div class="ph-fase">Fase 5 de 5</div><h2>Revisión y confirmación</h2><p>Verifica el pedido antes de enviarlo al proveedor.</p></div>
+    <div class="pbd">
+      <table class="rev"><thead><tr><th>Artículo</th><th>Unidades</th><th>Unidad</th><th>Costo unit.</th></tr></thead><tbody id="revbody"></tbody></table>
+      <div class="revmeta">
+        <div class="rm-item"><div class="l">Cliente</div><div class="v" id="rev_cli"></div></div>
+        <div class="rm-item"><div class="l">Fecha requerida</div><div class="v" id="rev_fecha"></div></div>
+        <div class="rm-item"><div class="l">Ventana</div><div class="v" id="rev_ventana"></div></div>
+      </div>
+    </div>
+    <div class="nav"><button class="btn btn-ghost" onclick="back(4)">Atrás</button><button class="btn btn-amber" onclick="confirmar()">Confirmar pedido</button></div>
+  </div>
+
+  <!-- SUCCESS -->
+  <div class="done-screen" id="done">
+    <div class="ring">OK</div>
+    <h2>Pedido enviado al proveedor</h2>
+    <p>El pedido quedó registrado. El motor de IA puede leerlo y capturarlo en el portal de Arca.</p>
+    <div class="folio" id="folio"></div>
+  </div>
+
+</div>
+
+<script>
+// catálogo (nombres propios de Sanborns; el LLM debe mapearlos al SKU de Arca)
+const CAT=[
+  {articulo:"Refresco Cola 600 ml", cod:"SB-RC600", costo:432.00},
+  {articulo:"Refresco Lima-Limón 600 ml", cod:"SB-LL600", costo:408.00},
+  {articulo:"Agua Natural 600 ml", cod:"SB-AG600", costo:264.00},
+  {articulo:"Té Sabor Durazno 600 ml", cod:"SB-TD600", costo:456.00},
+  {articulo:"Leche Saborizada Fresa 200 ml", cod:"SB-LF200", costo:228.00},
+  {articulo:"Bebida Energética 473 ml", cod:"SB-BE473", costo:864.00},
+];
+let step=0;
+let sel={};        // articulo -> {qty, unidad, costo}
+const order={};
+
+function renderStepper(){
+  [...document.querySelectorAll('.step')].forEach(s=>{
+    const i=+s.dataset.i; s.classList.toggle('active',i===step); s.classList.toggle('done',i<step);
+  });
+}
+function showPanel(){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('show',+p.dataset.step===step));
+  document.getElementById('done').classList.remove('show');
+  renderStepper(); window.scrollTo({top:0,behavior:'smooth'});
+}
+function renderCat(){
+  const q=(document.getElementById('buscar').value||'').toLowerCase();
+  const c=document.getElementById('catalog'); c.innerHTML='';
+  CAT.filter(x=>x.articulo.toLowerCase().includes(q)).forEach(x=>{
+    const on=!!sel[x.articulo];
+    const d=document.createElement('div');
+    d.className='citem'+(on?' sel':'');
+    d.innerHTML=`<div class="cchk">${on?'✓':''}</div><div class="cinfo"><div class="cn">${x.articulo}</div><div class="cc">${x.cod} · $${x.costo.toFixed(2)}/caja</div></div>`;
+    d.onclick=()=>{ if(sel[x.articulo]) delete sel[x.articulo]; else sel[x.articulo]={qty:10,unidad:'Caja',costo:x.costo}; renderCat(); document.getElementById('seln').textContent=Object.keys(sel).length; };
+    c.appendChild(d);
+  });
+  document.getElementById('seln').textContent=Object.keys(sel).length;
+}
+function renderQty(){
+  const box=document.getElementById('qrows'); box.innerHTML='';
+  Object.keys(sel).forEach(art=>{
+    const it=sel[art];
+    const cod=CAT.find(c=>c.articulo===art).cod;
+    const r=document.createElement('div'); r.className='qrow';
+    r.innerHTML=`
+      <div><div class="qn">${art}</div><div class="qc">${cod}</div></div>
+      <div><label>Unidades</label><input type="number" value="${it.qty}" data-art="${art}" class="q-u"></div>
+      <div><label>Unidad</label><select data-art="${art}" class="q-un"><option${it.unidad==='Caja'?' selected':''}>Caja</option><option${it.unidad==='Tarima'?' selected':''}>Tarima</option></select></div>
+      <div><label>Costo unit.</label><input type="number" step="0.01" value="${it.costo}" data-art="${art}" class="q-c"></div>`;
+    box.appendChild(r);
+  });
+  box.querySelectorAll('.q-u').forEach(e=>e.oninput=()=>sel[e.dataset.art].qty=+e.value||0);
+  box.querySelectorAll('.q-un').forEach(e=>e.onchange=()=>sel[e.dataset.art].unidad=e.value);
+  box.querySelectorAll('.q-c').forEach(e=>e.oninput=()=>sel[e.dataset.art].costo=+e.value||0);
+}
+function renderReview(){
+  const b=document.getElementById('revbody'); b.innerHTML='';
+  Object.keys(sel).forEach(art=>{
+    const it=sel[art];
+    b.innerHTML+=`<tr><td>${art}</td><td class="mono">${it.qty}</td><td>${it.unidad}</td><td class="mono">$${it.costo.toFixed(2)}</td></tr>`;
+  });
+  const cliSel=document.getElementById('client_id');
+  document.getElementById('rev_cli').textContent=cliSel.options[cliSel.selectedIndex].text;
+  const fr=document.getElementById('fecha_requerida').value;
+  document.getElementById('rev_fecha').textContent=fr?fr.split('-').reverse().join('/'):'—';
+  document.getElementById('rev_ventana').textContent=document.getElementById('ventana').value.split(' ')[0];
+}
+function next(from){
+  if(from===1 && Object.keys(sel).length===0){alert('Selecciona al menos un artículo.');return;}
+  step=from+1;
+  if(step===2) renderQty();
+  if(step===4) renderReview();
+  showPanel();
+}
+function back(from){step=from-1;showPanel();}
+function confirmar(){
+  const cliSel=document.getElementById('client_id');
+  const lineas=Object.keys(sel).map(art=>({
+    articulo:art,
+    unidades_pedidas:sel[art].qty,
+    unidad:sel[art].unidad,
+    costo:sel[art].costo
+  }));
+  const folio='SB-'+Math.floor(100000+Math.random()*899999);
+  const orden={
+    portal:"Sanborns", tabla_origen:"sanborns_pedidos", folio,
+    campos:{
+      client_id:cliSel.value,
+      fecha_requerida:document.getElementById('fecha_requerida').value,
+      lineas
+    },
+    fases:{
+      fecha_solicitud:document.getElementById('fecha_solicitud').dataset.iso,
+      ventana_entrega:document.getElementById('ventana').value,
+      prioridad:document.getElementById('prioridad').value
+    },
+    timestamp:new Date().toISOString()
+  };
+  localStorage.setItem('orden_origen_sanborns', JSON.stringify(orden));
+  console.log('ORDEN_ORIGEN_SANBORNS', JSON.stringify(orden,null,2));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('show'));
+  document.getElementById('folio').textContent='Folio: '+folio;
+  document.getElementById('done').classList.add('show');
+  step=5; renderStepper();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+// init
+(function(){
+  const t=new Date();
+  document.getElementById('fecha_solicitud').value=t.toLocaleDateString('es-MX',{day:'2-digit',month:'long',year:'numeric'});
+  document.getElementById('fecha_solicitud').dataset.iso=t.toISOString().slice(0,10);
+  const d=new Date();d.setDate(d.getDate()+3);document.getElementById('fecha_requerida').value=d.toISOString().slice(0,10);
+  renderCat(); showPanel();
+})();
+</script>
+</body>
+</html>

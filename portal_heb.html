@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HEB · Portal de Resurtido B2B</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --red:#D0021B; --dark:#1A0005; --deep:#8B0011;
+    --ink:#16171b; --muted:#6b7080; --line:#e4e6eb; --soft:#f1f2f5; --bg:#f6f7f9;
+    --ok:#0d7d4d; --ok-soft:#e6f4ee; --warn:#b45309; --warn-soft:#fef3c7;
+    --sans:'IBM Plex Sans',system-ui,sans-serif; --mono:'IBM Plex Mono',monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--sans);background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;min-height:100vh}
+
+  .topbar{background:var(--dark);height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;border-bottom:2px solid var(--red);position:sticky;top:0;z-index:50}
+  .brand{display:flex;align-items:center;gap:12px}
+  .brand .logo{background:var(--red);color:#fff;font-weight:800;font-size:15px;padding:4px 9px;border-radius:4px;letter-spacing:.5px}
+  .brand .mod{font-family:var(--mono);font-size:11px;color:rgba(255,255,255,.55);letter-spacing:.5px}
+  .sess{font-size:12px;color:rgba(255,255,255,.6);display:flex;align-items:center;gap:8px}
+  .sdot{width:7px;height:7px;border-radius:50%;background:#22c55e}
+
+  .wrap{max-width:880px;margin:28px auto;padding:0 24px 60px}
+  .head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap}
+  .head h1{font-size:22px;font-weight:700;color:var(--ink)}
+  .head .sub{font-size:13px;color:var(--muted);margin-top:4px}
+  .pometa{font-family:var(--mono);font-size:11px;color:var(--muted);text-align:right;line-height:1.7}
+  .pometa b{color:var(--ink)}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04),0 6px 20px rgba(0,0,0,.05);margin-bottom:18px}
+  .card-hd{padding:14px 22px;border-bottom:1px solid var(--line);background:#fafafa;display:flex;align-items:center;justify-content:space-between}
+  .card-hd h2{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+  .card-hd .tag{font-family:var(--mono);font-size:10px;color:var(--muted)}
+  .card-bd{padding:22px}
+
+  label{display:block;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px}
+  input,select{width:100%;font-family:var(--sans);font-size:14px;font-weight:500;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:10px;padding:11px 13px;transition:.15s}
+  input:focus,select:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px rgba(208,2,27,.1)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .field{margin-bottom:18px}.field:last-child{margin-bottom:0}
+
+  table.lines{width:100%;border-collapse:collapse}
+  table.lines th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);font-weight:700;padding:8px 10px;border-bottom:1px solid var(--line)}
+  table.lines td{padding:8px 10px;border-bottom:1px solid var(--soft);vertical-align:middle}
+  table.lines tr:last-child td{border-bottom:none}
+  table.lines input{padding:9px 11px;font-size:13px}
+  .rm{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:4px 8px;border-radius:6px}
+  .rm:hover{background:var(--soft);color:var(--red)}
+  .addline{margin-top:14px;font-family:var(--sans);font-size:13px;font-weight:600;color:var(--red);background:#fff;border:1.5px dashed var(--red);border-radius:10px;padding:9px 16px;cursor:pointer}
+  .addline:hover{background:#fff5f6}
+
+  .totbar{display:flex;justify-content:flex-end;gap:32px;padding:16px 22px;background:#fafafa;border-top:1px solid var(--line)}
+  .totbar .t .l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px}
+  .totbar .t .v{font-family:var(--mono);font-weight:700;font-size:18px;margin-top:2px}
+  .totbar .t .v.red{color:var(--red)}
+
+  .actions{display:flex;justify-content:flex-end;gap:12px;margin-top:6px}
+  .btn{font-family:var(--sans);font-weight:700;font-size:14px;border:none;border-radius:999px;padding:13px 28px;cursor:pointer;transition:.15s}
+  .btn-primary{background:var(--red);color:#fff;box-shadow:0 3px 12px rgba(208,2,27,.28)}
+  .btn-primary:hover{background:var(--deep)}
+  .btn-ghost{background:#fff;color:var(--ink);border:1.5px solid var(--line)}
+
+  .ok{display:none;align-items:center;gap:14px;background:var(--ok-soft);border:1px solid #a8e6c9;border-radius:14px;padding:16px 20px;margin-bottom:18px}
+  .ok.show{display:flex}
+  .ok .t{font-weight:700;color:var(--ok);font-size:15px}
+  .ok .s{font-size:12.5px;color:var(--muted);margin-top:2px}
+
+  .modal{display:none;position:fixed;inset:0;background:rgba(20,10,12,.55);align-items:center;justify-content:center;z-index:100}
+  .modal.show{display:flex}
+  .modal .box{background:#fff;border-radius:16px;padding:28px;width:420px;max-width:90vw;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+  .modal h3{font-size:17px;font-weight:700;color:var(--warn);margin-bottom:10px}
+  .modal p{font-size:13.5px;color:var(--ink);line-height:1.6;margin-bottom:22px}
+  .modal .mbtns{display:flex;gap:12px;justify-content:flex-end}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <span class="logo">HEB</span>
+    <span class="mod">PORTAL DE RESURTIDO B2B · CANAL MODERNO</span>
+  </div>
+  <div class="sess"><span class="sdot"></span>Sesión activa · Compras</div>
+</div>
+
+<div class="wrap">
+  <div class="ok" id="ok">
+    <div><div class="t">Orden emitida</div><div class="s">Guardada en el portal. El motor de IA puede leerla y capturarla en Arca.</div></div>
+  </div>
+
+  <div class="head">
+    <div>
+      <h1>Nueva orden de compra</h1>
+      <div class="sub">Proveedor: Arca Continental S.A.B. de C.V.</div>
+    </div>
+    <div class="pometa">
+      No. orden <b id="po">PO-2026-00851</b><br>
+      Fecha emisión <b id="hoy"></b>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-hd"><h2>Datos del comprador</h2><span class="tag">heb_orders</span></div>
+    <div class="card-bd">
+      <div class="grid2">
+        <div class="field"><label>ID de usuario comprador</label><input id="user_id" name="user_id" value="1"></div>
+        <div class="field"><label>Centro de distribución</label><input id="centro" value="CD Valle Oriente — Dock 14"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-hd"><h2>Productos a resurtir</h2><span class="tag">cantidad en PIEZAS</span></div>
+    <div class="card-bd">
+      <table class="lines">
+        <thead><tr><th style="width:48%">Producto</th><th style="width:18%">Cantidad (pzas)</th><th style="width:22%">Precio unit. (MXN)</th><th></th></tr></thead>
+        <tbody id="lines"></tbody>
+      </table>
+      <button class="addline" onclick="addLine()">+ Agregar línea</button>
+    </div>
+    <div class="totbar">
+      <div class="t"><div class="l">Líneas</div><div class="v" id="nlines">0</div></div>
+      <div class="t"><div class="l">Total estimado</div><div class="v red" id="total">$0.00</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-hd"><h2>Entrega</h2><span class="tag">delivery_date</span></div>
+    <div class="card-bd">
+      <div class="grid2">
+        <div class="field"><label>Fecha de entrega requerida</label><input type="date" id="delivery_date" name="delivery_date"></div>
+        <div class="field"><label>Condición de pago</label><input value="30 días neto" readonly></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-ghost" onclick="location.reload()">Limpiar</button>
+    <button class="btn btn-primary" onclick="openModal()">Emitir orden de compra</button>
+  </div>
+</div>
+
+<div class="modal" id="modal">
+  <div class="box">
+    <h3>Aviso de inventario</h3>
+    <p>Confirme que las cantidades solicitadas cumplen con el mínimo de pallet acordado con el proveedor. ¿Desea proceder con la emisión?</p>
+    <div class="mbtns">
+      <button class="btn btn-ghost" onclick="closeModal(false)">Cancelar</button>
+      <button class="btn btn-primary" onclick="closeModal(true)">Confirmar y enviar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SEED=[
+  {product:"Coca-Cola 600ml", qty:80, price:18.00},
+  {product:"Sprite 600ml", qty:60, price:17.00},
+];
+function row(d={product:"",qty:"",price:""}){
+  const tr=document.createElement('tr');
+  tr.innerHTML=`
+    <td><input class="c-prod" value="${d.product}" placeholder="Nombre del producto"></td>
+    <td><input class="c-qty" type="number" value="${d.qty}" placeholder="0" oninput="recalc()"></td>
+    <td><input class="c-price" type="number" step="0.01" value="${d.price}" placeholder="0.00" oninput="recalc()"></td>
+    <td><button class="rm" title="Quitar" onclick="this.closest('tr').remove();recalc()">×</button></td>`;
+  return tr;
+}
+function addLine(){document.getElementById('lines').appendChild(row());recalc();}
+function recalc(){
+  const rows=[...document.querySelectorAll('#lines tr')];
+  let total=0;
+  rows.forEach(r=>{const q=+r.querySelector('.c-qty').value||0;const p=+r.querySelector('.c-price').value||0;total+=q*p;});
+  document.getElementById('nlines').textContent=rows.length;
+  document.getElementById('total').textContent='$'+total.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',');
+}
+function openModal(){document.getElementById('modal').classList.add('show');}
+function closeModal(go){
+  document.getElementById('modal').classList.remove('show');
+  if(!go) return;
+  guardar();
+}
+function guardar(){
+  const lineas=[...document.querySelectorAll('#lines tr')].map(r=>({
+    product:r.querySelector('.c-prod').value,
+    qty:+r.querySelector('.c-qty').value||0,
+    unit_price:+r.querySelector('.c-price').value||0
+  })).filter(l=>l.product);
+  const orden={
+    portal:"HEB", tabla_origen:"heb_orders",
+    campos:{
+      user_id:document.getElementById('user_id').value,
+      delivery_date:document.getElementById('delivery_date').value,
+      lineas
+    },
+    timestamp:new Date().toISOString()
+  };
+  localStorage.setItem('orden_origen_heb', JSON.stringify(orden));
+  console.log('ORDEN_ORIGEN_HEB', JSON.stringify(orden,null,2));
+  document.getElementById('ok').classList.add('show');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+// init
+document.getElementById('hoy').textContent=new Date().toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'});
+const d=new Date();d.setDate(d.getDate()+2);document.getElementById('delivery_date').value=d.toISOString().slice(0,10);
+SEED.forEach(s=>document.getElementById('lines').appendChild(row(s)));
+recalc();
+</script>
+</body>
+</html>
