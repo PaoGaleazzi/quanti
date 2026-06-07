@@ -208,7 +208,7 @@
     <div class="hero">
       <div class="ey">Always on Shelf · EDI de IA</div>
       <h1>Captura automática de pedidos · canal moderno</h1>
-      <div class="herometa">Impacto en negocio · observabilidad del motor · datos en vivo</div>
+      <div class="herometa">Lo que le ahorra a Arca, cómo trabaja el motor por dentro y los pedidos al momento</div>
     </div>
 
     <div class="label first">Impacto para Arca</div>
@@ -230,15 +230,15 @@
     <div class="card">
       <div class="hd"><h2>Mapa aprendido · origen → Arca</h2><div class="selwrap"><select id="sel"></select></div></div>
       <div class="pad">
-        <div class="proof"><span class="ic2">◆</span><span><b>Inferido, no hardcodeado.</b> La confianza por campo viene del razonamiento del LLM + validación de tipo y unidad. Elige cualquier portal y el mapa se reconstruye solo (replicabilidad).</span></div>
+        <div class="proof"><span class="ic2">◆</span><span><b>Nada de esto está programado a mano.</b> El motor observa un pedido, deduce a qué campo de Arca va cada dato y qué tan seguro está de cada uno. Cambia de portal y arma el mapa otra vez, él solo.</span></div>
         <table><thead><tr><th>Concepto</th><th>Origen</th><th></th><th>Arca</th><th>Transformación</th><th>Confianza</th></tr></thead><tbody id="mapbody"></tbody></table>
       </div>
     </div>
 
     <div class="card">
-      <div class="hd"><h2>Semáforo de confiabilidad · mapa aprendido</h2><div class="tag">UMBRAL 70%</div></div>
+      <div class="hd"><h2>Qué tan bien entendió cada portal</h2><div class="tag">MÍNIMO 70%</div></div>
       <div class="pad">
-        <div class="proof"><span class="ic2">●</span><span><b>Confianza global por portal</b> — sale de <span class="field">mapas_aprendidos.confianza_global</span>. Verde ≥85%, amarillo 70–84%, rojo &lt;70%: un mapa en rojo se reentrena antes de operar en automático.</span></div>
+        <div class="proof"><span class="ic2">●</span><span>Qué tan seguro está el motor de cada portal (lo saca de <span class="field">mapas_aprendidos.confianza_global</span>). En verde cuando va bien; si alguno se pone en rojo, conviene volver a enseñarle antes de dejarlo trabajar solo.</span></div>
         <div class="semgrid" id="semgrid"></div>
       </div>
     </div>
@@ -276,11 +276,11 @@
 
   <!-- ============ FACTURACIÓN ============ -->
   <section class="panel" id="tab-facturacion">
-    <div class="label first">Ciclo pedido → entrega → factura</div>
-    <div class="proof" style="margin-bottom:16px"><span class="ic2">◆</span><span>La factura se genera <b>automáticamente al entregar</b> (vía SAP, ~2 días después). Aquí cada pedido en su etapa real del ciclo, leído de <span class="field">estatus_entrega</span> / <span class="field">estatus_factura</span> / <span class="field">numero_factura</span>.</span></div>
+    <div class="label first">Del pedido a la factura</div>
+    <div class="proof" style="margin-bottom:16px"><span class="ic2">◆</span><span>La factura sale sola cuando se entrega el pedido: SAP la genera un par de días después. Aquí ves en qué punto va cada uno. Sale de <span class="field">estatus_entrega</span>, <span class="field">estatus_factura</span> y <span class="field">numero_factura</span>.</span></div>
     <div class="fstats" id="fstats"></div>
     <div class="card">
-      <div class="hd"><h2>Estado de facturación por pedido</h2><div class="selwrap"><select id="ffiltro"></select></div></div>
+      <div class="hd"><h2>En qué va cada pedido</h2><div class="selwrap"><select id="ffiltro"></select></div></div>
       <table>
         <thead><tr><th>Pedido</th><th>Cliente</th><th>Ciclo</th><th>Factura</th><th style="text-align:right">Monto</th></tr></thead>
         <tbody id="factbody"></tbody>
@@ -290,13 +290,13 @@
 
   <!-- ============ RETENCIÓN (churn + insights) ============ -->
   <section class="panel" id="tab-retencion">
-    <div class="label first">Clientes en riesgo de baja · churn</div>
-    <div class="proof" style="margin-bottom:16px"><span class="ic2">▼</span><span>Riesgo calculado comparando el <b>volumen reciente</b> de cada cliente contra su <b>promedio histórico</b> (de <span class="field">pedidos.monto_total</span> por mes). Caída ≥40% = crítico · ≥25% = advertencia.</span></div>
+    <div class="label first">Clientes que están pidiendo menos</div>
+    <div class="proof" style="margin-bottom:16px"><span class="ic2">▼</span><span>Comparamos lo que cada cliente pidió hace poco contra lo que solía pedir (mes con mes, usando <span class="field">pedidos.monto_total</span>). Si la caída es fuerte, aparece aquí para no perderlo de vista.</span></div>
     <div class="churngrid" id="churngrid"></div>
 
-    <div class="label">Insights accionables · IA generativa</div>
+    <div class="label">Qué podemos hacer con cada uno</div>
     <div class="card">
-      <div class="hd"><h2>Recomendaciones de retención</h2><div class="gemtag"><span class="gembadge" id="gembadge">GEMINI</span><span id="gemsrc">esperando datos…</span></div></div>
+      <div class="hd"><h2>Ideas para no perderlos</h2><div class="gemtag"><span class="gembadge" id="gembadge">IA</span><span id="gemsrc"></span></div></div>
       <div class="pad"><div class="insgrid" id="insgrid"></div></div>
     </div>
   </section>
@@ -510,10 +510,10 @@ function renderFacturacion(){
   let cam=0,ent=0,fac=0,noent=0,montoFac=0;
   PEDIDOS.forEach(p=>{const i=cicloIdx(p);if(i===-1)noent++;else if(i===3){fac++;montoFac+=+p.monto||0;}else if(i===2)ent++;else cam++;});
   fstats.innerHTML=`
-    <div class="acard"><div class="n" style="color:var(--arca)">${cam}</div><div class="t">En camino</div></div>
-    <div class="acard c-warn"><div class="n">${ent}</div><div class="t">Entregados · por facturar</div></div>
-    <div class="acard c-ok"><div class="n">${fac}</div><div class="t">Facturados · $${fmt0(montoFac)}</div></div>
-    <div class="acard c-bad"><div class="n">${noent}</div><div class="t">No entregados</div></div>`;
+    <div class="acard"><div class="n" style="color:var(--arca)">${cam}</div><div class="t">Van en camino</div></div>
+    <div class="acard c-warn"><div class="n">${ent}</div><div class="t">Ya llegaron, falta facturar</div></div>
+    <div class="acard c-ok"><div class="n">${fac}</div><div class="t">Ya facturados · $${fmt0(montoFac)}</div></div>
+    <div class="acard c-bad"><div class="n">${noent}</div><div class="t">No se entregaron</div></div>`;
   const list=PEDIDOS.filter(p=>FFILTRO==="ALL"||p.portal===FFILTRO).slice().reverse();
   factbody.innerHTML=list.map(p=>{
     const i=cicloIdx(p);
@@ -564,10 +564,10 @@ function renderChurn(){
       <div class="cnm">${c.cliente}</div>
       <div class="cpt">${(PORTALES[c.portal]||{}).nombre||c.portal}</div>
       <div class="cdrop">▼ ${Math.round(c.drop*100)}%</div>
-      <div class="csub">$${fmt0(c.reciente)} reciente vs $${fmt0(c.base)} prom. histórico</div>
+      <div class="csub">antes pedía ~$${fmt0(c.base)} al mes, ahora va en ~$${fmt0(c.reciente)}</div>
       ${sparkline(c.serie)}
     </div>`;
-  }).join(""):`<div class="pad" style="color:var(--muted)">Sin clientes en riesgo detectados.</div>`;
+  }).join(""):`<div class="pad" style="color:var(--muted)">Por ahora todos vienen pidiendo parejo, nada que reportar.</div>`;
   renderInsights(list);
 }
 
@@ -577,17 +577,22 @@ function renderInsights(churnList){
   if(INSIGHTS&&INSIGHTS.length){
     items=INSIGHTS;live=true;
   }else{
-    // fallback: plantilla local a partir del churn calculado (el motor aún no escribió insights)
-    items=churnList.slice(0,4).map(c=>({
-      titulo:`${c.cliente} bajó ${Math.round(c.drop*100)}% su volumen`,
-      detalle:`Pasó de ~$${fmt0(c.base)} a ~$${fmt0(c.reciente)} MXN/mes — cliente en riesgo de baja.`,
-      accion:c.drop>=0.40?"Visita comercial + promoción 2x1":"Llamada de seguimiento + descuento por volumen"
-    }));
+    // si el motor todavía no escribió las de Gemini, armamos unas rápidas con lo que ya sabemos del cliente
+    items=churnList.slice(0,4).map(c=>{
+      const pct=Math.round(c.drop*100),fuerte=c.drop>=0.40;
+      return{
+        titulo:`${c.cliente} está pidiendo menos`,
+        detalle:`Estos dos meses cayó como ${pct}%: venía en unos $${fmt0(c.base)} al mes y ahora anda en $${fmt0(c.reciente)}. ${fuerte?"Si lo dejamos pasar, lo más seguro es que se vaya con otro.":"Todavía estamos a tiempo de recuperarlo."}`,
+        accion:fuerte?"Que un vendedor lo visite esta semana":"Hablarle para ver qué pasó"
+      };
+    });
     live=false;
   }
-  gembadge.textContent=live?"GEMINI":"PLANTILLA";
-  gemsrc.textContent=live?("Fuente: motor · "+(INSIGHTS_MODEL||"Gemini")):"Fuente: plantilla local — el motor aún no escribió insights de Gemini";
-  insgrid.innerHTML=items.length?items.map(it=>`<div class="insight"><div class="ii">✦</div><div class="it"><b>${it.titulo}</b><br>${it.detalle}${it.accion?`<span class="iact">→ ${it.accion}</span>`:""}</div></div>`).join(""):`<div style="color:var(--muted)">Sin recomendaciones — ningún cliente en riesgo.</div>`;
+  gembadge.style.display=live?"":"none";
+  gemsrc.textContent=live?("Lo escribió Gemini leyendo el historial de cada cliente"):"Sugerencias rápidas a partir de lo que ha pedido cada quien";
+  insgrid.innerHTML=items.length
+    ?items.map(it=>`<div class="insight"><div class="it"><b>${it.titulo}.</b> ${it.detalle}${it.accion?`<span class="iact">${it.accion}</span>`:""}</div></div>`).join("")
+    :`<div style="color:var(--muted)">Por ahora nadie viene a la baja. Todo en orden.</div>`;
 }
 
 function renderAll(){renderImpact();renderSelect();renderMini();renderMap();renderSemaforo();renderAlertas();renderOrders();renderFacturacion();renderChurn();renderChart();}

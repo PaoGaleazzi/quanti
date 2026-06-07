@@ -377,6 +377,44 @@ def ejecutar(cliente_portal, pedido_nuevo):
 # ---------------------------------------------------------------------------
 # 4. LLENAR EL PORTAL VISUAL DE ARCA (Playwright) — solo demo, no toca la base.
 # ---------------------------------------------------------------------------
+def _fill_editable(page, selector, valor):
+    """
+    Hace fill SOLO si el campo existe y es EDITABLE. Si es readonly/disabled
+    (ej. #numero_orden de Arca, que la base autogenera), lo SALTA en vez de
+    trabarse: Playwright no puede escribir en readonly y se queda esperando hasta
+    el timeout de 30s. Genérico para CUALQUIER campo no editable del portal.
+    """
+    el = page.query_selector(selector)
+    if el is None:
+        return                                   # el campo no existe en este portal
+    if not el.is_editable():                      # False si es readonly o disabled
+        print(f"[AVISO] Campo '{selector}' es readonly/no editable; se omite (no se teclea).")
+        return
+    page.fill(selector, str(valor))
+
+
+def _set_select(page, selector, valor):
+    """
+    Elige un valor en un <select> (no se usa fill en selects). Si el valor no está
+    entre las opciones del portal, lo inyecta antes (igual que hace el front con
+    prodOptions) y dispara 'change' para que corra su onChange. Robusto.
+    """
+    el = page.query_selector(selector)
+    if el is None or valor is None:
+        return
+    el.evaluate(
+        """(sel, val) => {
+            if (val && ![...sel.options].some(o => o.value === val)) {
+                const o = document.createElement('option');
+                o.value = val; o.textContent = val; sel.appendChild(o);
+            }
+            sel.value = val;
+            sel.dispatchEvent(new Event('change', { bubbles: true }));
+        }""",
+        str(valor),
+    )
+
+
 def llenar_portal_arca(cliente_portal, datos, pedido_origen, mapa, numero_orden):
     """
     Abre el portal de Arca NUEVO (arca_portal.html) y TECLEA los datos
@@ -398,11 +436,13 @@ def llenar_portal_arca(cliente_portal, datos, pedido_origen, mapa, numero_orden)
         page = browser.new_page()
         page.goto(URL_ARCA)
 
-        # CABECERA (ids/data-field reales del portal nuevo).
-        page.fill("#numero_orden", f"ORD-{numero_orden}")
-        page.fill("#client_id", str(datos["client_id"]))
-        page.fill("#fecha_entrega_estimada", str(datos["fecha_entrega_estimada"]))
-        # portal_origen es readonly -> lo ponemos por JS (contexto, no se teclea).
+        # CABECERA: SOLO campos editables. Los readonly (numero_orden autogenerado,
+        # fecha_pedido, origen_captura) se saltan solos vía _fill_editable, en vez
+        # de trabar Playwright. El numero_orden lo asigna la base; el bot NO lo teclea.
+        _fill_editable(page, "#numero_orden", f"ORD-{numero_orden}")   # readonly -> se salta
+        _fill_editable(page, "#client_id", datos["client_id"])
+        _fill_editable(page, "#fecha_entrega_estimada", datos["fecha_entrega_estimada"])
+        # portal_origen es readonly -> lo ponemos por JS (solo contexto, no se teclea).
         page.evaluate(
             "(v) => { const e = document.getElementById('portal_origen'); if (e) e.value = v; }",
             cliente_portal,
@@ -413,10 +453,12 @@ def llenar_portal_arca(cliente_portal, datos, pedido_origen, mapa, numero_orden)
         for it in datos["items"]:
             page.click(".addline")                 # botón "+ Agregar línea"
             fila = "#lines tr:last-of-type"
-            page.fill(f"{fila} .c-sku", str(it["sku"]))
-            page.fill(f"{fila} .c-prod", str(it["producto_nombre"]))
-            page.fill(f"{fila} .c-qty", str(it["cantidad"]))
-            page.fill(f"{fila} .c-price", str(it["precio_unitario"]))
+            # c-prod es un <select>: se elige con _set_select (no fill). Va primero
+            # para que su onChange autollene; luego sobreescribimos con nuestros datos.
+            _set_select(page, f"{fila} .c-prod", it["producto_nombre"])
+            _fill_editable(page, f"{fila} .c-sku", it["sku"])
+            _fill_editable(page, f"{fila} .c-qty", it["cantidad"])
+            _fill_editable(page, f"{fila} .c-price", it["precio_unitario"])
             # (el total se recalcula solo por el oninput del portal)
 
         # Clic final en 'Registrar en Arca'.
