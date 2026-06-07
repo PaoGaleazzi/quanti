@@ -6,7 +6,7 @@
 <title>Always on Shelf · Arca Continental</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#ffffff; --beige:#e8e4dc; --beige2:#f1eee8;
@@ -14,7 +14,7 @@
     --arca:#ed1c2e; --arca-deep:#a90f18; --arca-soft:#fdecec;
     --grad:linear-gradient(135deg,#e8233a 0%,#b0111b 100%);
     --ok:#1aa06a; --warn:#e09b16; --bad:#ed1c2e;
-    --sans:'Figtree',system-ui,sans-serif; --mono:'JetBrains Mono',monospace;
+    --sans:'Hanken Grotesk',system-ui,sans-serif; --disp:'Bricolage Grotesque',system-ui,sans-serif; --mono:'IBM Plex Mono',monospace;
     --r:24px; --pill:999px; --sh:0 1px 2px rgba(16,17,20,.04),0 8px 24px rgba(16,17,20,.05);
   }
   *{box-sizing:border-box}
@@ -38,7 +38,7 @@
   .hero{background:var(--arca);color:#fff;border-radius:var(--r);padding:32px 34px;margin-bottom:18px;position:relative;overflow:hidden}
   .hero:after{content:"";position:absolute;right:-70px;top:-70px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.13),transparent 70%)}
   .hero .ey{font-family:var(--mono);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;opacity:.85}
-  .hero h1{font-size:clamp(24px,3.6vw,38px);font-weight:900;letter-spacing:-1px;margin:8px 0 14px;line-height:1.04}
+  .hero h1{font-family:var(--disp);font-size:clamp(24px,3.6vw,38px);font-weight:800;letter-spacing:-1px;margin:8px 0 14px;line-height:1.04}
   .hero .herometa{font-family:var(--mono);font-size:12.5px;opacity:.85;margin-top:4px}
 
   .label{font-family:var(--mono);font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:var(--dim);margin:26px 2px 12px;font-weight:600}
@@ -49,7 +49,7 @@
   .ic{background:#fff;border:1px solid var(--line2);border-radius:18px;padding:20px;box-shadow:var(--sh)}
   .ic.hot{background:var(--grad);color:#fff;border:0}
   .ic .l{font-size:12.5px;font-weight:600;opacity:.92}
-  .ic .v{font-weight:900;font-size:clamp(24px,2.8vw,34px);margin-top:10px;line-height:1;letter-spacing:-1.5px}
+  .ic .v{font-family:var(--disp);font-weight:800;font-size:clamp(24px,2.8vw,34px);margin-top:10px;line-height:1;letter-spacing:-1.5px}
   .ic .s{font-family:var(--mono);font-size:11px;margin-top:9px;opacity:.85}
   .ic .arrow2{color:var(--ok);font-weight:700} .ic.hot .arrow2{color:#bff5dd}
 
@@ -67,7 +67,7 @@
   .card{background:#fff;border:1px solid var(--line2);border-radius:var(--r);overflow:hidden;margin-bottom:18px;box-shadow:var(--sh)}
   .card.beige{background:var(--beige)}
   .hd{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 22px;border-bottom:1px solid var(--line);flex-wrap:wrap}
-  .hd h2{font-weight:700;font-size:16px;margin:0;letter-spacing:-.2px}
+  .hd h2{font-family:var(--disp);font-weight:700;font-size:16.5px;margin:0;letter-spacing:-.2px}
   .tag{font-family:var(--mono);font-size:10px;color:#fff;background:var(--ink);padding:5px 11px;border-radius:var(--pill);letter-spacing:.5px}
   .pad{padding:20px 22px}
 
@@ -76,7 +76,7 @@
   .ms{padding:16px 18px;border-right:1px solid var(--line)}
   .ms:last-child{border-right:0}
   .ms .l{font-size:11px;color:var(--muted);font-weight:600}
-  .ms .v{font-weight:800;font-size:23px;margin-top:6px;letter-spacing:-.5px}
+  .ms .v{font-family:var(--disp);font-weight:800;font-size:23px;margin-top:6px;letter-spacing:-.5px}
   .ms .d{font-family:var(--mono);font-size:10px;margin-top:5px}
   .up{color:var(--ok)} .down{color:var(--bad)} .neutral{color:var(--muted)}
 
@@ -107,7 +107,7 @@
   .acounts{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
   @media(max-width:640px){.acounts{grid-template-columns:repeat(3,1fr)}}
   .acard{border-radius:18px;padding:18px 20px;border:1px solid var(--line2);background:#fff;box-shadow:var(--sh)}
-  .acard .n{font-weight:900;font-size:34px;letter-spacing:-1.5px}
+  .acard .n{font-family:var(--disp);font-weight:800;font-size:34px;letter-spacing:-1.5px}
   .acard .t{font-size:12.5px;color:var(--muted);font-weight:600;margin-top:4px}
   .acard.c-bad{background:var(--arca-soft);border-color:#f7d6d6} .acard.c-bad .n{color:var(--arca)}
   .acard.c-warn .n{color:#a9740a} .acard.c-ok .n{color:var(--ok)}
@@ -170,9 +170,9 @@
   .ccard{border:1px solid var(--line2);border-radius:16px;padding:16px 18px;background:#fff;box-shadow:var(--sh)}
   .ccard.risk-bad{border-color:#f7d6d6;background:var(--arca-soft)}
   .ccard.risk-warn{border-color:#f6e6c2;background:#fffdf7}
-  .ccard .cnm{font-weight:800;font-size:15px;letter-spacing:-.3px}
+  .ccard .cnm{font-family:var(--disp);font-weight:700;font-size:15.5px;letter-spacing:-.3px}
   .ccard .cpt{font-family:var(--mono);font-size:10.5px;color:var(--dim);margin-top:2px}
-  .ccard .cdrop{font-weight:900;font-size:27px;letter-spacing:-1px;margin-top:10px}
+  .ccard .cdrop{font-family:var(--disp);font-weight:800;font-size:27px;letter-spacing:-1px;margin-top:10px}
   .ccard.risk-bad .cdrop{color:var(--bad)} .ccard.risk-warn .cdrop{color:#a9740a}
   .ccard .csub{font-size:11.5px;color:var(--muted);margin-top:2px}
   .spark{display:block;width:100%;height:40px;margin-top:12px;overflow:visible}
@@ -488,7 +488,109 @@ const LOG=[
 ];
 function renderLog(){log.innerHTML="";LOG.forEach((l,i)=>setTimeout(()=>{log.insertAdjacentHTML("beforeend",`<div class="ln"><span class="t">[${l[0]}]</span><span class="c-${l[1]}">${l[2]}</span></div>`);log.scrollTop=log.scrollHeight;},i*240));}
 
-function renderAll(){renderImpact();renderSelect();renderMini();renderMap();renderAlertas();renderOrders();renderChart();}
+/* ===== semáforo de confiabilidad (mapas_aprendidos.confianza_global) ===== */
+function semColor(c){return c>=0.85?"var(--ok)":c>=0.70?"var(--warn)":"var(--bad)";}
+function renderSemaforo(){
+  const rows=(MAPAS&&MAPAS.length)
+    ? MAPAS.map(m=>({nombre:(PORTALES[m.cliente_portal]||{}).nombre||m.cliente_portal,conf:+m.confianza_global||0,modelo:m.modelo_llm||"—"}))
+    : Object.entries(PORTALES).map(([k,v])=>({nombre:v.nombre,conf:v.map.reduce((a,b)=>a+b.conf,0)/v.map.length,modelo:"demo"}));
+  semgrid.innerHTML=rows.map(r=>`<div class="semchip"><span class="semled" style="background:${semColor(r.conf)};box-shadow:0 0 0 4px ${semColor(r.conf)}1f"></span><div><div class="sp">${r.nombre}</div><div class="sc">${r.modelo}</div></div><span class="scval" style="color:${semColor(r.conf)}">${Math.round(r.conf*100)}%</span></div>`).join("");
+}
+
+/* ===== facturación · ciclo pedido→entrega→factura ===== */
+const CICLO=["Registrado","En camino","Entregado","Facturado"];
+function cicloIdx(p){
+  if(p.estatus_factura==="facturado")return 3;
+  if(p.estatus_entrega==="no_entregado")return -1;       // stopper
+  if(p.estatus_entrega==="entregado")return 2;
+  return 1;                                              // pendiente → en camino
+}
+function renderFacturacion(){
+  tabFactCount.textContent=PEDIDOS.length;
+  let cam=0,ent=0,fac=0,noent=0,montoFac=0;
+  PEDIDOS.forEach(p=>{const i=cicloIdx(p);if(i===-1)noent++;else if(i===3){fac++;montoFac+=+p.monto||0;}else if(i===2)ent++;else cam++;});
+  fstats.innerHTML=`
+    <div class="acard"><div class="n" style="color:var(--arca)">${cam}</div><div class="t">En camino</div></div>
+    <div class="acard c-warn"><div class="n">${ent}</div><div class="t">Entregados · por facturar</div></div>
+    <div class="acard c-ok"><div class="n">${fac}</div><div class="t">Facturados · $${fmt0(montoFac)}</div></div>
+    <div class="acard c-bad"><div class="n">${noent}</div><div class="t">No entregados</div></div>`;
+  const list=PEDIDOS.filter(p=>FFILTRO==="ALL"||p.portal===FFILTRO).slice().reverse();
+  factbody.innerHTML=list.map(p=>{
+    const i=cicloIdx(p);
+    let pipe="";
+    CICLO.forEach((s,si)=>{
+      let cls="";
+      if(i===-1)cls=si===0?"done":si===1?"bad":"";
+      else cls=si<i?"done":si===i?"cur":"";
+      const ic=cls==="done"?"✓":cls==="bad"?"✕":si+1;
+      pipe+=`<div class="pstep ${cls}"><div class="pdot">${ic}</div><div class="pl">${s}</div></div>`;
+      if(si<CICLO.length-1)pipe+=`<div class="pconn ${(i!==-1&&si<i)?'on':''}"></div>`;
+    });
+    const facCell=p.numero_factura?`<span class="badge b-ok">${p.numero_factura}</span>`
+      :(p.estatus_entrega==="no_entregado"?`<span class="badge b-bad">cancelado</span>`:`<span class="badge b-warn">pendiente</span>`);
+    return `<tr><td style="font-family:var(--mono);font-size:11px;color:var(--dim)">${p.id}</td><td style="font-weight:700">${p.cliente}</td><td><div class="pipe">${pipe}</div></td><td>${facCell}</td><td style="text-align:right;font-family:var(--mono);font-size:12px">$${fmt0(p.monto||0)}</td></tr>`;
+  }).join("")||`<tr><td colspan="5" style="color:var(--muted)">Sin pedidos.</td></tr>`;
+}
+
+/* ===== churn · volumen reciente vs promedio histórico ===== */
+function computeChurn(){
+  const byCli={};
+  PEDIDOS.forEach(p=>{if(!p.fecha)return;(byCli[p.cliente]=byCli[p.cliente]||{portal:p.portal,m:{}});const k=p.fecha.slice(0,7);byCli[p.cliente].m[k]=(byCli[p.cliente].m[k]||0)+(+p.monto||0);});
+  const out=[];
+  Object.entries(byCli).forEach(([cli,d])=>{
+    const keys=Object.keys(d.m).sort();if(keys.length<4)return;     // se necesita historia suficiente
+    const serie=keys.map(k=>d.m[k]);
+    const rec=serie.slice(-2),prev=serie.slice(0,-2);              // ventana reciente (2m) vs histórico previo
+    const reciente=rec.reduce((a,b)=>a+b,0)/rec.length;
+    const base=prev.reduce((a,b)=>a+b,0)/prev.length;if(base<=0)return;
+    const drop=(base-reciente)/base;
+    if(drop>=0.25)out.push({cliente:cli,portal:d.portal,drop,reciente,base,serie});
+  });
+  return out.sort((a,b)=>b.drop-a.drop);
+}
+function sparkline(serie){
+  const w=220,h=40,mx=Math.max(...serie),mn=Math.min(...serie),rng=(mx-mn)||1;
+  const pts=serie.map((v,i)=>[serie.length<2?w/2:i*w/(serie.length-1),h-3-((v-mn)/rng)*(h-8)]);
+  const path=pts.map((p,i)=>`${i?'L':'M'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(" ");
+  const last=pts[pts.length-1];
+  return `<svg class="spark" viewBox="0 0 ${w} ${h}"><path d="${path}" fill="none" stroke="var(--bad)" stroke-width="2" stroke-linejoin="round"/><circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="3.2" fill="var(--bad)"/></svg>`;
+}
+function renderChurn(){
+  const list=computeChurn();
+  tabRetCount.textContent=list.length;
+  churngrid.innerHTML=list.length?list.map(c=>{
+    const lv=c.drop>=0.40?"bad":"warn";
+    return `<div class="ccard risk-${lv}">
+      <div class="cnm">${c.cliente}</div>
+      <div class="cpt">${(PORTALES[c.portal]||{}).nombre||c.portal}</div>
+      <div class="cdrop">▼ ${Math.round(c.drop*100)}%</div>
+      <div class="csub">$${fmt0(c.reciente)} reciente vs $${fmt0(c.base)} prom. histórico</div>
+      ${sparkline(c.serie)}
+    </div>`;
+  }).join(""):`<div class="pad" style="color:var(--muted)">Sin clientes en riesgo detectados.</div>`;
+  renderInsights(list);
+}
+
+/* ===== insights accionables · los genera el motor (Gemini) en engine_output.json ===== */
+function renderInsights(churnList){
+  let items,live;
+  if(INSIGHTS&&INSIGHTS.length){
+    items=INSIGHTS;live=true;
+  }else{
+    // fallback: plantilla local a partir del churn calculado (el motor aún no escribió insights)
+    items=churnList.slice(0,4).map(c=>({
+      titulo:`${c.cliente} bajó ${Math.round(c.drop*100)}% su volumen`,
+      detalle:`Pasó de ~$${fmt0(c.base)} a ~$${fmt0(c.reciente)} MXN/mes — cliente en riesgo de baja.`,
+      accion:c.drop>=0.40?"Visita comercial + promoción 2x1":"Llamada de seguimiento + descuento por volumen"
+    }));
+    live=false;
+  }
+  gembadge.textContent=live?"GEMINI":"PLANTILLA";
+  gemsrc.textContent=live?("Fuente: motor · "+(INSIGHTS_MODEL||"Gemini")):"Fuente: plantilla local — el motor aún no escribió insights de Gemini";
+  insgrid.innerHTML=items.length?items.map(it=>`<div class="insight"><div class="ii">✦</div><div class="it"><b>${it.titulo}</b><br>${it.detalle}${it.accion?`<span class="iact">→ ${it.accion}</span>`:""}</div></div>`).join(""):`<div style="color:var(--muted)">Sin recomendaciones — ningún cliente en riesgo.</div>`;
+}
+
+function renderAll(){renderImpact();renderSelect();renderMini();renderMap();renderSemaforo();renderAlertas();renderOrders();renderFacturacion();renderChurn();renderChart();}
 
 /* tabs */
 document.querySelectorAll(".tabs button").forEach(b=>b.addEventListener("click",()=>{
@@ -498,25 +600,30 @@ document.querySelectorAll(".tabs button").forEach(b=>b.addEventListener("click",
 }));
 sel.addEventListener("change",e=>{CURRENT=e.target.value;renderMap();});
 filtro.addEventListener("change",e=>{FILTRO=e.target.value;renderOrders();});
+ffiltro.addEventListener("change",e=>{FFILTRO=e.target.value;renderFacturacion();});
 ["a_ped","a_cost","a_err"].forEach(id=>document.getElementById(id).addEventListener("input",renderImpact));
 renderAll();renderLog();
 
 async function pullFromSupabase(){
-  const [rP,rC,rA]=await Promise.all([
-    fetch(SB_URL+"/rest/v1/pedidos?select=numero_orden,client_id,confiabilidad_llenado,origen_captura,fecha_pedido&order=fecha_pedido.asc&limit=200",{headers:SBH}),
+  const [rP,rC,rA,rM]=await Promise.all([
+    fetch(SB_URL+"/rest/v1/pedidos?select=numero_orden,client_id,confiabilidad_llenado,origen_captura,fecha_pedido,estatus_entrega,estatus_factura,numero_factura,monto_total,fecha_entrega_estimada&order=fecha_pedido.asc&limit=500",{headers:SBH}),
     fetch(SB_URL+"/rest/v1/clientes?select=client_id,nombre_cliente,portal_origen",{headers:SBH}),
     fetch(SB_URL+"/rest/v1/alertas_riesgo?select=*&atendida=eq.false&order=nivel_riesgo.desc",{headers:SBH}),
+    fetch(SB_URL+"/rest/v1/mapas_aprendidos?select=cliente_portal,confianza_global,modelo_llm,fecha_actualizacion",{headers:SBH}),
   ]);
   if(!rP.ok||!rC.ok) throw new Error("SB "+rP.status);
-  const [peds,clis,alts]=await Promise.all([rP.json(),rC.json(),rA.ok?rA.json():Promise.resolve([])]);
+  const [peds,clis,alts,maps]=await Promise.all([rP.json(),rC.json(),rA.ok?rA.json():Promise.resolve([]),rM.ok?rM.json():Promise.resolve([])]);
   const cm=Object.fromEntries(clis.map(c=>[c.client_id,c]));
   const jitter=(b,d=0.025)=>Math.min(.999,Math.max(.5,b+(Math.random()-.5)*d));
   PEDIDOS=peds.map(p=>{
     const c=cm[p.client_id]||{};
     const b=(p.confiabilidad_llenado||95)/100;
     return {id:"ORD-"+p.numero_orden,cliente:c.nombre_cliente||"—",portal:c.portal_origen||"HEB",modo:p.origen_captura||"auto_IA",
+      fecha:p.fecha_pedido,monto:+p.monto_total||0,
+      estatus_entrega:p.estatus_entrega,estatus_factura:p.estatus_factura,numero_factura:p.numero_factura,fecha_entrega_estimada:p.fecha_entrega_estimada,
       fields:[["client_id",jitter(b),true],["producto_nombre",jitter(b),true],["cantidad",jitter(b,.04),true],["precio_unitario",jitter(b),true],["fecha_entrega_estimada",jitter(b),true]]};
   });
+  MAPAS=Array.isArray(maps)?maps:[];
   // alertas reales de la BD (churn, pedido_atrasado, volumen_bajo)
   if(alts.length){
     const cliNom=Object.fromEntries(clis.map(c=>[c.client_id,c.nombre_cliente]));
@@ -527,12 +634,21 @@ async function pullFromSupabase(){
       txt:a.descripcion
     }));
   }
-  renderSelect();renderMini();renderMap();renderAlertas();renderOrders();renderChart();
+  renderSelect();renderMini();renderMap();renderSemaforo();renderAlertas();renderOrders();renderFacturacion();renderChurn();renderChart();
   setSrc(true,"Supabase");
 }
 
 function setSrc(live,src="motor"){srcdot.style.background=live?"var(--ok)":"var(--warn)";srctxt.textContent=live?("Fuente: "+src+" · "+new Date().toLocaleTimeString()):"Fuente: datos de demo";}
-async function pull(){try{const r=await fetch("engine_output.json",{cache:"no-store"});if(!r.ok)throw 0;const j=await r.json();if(j.portales)PORTALES=j.portales;if(j.pedidos)PEDIDOS=j.pedidos;renderSelect();renderMini();renderMap();renderAlertas();renderOrders();renderChart();setSrc(true,"motor");}catch(e){try{await pullFromSupabase();}catch(e2){setSrc(false);}}}
+/* engine_output.json que escribe el motor (Pao) — campos que lee este tablero:
+   {
+     "portales": {...},                          // opcional, mismo formato que PORTALES_DEMO
+     "pedidos":  [{id,cliente,portal,fields,fecha,monto,estatus_entrega,estatus_factura,numero_factura}],
+     "mapas":    [{cliente_portal, confianza_global, modelo_llm}],          // semáforo
+     "insights": [{titulo, detalle, accion}],     // recomendaciones de Gemini (server-side, con GEMINI_API_KEY del .env)
+     "insights_model": "gemini-2.0-flash"
+   }
+   Si no hay 'insights', el panel de Retención cae a una plantilla local derivada del churn. */
+async function pull(){try{const r=await fetch("engine_output.json",{cache:"no-store"});if(!r.ok)throw 0;const j=await r.json();if(j.portales)PORTALES=j.portales;if(j.pedidos)PEDIDOS=j.pedidos;if(j.mapas)MAPAS=j.mapas;if(j.insights){INSIGHTS=j.insights;INSIGHTS_MODEL=j.insights_model||"";}renderSelect();renderMini();renderMap();renderSemaforo();renderAlertas();renderOrders();renderFacturacion();renderChurn();renderChart();setSrc(true,"motor");}catch(e){try{await pullFromSupabase();}catch(e2){setSrc(false);}}}
 refresh.addEventListener("click",pull);setInterval(pull,4000);pull();
 </script>
 </body>

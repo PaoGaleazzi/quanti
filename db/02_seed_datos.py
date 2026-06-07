@@ -86,7 +86,16 @@ CLIENTES = [
     ("Sanborns Centro",     "restaurante", "SAN850202BBB", True,  "Sanborns"),
     ("HEB Cumbres",         "super",       "HEB930101AAA", True,  "HEB"),
     ("Sanborns San Pedro",  "restaurante", "SAN850202BBB", False, "Sanborns"),
-    ("HEB Gómez Morín",     "super",       "HEB930101AAA", True,  "HEB"),
+    ("Sanborns Plaza Galerías", "restaurante", "SAN850202BBB", True, "Sanborns"),
+]
+
+# Clientes ADICIONALES con client_id EXPLÍCITO. Los portales de cliente ofrecen
+# ciertos ids fijos en sus <select> (ej. Sanborns ofrece el 9 = "Sanborns San
+# Ángel") que deben existir en la tabla para que el FK de pedidos no truene.
+# Se insertan con su id fijo (no por serial); la secuencia se ajusta después.
+# (client_id, nombre, tipo_canal, rfc, requiere_factura, portal_origen)
+CLIENTES_EXTRA = [
+    (9, "Sanborns San Ángel", "restaurante", "SAN850202BBB", True, "Sanborns"),
 ]
 
 # Perfil de pedido por cliente: qué SKUs pide, día típico, frecuencia (días),
@@ -101,8 +110,9 @@ PERFILES = [
     {"skus": ["SKU-0001","SKU-0002","SKU-0005"],            "dias": [2],   "base": 60, "decae": False},
     # Sanborns San Pedro: estable bajo, viernes
     {"skus": ["SKU-0004","SKU-0007"],                       "dias": [4],   "base": 25, "decae": False},
-    # HEB Gómez Morín: estable, lunes
-    {"skus": ["SKU-0001","SKU-0003","SKU-0006","SKU-0008"], "dias": [0],   "base": 70, "decae": False},
+    # Sanborns Plaza Galerías (client_id=5): SIN historial sembrado (empieza limpio;
+    # su primer pedido lo crea el demo en vivo). skus vacío -> no se siembran pedidos.
+    {"skus": [],                                            "dias": [],    "base": 0,  "decae": False},
 ]
 
 PRECIO = {p[0]: p[4] for p in PRODUCTOS}
@@ -132,12 +142,23 @@ def sembrar_catalogo(cur):
         " values (%s,%s,%s,%s,%s,%s)",
         [(c[0], c[1], c[0], c[2], c[3], c[4]) for c in CLIENTES],
     )
+    # Clientes con id EXPLÍCITO que los portales esperan (ej. Sanborns id=9).
+    cur.executemany(
+        "insert into clientes (client_id,nombre_cliente,tipo_canal,razon_social,rfc,requiere_factura,portal_origen)"
+        " values (%s,%s,%s,%s,%s,%s,%s)",
+        [(c[0], c[1], c[2], c[1], c[3], c[4], c[5]) for c in CLIENTES_EXTRA],
+    )
+    # Metimos ids explícitos mayores al serial (ej. 9); avanzamos la secuencia para
+    # que el próximo insert por serial no choque con uno ya usado.
+    cur.execute("select setval('clientes_client_id_seq', (select max(client_id) from clientes))")
 
 
 def sembrar_pedidos(cur):
     numero_orden = 0
     for idx, perfil in enumerate(PERFILES):
         client_id = idx + 1
+        if not perfil["skus"]:
+            continue                      # cliente sin historial sembrado (empieza limpio)
         for semana in range(SEMANAS):
             # factor de decaimiento: si decae, baja gradualmente hasta ~30% al final
             if perfil["decae"]:
