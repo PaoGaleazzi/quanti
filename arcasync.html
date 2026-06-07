@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ArcaSync · por Arca Continental</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5f5f3;--panel:#fff;--beige2:#f1eee8;
+  --ink:#16171b;--muted:#6c6f78;--dim:#9a9da6;--line:#e2e2e4;
+  --arca:#ed1c2e;--arca-deep:#a90f18;--arca-soft:#fdecec;
+  --grad:linear-gradient(135deg,#e8233a 0%,#b0111b 100%);
+  --ok:#1aa06a;--ok-soft:#e6f6ee;--warn:#e09b16;--warn-soft:#fdf2dc;
+  --sans:'Figtree',system-ui,sans-serif;--mono:'JetBrains Mono',monospace;
+  --r:16px;--pill:999px;--sh:0 1px 2px rgba(0,0,0,.04),0 6px 22px rgba(0,0,0,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;min-height:100vh}
+.topbar{height:56px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:50}
+.brand{display:flex;align-items:center;gap:12px}
+.mark{font-weight:900;font-size:20px;letter-spacing:-.5px}.mark span{color:var(--arca)}
+.by{font-size:11px;color:var(--dim);border-left:1px solid var(--line);padding-left:12px}
+.keywrap{display:flex;align-items:center;gap:8px}
+.keywrap input{font-family:var(--mono);font-size:11px;border:1.5px solid var(--line);border-radius:var(--pill);padding:7px 13px;width:220px}
+.keywrap input:focus{outline:none;border-color:var(--arca)}
+.wrap{max-width:1100px;margin:24px auto;padding:0 24px 60px}
+.hero{margin-bottom:20px}
+.hero h1{font-size:23px;font-weight:900;letter-spacing:-.4px}
+.hero p{font-size:13.5px;color:var(--muted);margin-top:5px}
+
+.upload-zone{background:#fff;border:2px dashed var(--line);border-radius:var(--r);padding:32px 24px;text-align:center;cursor:pointer;transition:.18s;box-shadow:var(--sh)}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--arca);background:var(--arca-soft)}
+.upload-zone .big{font-weight:700;font-size:15px}
+.upload-zone .small{font-size:13px;color:var(--muted);margin-top:5px}
+.upload-zone .hint{font-family:var(--mono);font-size:10.5px;color:var(--dim);margin-top:8px}
+
+.btn{font-family:var(--sans);font-weight:700;font-size:14px;border:none;border-radius:var(--pill);padding:11px 24px;cursor:pointer;transition:.15s}
+.btn-primary{background:var(--grad);color:#fff;box-shadow:0 3px 12px rgba(176,17,27,.3)}
+.btn-primary:hover{filter:brightness(1.05)}
+.btn-primary:disabled{opacity:.45;cursor:default;filter:none}
+.btn-ok{background:var(--ok);color:#fff}
+.btn-ghost{background:#fff;color:var(--ink);border:1.5px solid var(--line)}
+.btn-ghost:hover{border-color:var(--ink)}
+
+.queue{margin-top:20px;display:flex;flex-direction:column;gap:12px}
+.qcard{background:#fff;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh)}
+.qcard-hd{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);background:#fafafa}
+.qcard-hd .thumb{width:48px;height:48px;border-radius:8px;object-fit:cover;flex-shrink:0;border:1px solid var(--line)}
+.qcard-hd .fname{font-weight:700;font-size:13.5px}
+.qcard-hd .fsize{font-size:11px;color:var(--muted);margin-top:2px}
+.badge{font-family:var(--mono);font-size:10px;font-weight:700;padding:4px 10px;border-radius:var(--pill);margin-left:auto}
+.badge-wait{background:var(--beige2);color:var(--muted)}
+.badge-proc{background:var(--warn-soft);color:var(--warn)}
+.badge-ok{background:var(--ok-soft);color:var(--ok)}
+.badge-err{background:var(--arca-soft);color:var(--arca)}
+
+.result{padding:14px 16px;display:none}
+.result.show{display:block}
+.r2col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.rbox{background:var(--beige2);border-radius:12px;padding:12px 14px}
+.rbox .rl{font-size:10.5px;text-transform:uppercase;letter-spacing:.3px;color:var(--muted);font-weight:700;margin-bottom:8px}
+.kv{display:flex;justify-content:space-between;font-size:12.5px;padding:4px 0;border-bottom:1px solid rgba(0,0,0,.06)}
+.kv:last-child{border-bottom:none}
+.kv .k{color:var(--muted)}.kv .v{font-weight:600;text-align:right}
+.kv .v.mono{font-family:var(--mono);font-size:11.5px}
+table.lt{width:100%;border-collapse:collapse;margin-top:6px}
+table.lt th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.3px;color:var(--dim);font-weight:700;padding:6px 8px;border-bottom:1px solid var(--line)}
+table.lt td{padding:7px 8px;border-bottom:1px solid var(--beige2);font-size:12px}
+.nota{font-family:var(--mono);font-size:9.5px;color:var(--warn);background:var(--warn-soft);padding:2px 6px;border-radius:var(--pill);display:inline-block;margin-top:3px}
+.sku{font-family:var(--mono);font-size:10px;background:var(--beige2);border:1px solid var(--line);border-radius:5px;padding:2px 6px}
+.nomatch{font-family:var(--mono);font-size:9.5px;color:var(--arca);background:var(--arca-soft);padding:2px 6px;border-radius:var(--pill)}
+.conf-row{display:flex;align-items:center;gap:10px;margin-top:10px}
+.conf-bar{flex:1;height:8px;background:var(--line);border-radius:var(--pill);overflow:hidden}
+.conf-fill{height:100%;background:var(--ok);border-radius:var(--pill);transition:width .7s}
+.conf-pct{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--ok);width:36px;text-align:right}
+.spin{display:inline-block;width:13px;height:13px;border:2px solid var(--line);border-top-color:var(--arca);border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;margin-right:6px}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+.actions-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:20px;padding:16px 20px;background:#fff;border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);flex-wrap:wrap}
+.ab-stats{font-size:13px;color:var(--muted)}
+.ab-stats b{color:var(--ink)}
+
+.ok-banner{display:none;align-items:center;gap:12px;background:var(--ok-soft);border:1px solid #a8e6c9;border-radius:var(--r);padding:14px 18px;margin-top:16px;font-size:13.5px;color:var(--ok);font-weight:600}
+.ok-banner.show{display:flex}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand">
+    <span class="mark">Arca<span>Sync</span></span>
+    <span class="by">por Arca Continental</span>
+  </div>
+  <div class="keywrap">
+    <input id="apikey" type="password" placeholder="Gemini API key (AIzaSy...)">
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="hero">
+    <h1>Captura masiva de pedidos</h1>
+    <p>Sube las capturas o fotos de los pedidos de tus clientes. ArcaSync lee cada una con IA, mapea los campos a Arca y los registra en la base de datos.</p>
+  </div>
+
+  <div class="upload-zone" id="drop" onclick="document.getElementById('fileinput').click()">
+    <div class="big">Arrastra o selecciona las imagenes</div>
+    <div class="small">Puedes subir varias a la vez — PNG, JPG, PDF</div>
+    <div class="hint">Cada imagen es un pedido distinto de cualquier cliente</div>
+  </div>
+  <input type="file" id="fileinput" accept="image/*" multiple style="display:none">
+
+  <div class="queue" id="queue"></div>
+
+  <div class="actions-bar" id="actbar" style="display:none">
+    <div class="ab-stats">
+      <b id="stat-total">0</b> pedidos cargados &nbsp;·&nbsp;
+      <b id="stat-ok" style="color:var(--ok)">0</b> procesados &nbsp;·&nbsp;
+      <b id="stat-err" style="color:var(--arca)">0</b> con error
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost" onclick="limpiarTodo()">Limpiar todo</button>
+      <button class="btn btn-primary" id="btnProcesar" onclick="procesarTodos()">Leer todos con IA</button>
+      <button class="btn btn-ok" id="btnEnviar" onclick="enviarTodos()" style="display:none">Enviar todos a Arca</button>
+    </div>
+  </div>
+
+  <div class="ok-banner" id="okbanner">
+    Pedidos registrados en Supabase. El dashboard ya los muestra en vivo.
+  </div>
+</div>
+
+<script>
+// ── Config ────────────────────────────────────────────────────────────
+const GEMINI_MODEL="gemini-2.5-flash";
+const SB_URL="https://tlntymneqeaeezdgiqsq.supabase.co";
+const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRsbnR5bW5lcWVhZWV6ZGdpcXNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzQyOTAsImV4cCI6MjA5NjM1MDI5MH0.9E5BLzaQkokpCMyJonWrey96MQXx5x86qkANNH2d87w";
+const SBH={apikey:SB_KEY,"Authorization":"Bearer "+SB_KEY,"Content-Type":"application/json"};
+
+// Catálogo de productos Arca
+const CAT=[
+  {sku:"SKU-0001",nombre:"Coca-Cola 600ml",ppc:24,alias:["coca","cola","refresco cola","coca-cola"]},
+  {sku:"SKU-0002",nombre:"Coca-Cola Sin Azucar 600ml",ppc:24,alias:["zero","sin azucar","light","coca zero"]},
+  {sku:"SKU-0003",nombre:"Sprite 600ml",ppc:24,alias:["sprite","lima","limon","lima-limon"]},
+  {sku:"SKU-0004",nombre:"Agua Ciel 1L",ppc:12,alias:["ciel","agua natural","agua purificada","agua"]},
+  {sku:"SKU-0005",nombre:"Powerade Mora Azul 500ml",ppc:12,alias:["powerade","mora","hidratante"]},
+  {sku:"SKU-0006",nombre:"Bokados Mix 60g",ppc:30,alias:["bokados","botana","snack","mix"]},
+  {sku:"SKU-0007",nombre:"Topo Chico 355ml",ppc:24,alias:["topo chico","mineral","topo"]},
+  {sku:"SKU-0008",nombre:"Fuze Tea Durazno 600ml",ppc:24,alias:["fuze","te durazno","durazno","tea","fuze tea"]},
+];
+
+// Catálogo de clientes (para mapear nombre → client_id)
+const CLIENTES=[
+  {client_id:1,nombre:"HEB Valle Oriente",alias:["heb valle","heb valleoriente","valle oriente","comp-00421","1003"]},
+  {client_id:2,nombre:"Sanborns Centro",alias:["sanborns centro","sanborns","centro historico","2","cli-2"]},
+  {client_id:3,nombre:"HEB Cumbres",alias:["heb cumbres","cumbres","1003"]},
+  {client_id:4,nombre:"Sanborns San Pedro",alias:["sanborns san pedro","san pedro","4"]},
+  {client_id:5,nombre:"HEB Gomez Morin",alias:["heb gomez","gomez morin","5"]},
+];
+
+const norm=s=>(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9 ]/g," ").trim();
+function matchProd(txt){const t=norm(txt);for(const p of CAT)for(const a of p.alias)if(t.includes(norm(a)))return p;return null;}
+function matchCliente(txt){const t=norm(txt);for(const c of CLIENTES)for(const a of c.alias)if(t.includes(norm(a)))return c;return null;}
+
+// ── Estado ─────────────────────────────────────────────────────────────
+let items=[]; // {id, file, base64, mime, status, result}
+
+// ── Upload ──────────────────────────────────────────────────────────────
+const drop=document.getElementById('drop'),fi=document.getElementById('fileinput');
+['dragover','dragenter'].forEach(e=>drop.addEventListener(e,ev=>{ev.preventDefault();drop.classList.add('drag');}));
+['dragleave','drop'].forEach(e=>drop.addEventListener(e,ev=>{ev.preventDefault();drop.classList.remove('drag');}));
+drop.addEventListener('drop',ev=>cargarFiles([...ev.dataTransfer.files]));
+fi.addEventListener('change',()=>cargarFiles([...fi.files]));
+
+function cargarFiles(files){
+  files.filter(f=>f.type.startsWith('image/')).forEach(f=>{
+    const id='img-'+Date.now()+'-'+Math.random().toString(36).slice(2);
+    const item={id,file:f,base64:null,mime:f.type,status:'wait',result:null};
+    items.push(item);
+    const card=document.createElement('div');
+    card.className='qcard';card.id='card-'+id;
+    card.innerHTML=`<div class="qcard-hd">
+      <img class="thumb" id="thumb-${id}">
+      <div><div class="fname">${f.name}</div><div class="fsize">${(f.size/1024).toFixed(1)} KB</div></div>
+      <span class="badge badge-wait" id="badge-${id}">EN COLA</span>
+    </div><div class="result" id="res-${id}"></div>`;
+    document.getElementById('queue').appendChild(card);
+    // load preview + base64
+    const r=new FileReader();
+    r.onload=()=>{
+      document.getElementById('thumb-'+id).src=r.result;
+      item.base64=r.result.split(',')[1];
+    };
+    r.readAsDataURL(f);
+  });
+  actualizarActBar();
+}
+
+function actualizarActBar(){
+  const tot=items.length,ok=items.filter(i=>i.status==='ok').length,err=items.filter(i=>i.status==='err').length;
+  document.getElementById('actbar').style.display=tot?'flex':'none';
+  document.getElementById('stat-total').textContent=tot;
+  document.getElementById('stat-ok').textContent=ok;
+  document.getElementById('stat-err').textContent=err;
+  if(ok>0)document.getElementById('btnEnviar').style.display='inline-flex';
+}
+
+function setBadge(id,cls,txt){const b=document.getElementById('badge-'+id);b.className='badge '+cls;b.textContent=txt;}
+
+// ── Gemini ──────────────────────────────────────────────────────────────
+const PROMPT=`Eres un extractor de pedidos B2B. La imagen es un pedido de un cliente (portal web, email, chat, nota, factura, etc.).
+Extrae EXACTAMENTE lo que ves, sin inventar. Campos:
+- cliente: nombre o identificador del cliente/comprador (user_id, client_id, num_cliente, nombre, etc.) — IMPORTANTE extraer este campo
+- fecha: fecha de entrega o requerida si aparece (YYYY-MM-DD si puedes inferir, si no el texto exacto)
+- lineas: cada producto con { producto (texto exacto), cantidad (numero), unidad ("pieza","pza","caja","case" segun el pedido), precio (numero o 0) }
+Si algo no aparece dejalo vacio o 0. Responde SOLO JSON.`;
+
+const SCHEMA={type:"object",properties:{
+  cliente:{type:"string"},fecha:{type:"string"},
+  lineas:{type:"array",items:{type:"object",properties:{
+    producto:{type:"string"},cantidad:{type:"number"},unidad:{type:"string"},precio:{type:"number"}
+  },required:["producto","cantidad","unidad"]}}
+},required:["lineas"]};
+
+async function procesarUno(item){
+  const key=document.getElementById('apikey').value.trim();
+  if(!key||!item.base64)return;
+  setBadge(item.id,'badge-proc','LEYENDO...');
+  item.status='proc';
+  const res_el=document.getElementById('res-'+item.id);
+  res_el.className='result show';
+  res_el.innerHTML=`<span class="spin"></span>Gemini esta leyendo el pedido...`;
+  try{
+    const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${encodeURIComponent(key)}`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        contents:[{parts:[{text:PROMPT},{inline_data:{mime_type:item.mime,data:item.base64}}]}],
+        generationConfig:{responseMimeType:'application/json',responseSchema:SCHEMA}
+      })
+    });
+    if(!r.ok){const e=await r.text();throw new Error('API '+r.status+': '+e.slice(0,120));}
+    const data=await r.json();
+    const txt=data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    if(!txt)throw new Error('Respuesta vacia');
+    const parsed=JSON.parse(txt);
+    item.result=mapear(parsed);
+    item.status='ok';
+    setBadge(item.id,'badge-ok','LISTO');
+    renderResult(item.id,parsed,item.result);
+  }catch(e){
+    item.status='err';setBadge(item.id,'badge-err','ERROR');
+    res_el.innerHTML=`<div style="padding:10px;color:var(--arca);font-size:12px">${e.message}<br><small>Revisa la API key o cambia GEMINI_MODEL en el codigo.</small></div>`;
+  }
+  actualizarActBar();
+}
+
+function mapear(p){
+  // cliente
+  const cliRaw=p.cliente||'';
+  const cliMatch=matchCliente(cliRaw);
+  // lineas
+  let matched=0;
+  const lineas=(p.lineas||[]).map(l=>{
+    const prod=matchProd(l.producto);
+    let cantidad=Number(l.cantidad)||0,nota='';
+    const esCaja=norm(l.unidad||'').includes('caja')||norm(l.unidad||'').includes('case');
+    if(prod&&esCaja){cantidad=cantidad*prod.ppc;nota=`${l.cantidad} ${l.unidad} x ${prod.ppc} = ${cantidad} pzas`;}
+    if(prod)matched++;
+    return{sku:prod?prod.sku:'',producto_nombre:prod?prod.nombre:l.producto,
+           cantidad,precio_unitario:Number(l.precio)||0,nota,matched:!!prod};
+  });
+  const conf=lineas.length?0.55+0.42*(matched/lineas.length):0;
+  return{client_id:cliMatch?cliMatch.client_id:null,
+         cliente_nombre:cliMatch?cliMatch.nombre:(cliRaw||'Desconocido'),
+         cliente_raw:cliRaw,fecha:p.fecha||'',
+         confianza:Number(conf.toFixed(2)),lineas};
+}
+
+function renderResult(id,raw,mapped){
+  const el=document.getElementById('res-'+id);
+  const cl=mapped.client_id?`<b>${mapped.cliente_nombre}</b> <span class="sku">ID ${mapped.client_id}</span>`
+    :`<span class="nomatch">${mapped.cliente_raw||'no detectado'}</span>`;
+  el.innerHTML=`<div class="r2col">
+    <div class="rbox">
+      <div class="rl">Lo que leyó (origen)</div>
+      <div class="kv"><span class="k">Cliente raw</span><span class="v">${raw.cliente||'—'}</span></div>
+      <div class="kv"><span class="k">Fecha raw</span><span class="v mono">${raw.fecha||'—'}</span></div>
+      <table class="lt"><thead><tr><th>Producto (texto)</th><th>Cant.</th><th>Unidad</th></tr></thead><tbody>
+        ${(raw.lineas||[]).map(l=>`<tr><td>${l.producto}</td><td>${l.cantidad}</td><td>${l.unidad}</td></tr>`).join('')}
+      </tbody></table>
+    </div>
+    <div class="rbox">
+      <div class="rl">Mapeado a Arca</div>
+      <div class="kv"><span class="k">cliente_id</span><span class="v">${cl}</span></div>
+      <div class="kv"><span class="k">fecha_entrega_estimada</span><span class="v mono">${mapped.fecha||'—'}</span></div>
+      <table class="lt"><thead><tr><th>SKU</th><th>Producto Arca</th><th>Cant. (pzas)</th></tr></thead><tbody>
+        ${mapped.lineas.map(l=>`<tr>
+          <td>${l.sku?`<span class="sku">${l.sku}</span>`:`<span class="nomatch">sin match</span>`}</td>
+          <td>${l.producto_nombre}${l.nota?`<br><span class="nota">${l.nota}</span>`:''}</td>
+          <td style="font-family:var(--mono)">${l.cantidad}</td>
+        </tr>`).join('')}
+      </tbody></table>
+      <div class="conf-row">
+        <span style="font-size:11px;color:var(--muted)">Confiabilidad</span>
+        <div class="conf-bar"><div class="conf-fill" style="width:${mapped.confianza*100}%"></div></div>
+        <span class="conf-pct">${Math.round(mapped.confianza*100)}%</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+async function procesarTodos(){
+  const key=document.getElementById('apikey').value.trim();
+  if(!key){alert('Pega tu Gemini API key arriba.');return;}
+  const pendientes=items.filter(i=>i.status==='wait'||i.status==='err');
+  for(const item of pendientes) await procesarUno(item);
+}
+
+// ── Enviar a Supabase ───────────────────────────────────────────────────
+async function enviarTodos(){
+  const listos=items.filter(i=>i.status==='ok'&&i.result);
+  if(!listos.length){alert('No hay pedidos procesados.');return;}
+  document.getElementById('btnEnviar').disabled=true;
+  document.getElementById('btnEnviar').textContent='Enviando...';
+  let ok=0;
+  for(const item of listos){
+    try{
+      const m=item.result;
+      // insert pedido
+      const rPed=await fetch(SB_URL+'/rest/v1/pedidos',{
+        method:'POST',headers:{...SBH,'Prefer':'return=representation'},
+        body:JSON.stringify({
+          client_id:m.client_id||1,
+          fecha_pedido:new Date().toISOString().slice(0,10),
+          fecha_entrega_estimada:m.fecha||new Date(Date.now()+2*86400000).toISOString().slice(0,10),
+          estatus_entrega:'pendiente',estatus_factura:'no_facturado',
+          monto_total:m.lineas.reduce((s,l)=>s+l.cantidad*(l.precio_unitario||0),0),
+          confiabilidad_llenado:Math.round(m.confianza*100),
+          origen_captura:'auto_IA'
+        })
+      });
+      if(!rPed.ok) throw new Error('pedido: '+rPed.status);
+      const [ped]=await rPed.json();
+      const num=ped.numero_orden;
+      // insert detalle
+      for(const l of m.lineas.filter(l=>l.cantidad>0)){
+        await fetch(SB_URL+'/rest/v1/pedido_detalle',{
+          method:'POST',headers:SBH,
+          body:JSON.stringify({
+            numero_orden:num,sku:l.sku||'SKU-0001',
+            producto_nombre:l.producto_nombre,
+            cantidad:l.cantidad,unidad:'pieza',
+            precio_unitario:l.precio_unitario||0,
+            importe:l.cantidad*(l.precio_unitario||0)
+          })
+        });
+      }
+      setBadge(item.id,'badge-ok','REGISTRADO');
+      ok++;
+    }catch(e){setBadge(item.id,'badge-err','ERROR BD');console.error(e);}
+  }
+  document.getElementById('btnEnviar').textContent='Enviar todos a Arca';
+  document.getElementById('btnEnviar').disabled=false;
+  if(ok>0){
+    document.getElementById('okbanner').classList.add('show');
+    document.getElementById('okbanner').textContent=`${ok} pedido(s) registrados en Supabase. El dashboard ya los muestra en vivo.`;
+  }
+}
+
+function limpiarTodo(){items=[];document.getElementById('queue').innerHTML='';document.getElementById('actbar').style.display='none';document.getElementById('okbanner').classList.remove('show');}
+</script>
+</body>
+</html>
