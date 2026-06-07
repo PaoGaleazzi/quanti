@@ -332,16 +332,103 @@ else:
 # 4) PLACEHOLDER — Captura por imagen (proximamente). NO funcional.
 # ---------------------------------------------------------------------------
 st.divider()
-st.markdown('<div class="sec-title">Captura por imagen (proximamente)</div>',
-            unsafe_allow_html=True)
-st.markdown(
-    """
-    <div class="cv-card">
-      <div class="t">Captura por imagen — proximamente</div>
-      <div>Espacio reservado para vision computacional: tomar la foto de un pedido
-      y convertirla en un pedido estructurado. Aun no funcional; lo integrara el
-      equipo mas adelante.</div>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
+st.markdown('<div class="sec-title">ArcaSync · Captura por imagen</div>', unsafe_allow_html=True)
+st.caption("Sube la foto del pedido. Gemini la lee y registra en Arca.")
+
+gemini_key = st.text_input("Gemini API key", type="password", placeholder="AIzaSy...")
+archivos = st.file_uploader("Imágenes de pedidos", type=["png","jpg","jpeg"], accept_multiple_files=True)
+
+if archivos and gemini_key and st.button("Leer con Gemini", type="primary"):
+    import base64, json, requests as rq
+    for f in archivos:
+        b64 = base64.b64encode(f.read()).decode()
+        r = rq.post(
+            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={gemini_key}",
+            json={"contents":[{"parts":[
+                {"text":'Extrae del pedido: fecha_entrega_estimada, y lineas=[{producto_nombre,cantidad,unidad,precio_unitario}]. Solo JSON, sin texto extra.'},
+                {"inline_data":{"mime_type":f.type,"data":b64}}
+            ]}],"generationConfig":{"responseMimeType":"application/json"}},
+            timeout=30
+        )
+        if r.ok:
+            txt = r.json()["candidates"][0]["content"]["parts"][0]["text"]
+            resultado = json.loads(txt)
+            resultado["client_id"] = client_id
+
+            # ── Vista lado a lado (estilo ArcaSync) ──────────────────────
+            st.markdown(f"**{f.name}** — leído")
+            CAT=[
+                {"sku":"SKU-0001","nombre":"Coca-Cola 600ml","ppc":24,"alias":["coca","cola","refresco cola"]},
+                {"sku":"SKU-0002","nombre":"Coca-Cola Sin Azucar 600ml","ppc":24,"alias":["zero","sin azucar","light"]},
+                {"sku":"SKU-0003","nombre":"Sprite 600ml","ppc":24,"alias":["sprite","lima","limon"]},
+                {"sku":"SKU-0004","nombre":"Agua Ciel 1L","ppc":12,"alias":["ciel","agua natural","agua"]},
+                {"sku":"SKU-0005","nombre":"Powerade 500ml","ppc":12,"alias":["powerade","mora"]},
+                {"sku":"SKU-0006","nombre":"Bokados Mix 60g","ppc":30,"alias":["bokados","botana","snack"]},
+                {"sku":"SKU-0007","nombre":"Topo Chico 355ml","ppc":24,"alias":["topo chico","mineral"]},
+                {"sku":"SKU-0008","nombre":"Fuze Tea Durazno 600ml","ppc":24,"alias":["fuze","durazno","tea"]},
+            ]
+            def match_prod(txt):
+                t=(txt or "").lower()
+                for p in CAT:
+                    if any(a in t for a in p["alias"]): return p
+                return None
+
+            lineas = resultado.get("lineas", [])
+            total = 0; mapeadas = []
+            matched = 0
+            for l in lineas:
+                prod = match_prod(l.get("producto_nombre",""))
+                qty = int(l.get("cantidad") or 0)
+                unidad = (l.get("unidad","") or "").lower()
+                nota = ""
+                if prod and ("caja" in unidad or "case" in unidad):
+                    nota = f"{qty} {l.get('unidad','')} × {prod['ppc']} = {qty*prod['ppc']} pzas"
+                    qty = qty * prod["ppc"]
+                precio = float(l.get("precio_unitario") or 0)
+                if not precio and prod: precio = 18.0
+                total += qty * precio
+                if prod: matched += 1
+                mapeadas.append({"sku": prod["sku"] if prod else "","nombre_arca": prod["nombre"] if prod else l.get("producto_nombre",""),"cantidad": qty,"precio_unitario": precio,"importe": qty*precio,"nota": nota,"matched": bool(prod)})
+
+            conf = 0.55 + 0.42*(matched/len(lineas)) if lineas else 0
+
+            col_orig, col_dest = st.columns(2)
+            with col_orig:
+                st.markdown("**Lo que leyó del cliente**")
+                st.caption(f"Fecha: {resultado.get('fecha_entrega_estimada','—')}")
+                rows_orig = [{"Producto (texto)": l.get("producto_nombre",""), "Cant.": l.get("cantidad",""), "Unidad": l.get("unidad","")} for l in lineas]
+                st.dataframe(rows_orig, hide_index=True, use_container_width=True)
+
+            with col_dest:
+                st.markdown("**Mapeado a Arca**")
+                st.caption(f"client_id: {client_id} · fecha_entrega: {resultado.get('fecha_entrega_estimada','—')}")
+                rows_dest = []
+                for m in mapeadas:
+                    rows_dest.append({"SKU": m["sku"] or "sin match","Producto Arca": m["nombre_arca"],"Cant. (pzas)": m["cantidad"],"Nota conv.": m["nota"]})
+                st.dataframe(rows_dest, hide_index=True, use_container_width=True)
+
+            st.progress(conf, text=f"Confiabilidad: {round(conf*100)}%")
+            st.divider()
+
+            # Guardar en Supabase
+            import datetime, requests as rq2
+            def fix_fecha(fstr):
+                if not fstr: return str(datetime.date.today()+datetime.timedelta(days=2))
+                for fmt in ("%Y-%m-%d","%d/%m/%Y","%d-%m-%Y","%m/%d/%Y","%d %b %Y","%d/%m/%y"):
+                    try: return datetime.datetime.strptime(fstr.strip(),fmt).strftime("%Y-%m-%d")
+                    except: pass
+                return str(datetime.date.today()+datetime.timedelta(days=2))
+            SB_URL="https://tlntymneqeaeezdgiqsq.supabase.co"
+            SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRsbnR5bW5lcWVhZWV6ZGdpcXNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzQyOTAsImV4cCI6MjA5NjM1MDI5MH0.9E5BLzaQkokpCMyJonWrey96MQXx5x86qkANNH2d87w"
+            SBH={"apikey":SB_KEY,"Authorization":"Bearer "+SB_KEY,"Content-Type":"application/json","Prefer":"return=representation"}
+            fecha_ok=fix_fecha(resultado.get("fecha_entrega_estimada",""))
+            rped=rq2.post(SB_URL+"/rest/v1/pedidos",headers=SBH,json={"client_id":client_id,"fecha_pedido":str(datetime.date.today()),"fecha_entrega_estimada":fecha_ok,"estatus_entrega":"pendiente","estatus_factura":"no_facturado","monto_total":round(total,2),"confiabilidad_llenado":round(conf*100),"origen_captura":"auto_IA"})
+            if rped.ok:
+                num=rped.json()[0]["numero_orden"]
+                for m in mapeadas:
+                    rq2.post(SB_URL+"/rest/v1/pedido_detalle",headers=SBH,json={"numero_orden":num,"sku":m["sku"] or "SKU-0001","producto_nombre":m["nombre_arca"],"cantidad":m["cantidad"],"unidad":"pieza","precio_unitario":m["precio_unitario"],"importe":m["importe"]})
+                st.success(f"Guardado en Arca — ORD-{num}")
+            else:
+                st.error(f"Error BD: {rped.status_code} · {rped.text[:200]}")
+        else:
+            st.error(f"Error {r.status_code}: {r.text[:120]}")

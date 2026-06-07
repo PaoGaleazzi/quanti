@@ -524,7 +524,10 @@ def ejecutar_desde_portal(cliente_portal, url_origen, esperar_listo=False):
 
     # 5) Llenar el portal de Arca en pantalla.
     llenar_portal_arca(cliente_portal, datos, pedido, mapa, numero_orden)
-
+    # Alerta WhatsApp si confianza baja
+    import sys; sys.path.insert(0, "..")
+    from whatsapp_alerta import enviar_alerta
+    enviar_alerta({"numero_orden": f"ORD-{numero_orden}", "cliente_portal": cliente_portal, "confianza_global": mapa.get("confianza_global", 1.0), "lineas": []}, mapa)
     return pedido, lecturas, datos, numero_orden, monto_total
 
 
