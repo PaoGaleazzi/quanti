@@ -52,8 +52,8 @@ from playwright.sync_api import sync_playwright
 # Mismo patrón que leer_portal_*.py: hay que correr antes
 #     python -m http.server 3000 -d fronts
 PORTALES = {
-    "sanborns": "http://localhost:3000/sanborns_portal.html",
-    "heb": "http://localhost:3000/heb_portal.html",
+    "sanborns": "http://localhost:3000/portal_sanborns.html",
+    "heb": "http://localhost:3000/portal_heb.html",
 }
 
 
@@ -166,12 +166,11 @@ LISTENER_JS = r"""
            || (el.className || '').trim().split(/\s+/)[0] || '';
   }
 
-  // Texto visible de la opción elegida de un <select> (además de su value).
-  function textoSelect(el) {
-    if (el.tagName === 'SELECT' && el.selectedIndex >= 0)
-      return (el.options[el.selectedIndex].text || '').trim();
-    return null;
-  }
+  // OJO: a propósito NO capturamos el TEXTO visible de la opción de un <select>.
+  // valorCampo(el) ya devuelve el VALUE de la opción (ej. "9"), que es lo que la
+  // base espera. Incluir el texto ("9 — Sanborns San Ángel") en el snapshot solo
+  // confundía al LLM (inventaba transformaciones como 'split' para "extraer el
+  // nombre"). Manteniéndonos en el value, observar y ejecutar usan el mismo dato.
 
   // Atributos data-* del elemento como objeto (ej. {art:'Coca-Cola 600ml'}).
   // Sirve para recuperar el dato asociado a campos sin etiqueta (tablas dinámicas).
@@ -211,8 +210,6 @@ LISTENER_JS = r"""
         valor: String(valorCampo(el)),
         tipo: el.tagName.toLowerCase(),
       };
-      const texto = textoSelect(el);     // <select>: texto de la opción elegida
-      if (texto != null) dato.texto = texto;
       const datos = datosDe(el);         // data-* asociados (ej. data-art = nombre)
       if (datos) dato.datos = datos;
       window.__grabSnapshot.set(sel, dato);

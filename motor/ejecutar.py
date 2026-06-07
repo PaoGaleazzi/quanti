@@ -174,7 +174,35 @@ def aplicar_transformacion(transformacion, valor, producto_nombre, cur, unidad=N
         return _normalizar_fecha(valor)
     if transformacion == "calculado":
         return None                             # importe se calcula en guardar_pedido
-    raise ValueError(f"Transformación desconocida en el mapa: {transformacion}")
+    # El LLM es no determinista: a veces etiqueta transformaciones que no soportamos
+    # (split, concat, etc.). En vez de tronar el flujo, hacemos el fallback más seguro
+    # —tratarla como "directa" (copiar el valor tal cual)— y avisamos claro para saberlo.
+    print(
+        f"[AVISO] Transformacion desconocida '{transformacion}'"
+        f"{f' en campo (producto={producto_nombre})' if producto_nombre else ''}"
+        f"; se aplica 'directa' (valor copiado tal cual): {valor!r}"
+    )
+    return valor
+
+
+class MapaIncompletoError(Exception):
+    """El mapa aprendido no trae un campo que Arca necesita (LLM no determinista)."""
+
+
+def _exigir(indice, campo):
+    """
+    Devuelve el mapeo de un campo que SÍ depende del mapa aprendido (cantidad,
+    precio, nombre…). Si el LLM no lo incluyó esta vez, avisa CLARO qué falta y
+    cómo resolverlo, en vez de tronar con un KeyError pelón.
+    """
+    if campo not in indice:
+        disponibles = ", ".join(sorted(indice)) or "(ninguno)"
+        raise MapaIncompletoError(
+            f"El mapa aprendido no incluye el campo '{campo}'. "
+            f"Campos que sí mapeó: {disponibles}. "
+            f"Vuelve a aprender el portal (Fase 1) para regenerar el mapa."
+        )
+    return indice[campo]
 
 
 def aplicar_transformaciones(pedido, mapa, cur, cliente_portal=None):
@@ -203,7 +231,7 @@ def aplicar_transformaciones(pedido, mapa, cur, cliente_portal=None):
     datos["items"] = []
     for prod in pedido["productos"]:
         # Nombre tal como lo escribió el CLIENTE (puede no existir en el catálogo).
-        info_nombre = indice["producto_nombre"]
+        info_nombre = _exigir(indice, "producto_nombre")
         nombre_cliente = prod.get(info_nombre["origen"])
 
         # RESOLUCIÓN: traducimos el nombre del cliente al producto del catálogo de
@@ -218,8 +246,10 @@ def aplicar_transformaciones(pedido, mapa, cur, cliente_portal=None):
         unidad = prod.get(indice["unidad"]["origen"]) if "unidad" in indice else None
 
         item = {"producto_nombre": nombre}
-        for campo in ["cantidad", "precio_unitario", "sku"]:
-            info = indice[campo]
+        # cantidad y precio SÍ dependen del mapa aprendido -> se exigen con aviso
+        # claro si el LLM no los mapeó (en vez de un KeyError feo).
+        for campo in ["cantidad", "precio_unitario"]:
+            info = _exigir(indice, campo)
             valor_origen = prod.get(info["origen"])
             item[campo] = aplicar_transformacion(
                 info["transf"], valor_origen, nombre, cur, unidad
@@ -233,6 +263,12 @@ def aplicar_transformaciones(pedido, mapa, cur, cliente_portal=None):
             ppc = _piezas_por_caja(cur, nombre)
             item["precio_unitario"] = round(float(item["precio_unitario"]) / ppc, 2)
 
+        # sku NO depende del mapa: es estructura FIJA de Arca y SIEMPRE se resuelve
+        # del catálogo por nombre de producto. Así el pedido se registra aunque el
+        # LLM (no determinista) no haya incluido el mapeo 'sku' esta vez. No es
+        # hardcodear el mapeo origen->destino; es la estructura fija de Arca, igual
+        # que CAMPOS_PRODUCTO_DESTINO.
+        item["sku"] = _buscar_sku(cur, nombre)
         datos["items"].append(item)
 
     return datos
@@ -418,7 +454,7 @@ if __name__ == "__main__":
         # HEB: el bot recorre SOLO las 3 pantallas guiado por el navigation_flow.
         print("Ejecutando HEB: el bot recorre el portal multi-pantalla solo...\n")
         pedido, lecturas, datos, numero_orden, monto_total = ejecutar_desde_portal(
-            "HEB", "http://localhost:3000/heb_portal.html"
+            "HEB", "http://localhost:3000/portal_heb.html"
         )
         print("DATOS LEÍDOS POR PANTALLA:")
         print(json.dumps(lecturas, indent=2, ensure_ascii=False))
