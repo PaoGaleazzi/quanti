@@ -125,6 +125,28 @@ El llenado manual de cada portal ocurre en la ventana del navegador que abre la 
 
 > El script de terminal `motor/demo.py` sigue disponible como respaldo del mismo flujo, pero la forma habitual de operarlo es la interfaz de Streamlit.
 
+## Dashboard
+
+El tablero de negocio (`fronts/dashboard_arca.html`) muestra los pedidos, la confiabilidad del llenado y los insights. Se sirve junto con el resto de los portales, así que con el servidor estático ya levantado basta con abrirlo en el navegador:
+
+```
+http://localhost:3000/dashboard_arca.html
+```
+
+Se actualiza solo cada pocos segundos leyendo la información directamente de la base de datos. Dos cosas opcionales:
+
+- **Insights con IA:** copiar `fronts/secrets.example.js` a `fronts/secrets.js` y poner ahí la API key de Gemini. El archivo `secrets.js` está en `.gitignore` y no se publica.
+
+  ```bash
+  cp fronts/secrets.example.js fronts/secrets.js
+  ```
+
+- **Alimentar el tablero desde el motor (modo demo en vivo):** `sync_to_dashboard.py` vuelca los pedidos de la base a un archivo local que el tablero relee de forma continua.
+
+  ```bash
+  uv run python sync_to_dashboard.py --loop
+  ```
+
 ## Estructura del repositorio
 
 ```
@@ -133,7 +155,7 @@ El llenado manual de cada portal ocurre en la ventana del navegador que abre la 
 ├── pyproject.toml / uv.lock     Dependencias y entorno (uv)
 ├── .env.example                 Plantilla de variables de entorno
 ├── motor/                       Aprendizaje, resolución y ejecución
-├── fronts/                      Portales de cliente y de Arca (HTML)
+├── fronts/                      Portales de cliente, portal de Arca y dashboard (HTML)
 ├── db/                          Esquema SQL y generador de datos
 └── docs/                        Diagramas de arquitectura y anexo técnico
 ```
