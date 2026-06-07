@@ -8,6 +8,10 @@ Es a la vez el **cerebro** (lo que se ejecuta después) y la **observabilidad** 
 
 ## 1. Estructura completa (con todos los campos)
 
+El mapa ahora tiene DOS partes:
+- **`navigation_flow`** → la SECUENCIA de pasos/pantallas (para flujos multi-pantalla)
+- **`field_mappings`** → la correspondencia de campos (qué va a dónde)
+
 ```json
 {
   "map_id": "uuid-o-timestamp",
@@ -15,11 +19,47 @@ Es a la vez el **cerebro** (lo que se ejecuta después) y la **observabilidad** 
   "fecha_aprendizaje": "2025-06-06T16:00:00",
   "modelo_llm": "gpt-4o",
 
+  "navigation_flow": [
+    {
+      "paso": 1,
+      "pantalla": "productos",
+      "accion": "leer_datos",
+      "descripcion": "Leer la tabla de productos del pedido",
+      "selector_referencia": "tabla de productos",
+      "confianza": 0.95
+    },
+    {
+      "paso": 2,
+      "pantalla": "productos",
+      "accion": "click",
+      "descripcion": "Avanzar a la pantalla de entrega",
+      "selector_referencia": "boton 'Continuar' / 'Programar entrega'",
+      "confianza": 0.93
+    },
+    {
+      "paso": 3,
+      "pantalla": "entrega",
+      "accion": "leer_datos",
+      "descripcion": "Leer fecha y datos de entrega",
+      "selector_referencia": "campos de entrega",
+      "confianza": 0.90
+    },
+    {
+      "paso": 4,
+      "pantalla": "confirmacion",
+      "accion": "click",
+      "descripcion": "Confirmar/guardar el pedido",
+      "selector_referencia": "boton 'Confirmar'",
+      "confianza": 0.92
+    }
+  ],
+
   "field_mappings": [
     {
       "campo_origen": "user_id",
       "campo_destino": "client_id",
       "transformacion": "directa",
+      "pantalla_origen": "productos",
       "confianza": 0.98,
       "razonamiento": "Ambos identifican al cliente; valores numéricos que coinciden en posición y tipo."
     },
@@ -27,6 +67,7 @@ Es a la vez el **cerebro** (lo que se ejecuta después) y la **observabilidad** 
       "campo_origen": "product",
       "campo_destino": "producto_nombre",
       "transformacion": "directa",
+      "pantalla_origen": "productos",
       "confianza": 0.95,
       "razonamiento": "Nombre de producto en ambos sistemas; texto idéntico observado."
     },
@@ -34,6 +75,7 @@ Es a la vez el **cerebro** (lo que se ejecuta después) y la **observabilidad** 
       "campo_origen": "qty",
       "campo_destino": "cantidad",
       "transformacion": "directa",
+      "pantalla_origen": "productos",
       "confianza": 0.93,
       "razonamiento": "Cantidad en piezas en ambos; HEB y Arca usan la misma unidad."
     },
@@ -41,6 +83,7 @@ Es a la vez el **cerebro** (lo que se ejecuta después) y la **observabilidad** 
       "campo_origen": "unit_price",
       "campo_destino": "precio_unitario",
       "transformacion": "directa",
+      "pantalla_origen": "productos",
       "confianza": 0.90,
       "razonamiento": "Precio por unidad; mismo orden de magnitud observado."
     },
@@ -49,8 +92,9 @@ Es a la vez el **cerebro** (lo que se ejecuta después) y la **observabilidad** 
       "campo_destino": "fecha_entrega_estimada",
       "transformacion": "formato_fecha",
       "parametros": { "formato_origen": "YYYY-MM-DD", "formato_destino": "YYYY-MM-DD" },
+      "pantalla_origen": "entrega",
       "confianza": 0.92,
-      "razonamiento": "Fecha de entrega; mismo formato, mapeo directo."
+      "razonamiento": "Fecha de entrega; capturada en la pantalla de entrega."
     }
   ],
 
@@ -65,6 +109,8 @@ Es a la vez el **cerebro** (lo que se ejecuta después) y la **observabilidad** 
   "confianza_global": 0.94
 }
 ```
+
+> 💡 **El `navigation_flow` es lo que sube a nivel "Avanzado" en la rúbrica.** Captura que el proceso tiene varios pasos y pantallas, no solo un formulario. El campo `pantalla_origen` en cada mapping dice en qué pantalla se lee ese dato. Para un flujo de UNA sola pantalla, `navigation_flow` tiene un solo paso de "leer y guardar" — la estructura sirve igual para simple y complejo.
 
 ---
 
@@ -166,7 +212,13 @@ Aquí el LLM debe demostrar **razonamiento**, no copia. Sanborns pide en CAJAS, 
 
 ---
 
-## 6. Decisión de equipo pendiente
-- [ ] ¿Dónde se guarda el JSON? (tabla nueva `mapas_aprendidos` en Supabase vs archivo JSON por cliente)
-- [ ] ¿Umbral de `confianza_global` para alertar? (sugerencia: < 0.80 → revisar)
-- [ ] ¿El LLM siempre devuelve `razonamiento` o solo cuando confianza < X? (afecta presupuesto de tokens)
+## 6. Decisiones de equipo (TOMADAS)
+- ✅ **Dónde se guarda:** tabla `mapas_aprendidos` en Supabase, columna `jsonb` (ver `db/04_mapas.sql`). Una fila por cliente. NO archivos JSON sueltos (se desincronizarían entre las cuatro).
+- ✅ **Umbral de alerta:** `confianza_global < 0.70` → Steff lo marca para revisar.
+- ✅ **Razonamiento:** el LLM SIEMPRE devuelve `razonamiento` en cada campo (cuesta algo de tokens pero es la prueba anti-hardcoding y la base del dashboard).
+
+## 7. Importante: MAPA vs PATRÓN (no confundir)
+- **`mapas_aprendidos`** → CÓMO traducir los campos del portal. Se aprende UNA vez por cliente y casi no cambia. *Estable.*
+- **`patron_cliente`** → QUÉ suele pedir el cliente y cuándo. Se enriquece con CADA pedido. *Vivo.* De aquí salen los borradores personalizados.
+
+Las dos van en Supabase, en tablas distintas. El "se aprende una sola vez" aplica al mapa, no al patrón.

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Portal Sanborns - Pedidos (DUMMY)</title>
+  <style>
+    body { font-family: Georgia, serif; max-width: 700px; margin: 40px auto; padding: 20px; }
+    h1 { color: #0a4d2e; }  /* verde Sanborns */
+    .caja { border: 1px solid #ddd; border-radius: 8px; padding: 24px; }
+    label { display: block; margin: 12px 0 4px; font-weight: bold; }
+    input { padding: 6px; width: 60%; }
+    button { background: #0a4d2e; color: white; border: none; padding: 10px 20px;
+             border-radius: 6px; cursor: pointer; font-size: 14px; margin-top: 16px; }
+    .nota { color: #888; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <h1>Sanborns — Captura de Pedido</h1>
+  <p class="nota">Nota: las cantidades se piden en CAJAS (no piezas).</p>
+
+  <div class="caja" id="formulario">
+    <label>client_id</label>
+    <input id="client_id" value="2">
+
+    <label>articulo</label>
+    <input id="articulo" value="Bokados Mix 60g">
+
+    <label>unidades_pedidas (cajas)</label>
+    <input id="unidades_pedidas" value="4">
+
+    <label>costo</label>
+    <input id="costo" value="15.00">
+
+    <label>fecha_requerida</label>
+    <input id="fecha_requerida" value="2025-06-25">
+
+    <br>
+    <button id="btn-guardar" onclick="document.getElementById('resultado').innerText='Pedido guardado ✓'">Guardar pedido</button>
+    <p id="resultado"></p>
+  </div>
+</body>
+</html>

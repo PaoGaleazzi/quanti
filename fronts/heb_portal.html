@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Portal HEB - Pedidos (DUMMY)</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 700px; margin: 40px auto; padding: 20px; }
+    h1 { color: #e30613; }  /* rojo HEB */
+    .pantalla { display: none; border: 1px solid #ddd; border-radius: 8px; padding: 24px; }
+    .pantalla.activa { display: block; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    input { padding: 6px; width: 90%; }
+    button { background: #e30613; color: white; border: none; padding: 10px 20px;
+             border-radius: 6px; cursor: pointer; font-size: 14px; }
+    .paso { color: #888; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <h1>HEB — Portal de Pedidos</h1>
+  <p class="paso" id="indicador-paso">Paso 1 de 3: Productos</p>
+
+  <!-- PANTALLA 1: PRODUCTOS -->
+  <div class="pantalla activa" id="pantalla-productos">
+    <h2>Productos del pedido</h2>
+    <label>user_id: <input id="user_id" value="1"></label>
+    <table id="tabla-productos">
+      <thead>
+        <tr><th>product</th><th>qty</th><th>unit_price</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><input class="product" value="Coca-Cola 600ml"></td>
+          <td><input class="qty" value="80"></td>
+          <td><input class="unit_price" value="18.00"></td>
+        </tr>
+        <tr>
+          <td><input class="product" value="Sprite 600ml"></td>
+          <td><input class="qty" value="60"></td>
+          <td><input class="unit_price" value="17.00"></td>
+        </tr>
+      </tbody>
+    </table>
+    <button id="btn-continuar" onclick="irA('entrega', 'Paso 2 de 3: Entrega')">Continuar a entrega</button>
+  </div>
+
+  <!-- PANTALLA 2: ENTREGA -->
+  <div class="pantalla" id="pantalla-entrega">
+    <h2>Programar entrega</h2>
+    <label>delivery_date: <input id="delivery_date" value="2025-06-10"></label><br><br>
+    <label>delivery_window: <input id="delivery_window" value="08:00-12:00"></label>
+    <br><br>
+    <button id="btn-confirmar" onclick="irA('confirmacion', 'Paso 3 de 3: Confirmación')">Continuar a confirmación</button>
+  </div>
+
+  <!-- PANTALLA 3: CONFIRMACION -->
+  <div class="pantalla" id="pantalla-confirmacion">
+    <h2>Confirmar pedido</h2>
+    <p>Revisa y confirma el pedido.</p>
+    <button id="btn-enviar" onclick="document.getElementById('resultado').innerText='Pedido enviado ✓'">Enviar pedido</button>
+    <p id="resultado"></p>
+  </div>
+
+  <script>
+    function irA(pantalla, textoPaso) {
+      document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('activa'));
+      document.getElementById('pantalla-' + pantalla).classList.add('activa');
+      document.getElementById('indicador-paso').innerText = textoPaso;
+    }
+  </script>
+</body>
+</html>
