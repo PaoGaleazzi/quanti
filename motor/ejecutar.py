@@ -169,13 +169,17 @@ def aplicar_transformacion(transformacion, valor, producto_nombre, cur, unidad=N
     if transformacion == "directa":
         return valor
     if transformacion == "conversion_unidad":
-        # Por ahora SOLO soportamos Caja (factor = piezas_por_caja del catálogo).
-        # Si la unidad es otra (ej. Tarima) avisamos claro en vez de convertir mal.
+        # La conversión depende del VALOR de la unidad (genérico, no "si es X cliente"):
+        #   - Pieza -> NO convertir: el cliente ya pide en PIEZAS, igual que Arca.
+        #   - Caja  -> convertir: cantidad x piezas_por_caja del catálogo.
+        #   - otra  -> avisar claro en vez de convertir mal.
         u = (unidad or "caja").strip().lower()
+        if u in ("pieza", "piezas"):
+            return valor                        # ya está en piezas: se copia tal cual
         if u not in ("caja", "cajas", ""):
             raise ValueError(
-                f"Unidad '{unidad}' no soportada aún (solo Caja). "
-                f"Falta el factor en el catálogo de productos."
+                f"Unidad '{unidad}' no soportada (solo Caja o Pieza). "
+                f"Falta el factor de conversión para esa unidad."
             )
         cantidad = int(valor)
         ppc = _piezas_por_caja(cur, producto_nombre)
