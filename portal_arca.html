@@ -5,11 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sistema de Pedidos · Arca Continental</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#f5f5f3; --panel:#ffffff; --beige:#e8e4dc; --beige2:#f1eee8;
+    --bg:#f5f5f3; --panel:#fff; --beige:#e8e4dc; --beige2:#f1eee8;
     --ink:#16171b; --muted:#6c6f78; --dim:#9a9da6; --line:#e2e2e4;
     --arca:#ed1c2e; --arca-deep:#a90f18; --arca-soft:#fdecec;
     --grad:linear-gradient(135deg,#e8233a 0%,#b0111b 100%);
@@ -18,124 +17,73 @@
     --r:18px; --pill:999px; --sh:0 1px 2px rgba(0,0,0,.04),0 4px 16px rgba(0,0,0,.06);
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  html,body{height:100%;background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;min-height:100vh}
 
-  /* topbar */
-  .topbar{height:56px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:fixed;top:0;left:0;right:0;z-index:100}
+  .topbar{height:56px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:50}
   .topbar img{height:26px}
-  .topbar .title{font-weight:700;font-size:15px;color:var(--ink);margin-left:16px}
-  .topbar .left{display:flex;align-items:center;gap:0}
+  .topbar .title{font-weight:700;font-size:15px;margin-left:16px}
+  .topbar .left{display:flex;align-items:center}
   .topbar .sep{width:1px;height:22px;background:var(--line);margin:0 16px}
   .status{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11.5px;color:var(--muted);background:var(--beige2);border-radius:var(--pill);padding:7px 14px}
-  .dot{width:7px;height:7px;border-radius:50%;background:var(--ok);animation:pulse 2s infinite}
-  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(26,160,106,.5)}70%{box-shadow:0 0 0 6px rgba(26,160,106,0)}100%{box-shadow:0 0 0 0 rgba(26,160,106,0)}}
-  .user{font-size:13px;font-weight:600;color:var(--muted)}
-  .btn-all{font-family:var(--sans);font-weight:700;font-size:12px;color:#fff;background:var(--grad);border:0;border-radius:var(--pill);padding:8px 16px;cursor:pointer;margin-top:10px;width:100%;transition:.18s}
-  .btn-all:hover{filter:brightness(1.06)}
-  .btn-all:disabled{opacity:.5;cursor:default}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--ok)}
 
-  /* layout */
-  .layout{display:grid;grid-template-columns:300px 1fr;height:100vh;padding-top:56px}
+  .wrap{max-width:920px;margin:26px auto;padding:0 24px 60px}
 
-  /* sidebar */
-  .sidebar{background:#fff;border-right:1px solid var(--line);overflow-y:auto;display:flex;flex-direction:column}
-  .sidebar .shd{padding:18px 18px 10px;border-bottom:1px solid var(--line)}
-  .sidebar .shd h2{font-weight:800;font-size:15px}
-  .sidebar .shd p{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:3px}
-  .ocard{padding:14px 18px;border-bottom:1px solid var(--line);cursor:pointer;transition:.15s;position:relative}
-  .ocard:hover{background:var(--beige2)}
-  .ocard.active{background:var(--arca-soft);border-left:3px solid var(--arca)}
-  .ocard .on{font-family:var(--mono);font-size:10px;color:var(--dim)}
-  .ocard .oname{font-weight:700;font-size:14px;margin-top:3px}
-  .ocard .ometa{font-size:12px;color:var(--muted);margin-top:2px}
-  .ocard .obadge{position:absolute;top:14px;right:14px;font-family:var(--mono);font-size:10px;font-weight:700;padding:3px 9px;border-radius:var(--pill)}
-  .pend{color:var(--arca);background:var(--arca-soft)}
-  .done{color:var(--ok);background:var(--ok-soft)}
-  .proc{color:var(--warn);background:var(--warn-soft)}
+  .toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap}
+  .toolbar h1{font-size:22px;font-weight:900;letter-spacing:-.4px}
+  .toolbar .sub{font-size:13px;color:var(--muted);margin-top:3px}
+  .tb-btns{display:flex;gap:10px}
 
-  /* main */
-  .main{overflow-y:auto;padding:28px 32px}
-  .main-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--dim);gap:12px;text-align:center}
-  .main-empty .bigicon{font-size:48px;opacity:.3}
-  .main-empty p{font-size:14px}
+  .btn{font-family:var(--sans);font-weight:700;font-size:13.5px;border:none;border-radius:var(--pill);padding:11px 20px;cursor:pointer;transition:.15s}
+  .btn-load{background:var(--ink);color:#fff}
+  .btn-load:hover{background:#2a2b30}
+  .btn-ghost{background:#fff;color:var(--ink);border:1.5px solid var(--line)}
+  .btn-ghost:hover{border-color:var(--ink)}
+  .btn-primary{background:var(--grad);color:#fff;box-shadow:0 3px 12px rgba(176,17,27,.3)}
+  .btn-primary:hover{filter:brightness(1.05)}
 
-  /* form area */
-  .form-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px}
-  .form-header h1{font-weight:900;font-size:22px;letter-spacing:-.5px}
-  .form-header .badges{display:flex;gap:8px;align-items:center}
-  .badge{font-family:var(--mono);font-size:11px;font-weight:700;padding:6px 12px;border-radius:var(--pill)}
-  .badge-ai{color:#fff;background:var(--grad)}
-  .badge-ok{color:var(--ok);background:var(--ok-soft)}
-  .badge-pend{color:var(--arca);background:var(--arca-soft)}
+  .banner{display:none;align-items:center;gap:14px;border-radius:var(--r);padding:14px 18px;margin-bottom:18px;font-size:13.5px}
+  .banner.show{display:flex}
+  .banner.info{background:var(--beige2);color:var(--muted);border:1px solid var(--line)}
+  .banner.ok{background:var(--ok-soft);color:var(--ok);border:1px solid #a8e6c9}
+  .banner b{font-weight:800}
 
-  /* origen strip */
-  .origen-strip{background:var(--beige);border-radius:var(--r);padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
-  .origen-strip .ol{font-size:13px;color:var(--muted)}
-  .origen-strip .ol b{color:var(--ink);font-weight:700}
-  .origen-strip .campos{display:flex;gap:8px;flex-wrap:wrap}
-  .cpill{font-family:var(--mono);font-size:11px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:4px 9px;color:var(--muted)}
-  .cpill span{color:var(--arca-deep);font-weight:700}
-
-  /* sections */
   .section{background:#fff;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-bottom:18px;box-shadow:var(--sh)}
-  .sechd{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line);background:#fafafa}
-  .sechd h3{font-weight:700;font-size:14px}
-  .sechd .stag{font-family:var(--mono);font-size:10px;color:var(--dim)}
+  .sechd{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--line);background:#fafafa}
+  .sechd h2{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+  .sechd .tag{font-family:var(--mono);font-size:10px;color:var(--dim)}
 
-  /* field grid */
-  .fgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:18px}
-  .fg2{grid-template-columns:repeat(2,1fr)}
-  .field-wrap{display:flex;flex-direction:column;gap:5px}
-  .field-wrap label{font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;display:flex;align-items:center;gap:6px}
-  .map-hint{font-family:var(--mono);font-size:9px;color:var(--dim);background:var(--beige2);padding:2px 7px;border-radius:var(--pill);font-weight:400;letter-spacing:0}
-  .field-wrap input, .field-wrap select{font-family:var(--sans);font-size:14px;font-weight:600;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:10px 13px;transition:.2s;width:100%}
-  .field-wrap input:focus,.field-wrap select:focus{outline:none;border-color:var(--arca);box-shadow:0 0 0 3px var(--arca-soft)}
-  .field-wrap input.filled{border-color:var(--ok);background:var(--ok-soft);animation:fillanim .4s ease}
-  .field-wrap input.filling{border-color:var(--warn);background:var(--warn-soft)}
-  @keyframes fillanim{0%{transform:scale(1.02);background:#d4f5e5}100%{transform:scale(1);background:var(--ok-soft)}}
-  .field-wrap input[readonly]{background:var(--beige2);color:var(--muted);border-color:var(--line)}
-  .conf-tag{font-family:var(--mono);font-size:10px;color:var(--ok);margin-top:3px;display:none}
-  .conf-tag.show{display:block}
+  .fgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:20px}
+  .field{display:flex;flex-direction:column;gap:6px}
+  .field label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+  .field input{font-family:var(--sans);font-size:14px;font-weight:600;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:11px;padding:10px 13px;transition:.18s}
+  .field input:focus{outline:none;border-color:var(--arca);box-shadow:0 0 0 3px var(--arca-soft)}
+  .field input[readonly]{background:var(--beige2);color:var(--muted)}
+  .field input.flash{border-color:var(--ok);background:var(--ok-soft);animation:fl .5s ease}
+  @keyframes fl{0%{background:#d4f5e5;transform:scale(1.015)}100%{background:var(--ok-soft);transform:none}}
 
-  /* line items table */
-  .items-table{width:100%;border-collapse:collapse}
-  .items-table th{text-align:left;padding:10px 14px;font-size:11px;letter-spacing:.3px;text-transform:uppercase;color:var(--dim);font-weight:700;background:#fafafa;border-bottom:1px solid var(--line)}
-  .items-table td{padding:11px 14px;font-size:13.5px;border-bottom:1px solid var(--line);vertical-align:middle}
-  .items-table tr:last-child td{border-bottom:0}
-  .items-table td input{font-family:var(--sans);font-size:13.5px;font-weight:600;border:1.5px solid var(--line);border-radius:9px;padding:7px 10px;width:100%;background:#fff;transition:.2s}
-  .items-table td input.filled{border-color:var(--ok);background:var(--ok-soft);animation:fillanim .4s ease}
-  .items-table td input.filling{border-color:var(--warn);background:var(--warn-soft)}
-  .items-table td input:focus{outline:none;border-color:var(--arca);box-shadow:0 0 0 3px var(--arca-soft)}
-  .conv-badge{font-family:var(--mono);font-size:10px;color:var(--warn);background:var(--warn-soft);padding:2px 8px;border-radius:var(--pill);margin-top:4px;display:none}
-  .conv-badge.show{display:inline-block}
-  .sku-pill{font-family:var(--mono);font-size:11px;background:var(--beige2);border:1px solid var(--line);border-radius:7px;padding:3px 8px;color:var(--ink)}
+  table.lines{width:100%;border-collapse:collapse}
+  table.lines th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--dim);font-weight:700;padding:9px 12px;background:#fafafa;border-bottom:1px solid var(--line)}
+  table.lines td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+  table.lines tr:last-child td{border-bottom:none}
+  table.lines input{font-family:var(--sans);font-size:13px;font-weight:600;border:1.5px solid var(--line);border-radius:9px;padding:8px 10px;width:100%}
+  table.lines input:focus{outline:none;border-color:var(--arca);box-shadow:0 0 0 3px var(--arca-soft)}
+  table.lines input.flash{border-color:var(--ok);background:var(--ok-soft);animation:fl .5s ease}
+  .nota{font-family:var(--mono);font-size:10px;color:var(--warn);background:var(--warn-soft);padding:2px 7px;border-radius:var(--pill);margin-top:4px;display:inline-block}
+  .rm{background:none;border:none;color:var(--dim);cursor:pointer;font-size:17px;padding:2px 7px;border-radius:6px}
+  .rm:hover{background:var(--beige2);color:var(--arca)}
+  .addline{margin:14px 20px;font-size:13px;font-weight:700;color:var(--arca);background:#fff;border:1.5px dashed var(--arca);border-radius:11px;padding:9px 16px;cursor:pointer}
 
-  /* footer */
-  .form-footer{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;box-shadow:var(--sh);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
-  .totals{display:flex;gap:24px;align-items:center}
-  .total-item .tl{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.3px}
-  .total-item .tv{font-weight:900;font-size:22px;letter-spacing:-.5px;margin-top:2px}
-  .total-item .tv.red{color:var(--arca)}
-  .conf-bar{display:flex;flex-direction:column;gap:5px}
-  .conf-bar .cl{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.3px}
-  .conf-bar .cbar{width:160px;height:8px;background:var(--line);border-radius:var(--pill);overflow:hidden}
-  .conf-bar .cfill{height:100%;border-radius:var(--pill);background:var(--ok);width:0;transition:width .8s ease}
-  .conf-bar .cpct{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--ok);margin-top:3px}
-  .actions{display:flex;gap:10px;align-items:center}
-  .btn-bot{font-family:var(--sans);font-weight:700;font-size:14px;color:#fff;background:var(--grad);border:0;border-radius:var(--pill);padding:12px 24px;cursor:pointer;display:inline-flex;align-items:center;gap:9px;box-shadow:0 3px 12px rgba(176,17,27,.3);transition:.18s}
-  .btn-bot:hover{filter:brightness(1.06)}
-  .btn-bot:disabled{opacity:.5;cursor:default;filter:none}
-  .btn-sec{font-family:var(--sans);font-weight:600;font-size:13px;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:var(--pill);padding:11px 20px;cursor:pointer;transition:.18s}
-  .btn-sec:hover{border-color:var(--ink)}
-  .btn-submit{font-family:var(--sans);font-weight:700;font-size:14px;color:#fff;background:var(--ink);border:0;border-radius:var(--pill);padding:12px 24px;cursor:pointer;display:none;transition:.18s}
-  .btn-submit.show{display:inline-flex;align-items:center;gap:8px}
-  .btn-submit:hover{background:#2a2b30}
-
-  .success-banner{background:var(--ok-soft);border:1px solid #a8e6c9;border-radius:var(--r);padding:16px 20px;margin-bottom:18px;display:none;align-items:center;gap:14px}
-  .success-banner.show{display:flex}
-  .success-banner .si{font-size:22px}
-  .success-banner .st{font-weight:700;font-size:15px;color:var(--ok)}
-  .success-banner .ss{font-size:13px;color:var(--muted);margin-top:2px}
+  .footer{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 20px;background:#fafafa;border-top:1px solid var(--line);flex-wrap:wrap}
+  .totals{display:flex;gap:26px;align-items:center}
+  .ti .l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px}
+  .ti .v{font-weight:900;font-size:20px;margin-top:2px}.ti .v.red{color:var(--arca)}
+  .conf{display:none;flex-direction:column;gap:4px}
+  .conf.show{display:flex}
+  .conf .l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px}
+  .conf .bar{width:150px;height:8px;background:var(--line);border-radius:var(--pill);overflow:hidden}
+  .conf .fill{height:100%;background:var(--ok);width:0;transition:width .7s ease}
+  .conf .pct{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--ok);margin-top:2px}
 </style>
 </head>
 <body>
@@ -146,326 +94,184 @@
     <div class="sep"></div>
     <span class="title">Sistema de Pedidos · Portal Interno</span>
   </div>
-  <div style="display:flex;align-items:center;gap:14px">
-    <div class="status"><span class="dot"></span>MOTOR IA ACTIVO</div>
-    <span class="user">Operaciones · Canal Moderno</span>
-  </div>
+  <div class="status"><span class="dot"></span>MOTOR IA ACTIVO</div>
 </div>
 
-<div class="layout">
+<div class="wrap">
 
-  <!-- SIDEBAR -->
-  <div class="sidebar">
-    <div class="shd">
-      <h2>Cola de pedidos</h2>
-      <p>PORTAL CLIENTE → ARCA</p>
-      <button class="btn-all" onclick="runAll()">Ejecutar todos</button>
+  <div class="toolbar">
+    <div>
+      <h1>Captura de pedido</h1>
+      <div class="sub">Portal destino · los campos los llena el motor de IA o se cargan del pedido ya mapeado</div>
     </div>
-
-    <div class="ocard" data-id="heb1" onclick="loadOrder('heb1')">
-      <div class="obadge pend">PENDIENTE</div>
-      <div class="on">ORD-2071</div>
-      <div class="oname">HEB Valle Oriente</div>
-      <div class="ometa">HEB · 2 líneas · $2,460 MXN</div>
+    <div class="tb-btns">
+      <button class="btn btn-ghost" onclick="limpiar()">Limpiar</button>
+      <button class="btn btn-load" onclick="cargarDelMotor()">Cargar pedido del motor</button>
     </div>
+  </div>
 
-    <div class="ocard" data-id="san1" onclick="loadOrder('san1')">
-      <div class="obadge pend">PENDIENTE</div>
-      <div class="on">ORD-2072</div>
-      <div class="oname">Sanborns Centro</div>
-      <div class="ometa">Sanborns · 2 líneas · $1,296 MXN</div>
+  <div class="banner info" id="banner"></div>
+
+  <div class="section">
+    <div class="sechd"><h2>Datos del pedido</h2><span class="tag">PORTAL ARCA · DESTINO</span></div>
+    <div class="fgrid">
+      <div class="field"><label>No. orden</label><input id="numero_orden" data-field="numero_orden" placeholder="—"></div>
+      <div class="field"><label>Cliente (client_id)</label><input id="client_id" data-field="client_id" placeholder="—"></div>
+      <div class="field"><label>Portal origen</label><input id="portal_origen" data-field="portal_origen" placeholder="—" readonly></div>
+      <div class="field"><label>Fecha pedido</label><input id="fecha_pedido" data-field="fecha_pedido" readonly></div>
+      <div class="field"><label>Fecha entrega estimada</label><input id="fecha_entrega_estimada" data-field="fecha_entrega_estimada" placeholder="—"></div>
+      <div class="field"><label>Origen captura</label><input id="origen_captura" data-field="origen_captura" value="auto_IA" readonly></div>
     </div>
+  </div>
 
-    <div class="ocard" data-id="heb2" onclick="loadOrder('heb2')">
-      <div class="obadge done">COMPLETADO</div>
-      <div class="on">ORD-2070</div>
-      <div class="oname">HEB Cumbres</div>
-      <div class="ometa">HEB · 3 líneas · $3,740 MXN</div>
-    </div>
-
-    <div style="padding:18px;margin-top:auto;border-top:1px solid var(--line)">
-      <div style="font-family:var(--mono);font-size:10.5px;color:var(--dim);line-height:1.7">
-        El bot observó los portales origen una vez y aprendió el mapeo.<br>Ahora ejecuta solo con datos nuevos.
+  <div class="section">
+    <div class="sechd"><h2>Líneas del pedido</h2><span class="tag" id="nlineas">0 PRODUCTOS</span></div>
+    <table class="lines">
+      <thead><tr><th style="width:16%">SKU</th><th style="width:34%">Producto</th><th style="width:15%">Cantidad (pzas)</th><th style="width:18%">Precio unit.</th><th style="width:13%">Importe</th><th></th></tr></thead>
+      <tbody id="lines"></tbody>
+    </table>
+    <button class="addline" onclick="addLine()">+ Agregar línea</button>
+    <div class="footer">
+      <div class="totals">
+        <div class="ti"><div class="l">Monto total</div><div class="v red" id="total">$0.00</div></div>
+        <div class="conf" id="confbox">
+          <div class="l">Confiabilidad del llenado</div>
+          <div class="bar"><div class="fill" id="conffill"></div></div>
+          <div class="pct" id="confpct">—</div>
+        </div>
       </div>
+      <button class="btn btn-primary" onclick="registrar()">Registrar en Arca</button>
     </div>
   </div>
 
-  <!-- MAIN -->
-  <div class="main" id="main">
-    <div class="main-empty">
-      <div class="bigicon"></div>
-      <p>Selecciona un pedido de la cola para procesarlo</p>
-    </div>
-  </div>
 </div>
 
 <script>
-const ORDERS = {
-  heb1: {
-    id:"ORD-2071", portal:"HEB", cliente:"HEB Valle Oriente", client_id:"1",
-    fecha_pedido:"2025-06-06", fecha_entrega:"2025-06-08",
-    origen: {
-      label:"heb_orders",
-      campos:["user_id","product","qty","unit_price","delivery_date"],
-      nota:"Campos en inglés · cantidad en piezas"
-    },
-    mapeo:[
-      {src:"user_id",dst:"client_id",conf:.97,xform:"directa"},
-      {src:"product",dst:"producto_nombre",conf:.95,xform:"match SKU"},
-      {src:"qty",dst:"cantidad",conf:.99,xform:"directa (piezas)"},
-      {src:"unit_price",dst:"precio_unitario",conf:.96,xform:"directa"},
-      {src:"delivery_date",dst:"fecha_entrega_estimada",conf:.93,xform:"ISO → date"},
-    ],
-    items:[
-      {sku:"SKU-0001",nombre:"Coca-Cola 600ml",cantidad:80,unidad:"pieza",precio:18.00,cajas:null},
-      {sku:"SKU-0003",nombre:"Sprite 600ml",cantidad:60,unidad:"pieza",precio:17.00,cajas:null},
-    ]
-  },
-  san1: {
-    id:"ORD-2072", portal:"Sanborns", cliente:"Sanborns Centro", client_id:"2",
-    fecha_pedido:"2025-06-06", fecha_entrega:"2025-06-08",
-    origen: {
-      label:"sanborns_pedidos",
-      campos:["client_id","articulo","unidades_pedidas","costo","fecha_requerida"],
-      nota:"Campos en español · ⚠ cantidad en CAJAS → convertir a piezas"
-    },
-    mapeo:[
-      {src:"client_id",dst:"client_id",conf:.97,xform:"directa"},
-      {src:"articulo",dst:"producto_nombre",conf:.94,xform:"normaliza + match SKU"},
-      {src:"unidades_pedidas",dst:"cantidad",conf:.88,xform:"CAJAS × piezas_por_caja",hot:true},
-      {src:"costo",dst:"precio_unitario",conf:.85,xform:"directa"},
-      {src:"fecha_requerida",dst:"fecha_entrega_estimada",conf:.91,xform:"DD/MM/YYYY → date"},
-    ],
-    items:[
-      {sku:"SKU-0001",nombre:"Coca-Cola 600ml",cantidad:72,unidad:"pieza",precio:18.00,cajas:3},
-      {sku:"SKU-0008",nombre:"Fuze Tea Durazno 600ml",cantidad:48,unidad:"pieza",precio:19.00,cajas:2},
-    ]
-  }
-};
+// El portal NO trae datos de ejemplo. Recibe del motor de Pao el pedido YA MAPEADO
+// (los valores tras aplicar el learned_map al pedido nuevo), con los nombres de Arca.
+//
+// Pao escribe en localStorage['pedido_mapeado_arca'] un JSON. El lector es TOLERANTE:
+// acepta los nombres de Arca y los del learned_map a la vez. Forma esperada:
+// {
+//   "numero_orden": "ORD-2072",                      // opcional
+//   "cliente_portal": "Sanborns",                    // o "portal_origen"
+//   "client_id": "2",
+//   "fecha_entrega_estimada": "2026-06-09",
+//   "confianza_global": 0.89,                         // o "confiabilidad"
+//   "lineas": [
+//     { "sku":"SKU-0001", "producto_nombre":"Coca-Cola 600ml",
+//       "cantidad":72, "precio_unitario":18.00,
+//       "nota":"3 cajas x 24 = 72",                   // opcional (evidencia de conversión)
+//       "confianza":0.88 }                            // opcional
+//   ]
+// }
+// Notas:
+// - 'cantidad' ya viene en PIEZAS: el motor aplicó conversion_unidad (cajas x piezas_por_caja).
+// - El portal NO convierte ni inventa nada: muestra exactamente lo que el motor mandó.
+// - Header tambien acepta venir anidado en p.header o p.campos.
 
-let current = null;
-let running = false;
+function pick(obj, ...keys){ for(const k of keys){ if(obj && obj[k]!=null) return obj[k]; } return undefined; }
 
-function loadOrder(id){
-  if(running) return;
-  current = ORDERS[id];
-  if(!current) return;
-  document.querySelectorAll('.ocard').forEach(c=>c.classList.toggle('active', c.dataset.id===id));
-  renderForm(current);
+function lineRow(d={}){
+  const sku=d.sku||'', prod=pick(d,'producto_nombre','producto','product','articulo')||'';
+  const qty=pick(d,'cantidad','qty','unidades_pedidas'); const price=pick(d,'precio_unitario','unit_price','costo');
+  const nota=d.nota||'';
+  const tr=document.createElement('tr');
+  tr.innerHTML=`
+    <td><input class="c-sku" data-field="sku" value="${sku}" placeholder="SKU"></td>
+    <td><input class="c-prod" data-field="producto_nombre" value="${prod}" placeholder="Producto">
+        ${nota?`<span class="nota">${nota}</span>`:''}</td>
+    <td><input class="c-qty" data-field="cantidad" type="number" value="${qty!=null?qty:''}" placeholder="0" oninput="recalc()"></td>
+    <td><input class="c-price" data-field="precio_unitario" type="number" step="0.01" value="${price!=null?price:''}" placeholder="0.00" oninput="recalc()"></td>
+    <td class="imp" style="font-weight:700">—</td>
+    <td><button class="rm" onclick="this.closest('tr').remove();recalc()">×</button></td>`;
+  return tr;
 }
-
-function fmtMXN(n){return'$'+n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',')+' MXN';}
-
-function renderForm(o){
-  const total = o.items.reduce((s,i)=>s+i.cantidad*i.precio,0);
-  const isCmpl = o.id==='ORD-2070';
-  const confiGlobal = o.mapeo.reduce((s,m)=>s+m.conf,0)/o.mapeo.length;
-
-  const mapHints = Object.fromEntries(o.mapeo.map(m=>[m.dst, m]));
-
-  document.getElementById('main').innerHTML = `
-    <div class="success-banner" id="success">
-      <div class="si">[OK]</div>
-      <div><div class="st">Pedido registrado en Arca</div><div class="ss">Llenado automáticamente por el motor de IA · ${o.id} guardado en la base de datos</div></div>
-    </div>
-
-    <div class="form-header">
-      <div>
-        <h1>${o.cliente}</h1>
-        <div style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:4px">${o.id} · Portal origen: <b style="color:var(--ink)">${o.portal}</b></div>
-      </div>
-      <div class="badges">
-        <span class="badge badge-pend" id="statusBadge">PENDIENTE</span>
-      </div>
-    </div>
-
-    <div class="origen-strip">
-      <div class="ol">Datos del portal cliente (<b>${o.origen.label}</b>) — ${o.origen.nota}</div>
-      <div class="campos">
-        ${o.origen.campos.map(c=>`<div class="cpill"><span>${c}</span></div>`).join('')}
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="sechd"><h3>Datos del pedido</h3><span class="stag">PORTAL ARCA · DESTINO</span></div>
-      <div class="fgrid">
-        <div class="field-wrap">
-          <label>No. Orden</label>
-          <input type="text" id="f_orden" value="${o.id}" readonly>
-        </div>
-        <div class="field-wrap">
-          <label>Cliente (client_id) <span class="map-hint" id="h_client">${mapHints['client_id']?mapHints['client_id'].src+' →':''}</span></label>
-          <input type="text" id="f_client" placeholder="—">
-          <div class="conf-tag" id="ct_client"></div>
-        </div>
-        <div class="field-wrap">
-          <label>Portal origen</label>
-          <input type="text" id="f_portal" value="${o.portal}" readonly>
-        </div>
-        <div class="field-wrap">
-          <label>Fecha pedido</label>
-          <input type="text" id="f_fechap" value="${o.fecha_pedido}" readonly>
-        </div>
-        <div class="field-wrap">
-          <label>Fecha entrega est. <span class="map-hint" id="h_fecha">${mapHints['fecha_entrega_estimada']?mapHints['fecha_entrega_estimada'].src+' →':''}</span></label>
-          <input type="text" id="f_fechae" placeholder="—">
-          <div class="conf-tag" id="ct_fecha"></div>
-        </div>
-        <div class="field-wrap">
-          <label>Origen captura</label>
-          <input type="text" id="f_origen" value="auto_IA" readonly>
-        </div>
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="sechd"><h3>Líneas del pedido</h3><span class="stag">${o.items.length} PRODUCTOS</span></div>
-      <table class="items-table">
-        <thead><tr><th>SKU</th><th>Producto <span class="map-hint">${o.portal==='Sanborns'?'articulo →':'product →'}</span></th><th>Cantidad <span class="map-hint">${o.portal==='Sanborns'?'unidades_pedidas →':'qty →'}</span></th><th>Unidad</th><th>Precio unit. <span class="map-hint">${o.portal==='Sanborns'?'costo →':'unit_price →'}</span></th><th>Importe</th></tr></thead>
-        <tbody id="itemsbody">
-          ${o.items.map((it,i)=>`<tr>
-            <td><span class="sku-pill">${it.sku}</span></td>
-            <td><input type="text" id="f_nom${i}" placeholder="—"></td>
-            <td>
-              <input type="text" id="f_qty${i}" placeholder="—">
-              ${it.cajas?`<div class="conv-badge" id="conv${i}">${it.cajas} cajas × 24 = ${it.cantidad} piezas</div>`:''}
-            </td>
-            <td style="font-family:var(--mono);font-size:12px;color:var(--muted)">${it.unidad}</td>
-            <td><input type="text" id="f_precio${i}" placeholder="—"></td>
-            <td style="font-weight:700" id="f_imp${i}">—</td>
-          </tr>`).join('')}
-        </tbody>
-      </table>
-    </div>
-
-    <div class="form-footer">
-      <div class="totals">
-        <div class="total-item"><div class="tl">Monto total</div><div class="tv red" id="f_total">—</div></div>
-        <div class="conf-bar">
-          <div class="cl">Confiabilidad del llenado</div>
-          <div class="cbar"><div class="cfill" id="cbar"></div></div>
-          <div class="cpct" id="cpct">—</div>
-        </div>
-      </div>
-      <div class="actions">
-        <button class="btn-sec" onclick="clearForm()">Limpiar</button>
-        <button class="btn-bot" id="btnBot" onclick="runBot()">Ejecutar bot</button>
-        <button class="btn-submit" id="btnSubmit" onclick="submitOrder()">Registrar en Arca →</button>
-      </div>
-    </div>
-  `;
-}
-
-function clearForm(){
-  if(!current) return;
-  ['f_client','f_fechae'].forEach(id=>{const el=document.getElementById(id);if(el){el.value='';el.classList.remove('filled','filling');}});
-  current.items.forEach((_,i)=>{
-    ['f_nom','f_qty','f_precio'].forEach(p=>{const el=document.getElementById(p+i);if(el){el.value='';el.classList.remove('filled','filling');}});
-    const conv=document.getElementById('conv'+i);if(conv)conv.classList.remove('show');
-    const imp=document.getElementById('f_imp'+i);if(imp)imp.textContent='—';
+function addLine(d){document.getElementById('lines').appendChild(lineRow(d||{}));recalc();}
+function recalc(){
+  const rows=[...document.querySelectorAll('#lines tr')];let total=0;
+  rows.forEach(r=>{
+    const q=+r.querySelector('.c-qty').value||0,p=+r.querySelector('.c-price').value||0;
+    const imp=q*p;total+=imp;
+    r.querySelector('.imp').textContent=imp?('$'+imp.toFixed(2)):'—';
   });
-  const t=document.getElementById('f_total');if(t)t.textContent='—';
-  const cb=document.getElementById('cbar');if(cb)cb.style.width='0';
-  const cp=document.getElementById('cpct');if(cp)cp.textContent='—';
-  const bs=document.getElementById('btnSubmit');if(bs)bs.classList.remove('show');
-  const sb=document.getElementById('statusBadge');if(sb){sb.textContent='PENDIENTE';sb.className='badge badge-pend';}
-  document.querySelectorAll('.conf-tag').forEach(c=>c.classList.remove('show'));
-  running = false;
+  document.getElementById('nlineas').textContent=rows.length+' PRODUCTOS';
+  document.getElementById('total').textContent='$'+total.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',');
 }
+function flash(el){el.classList.add('flash');setTimeout(()=>el.classList.remove('flash'),550);}
 
-function fillField(id, value, delay, conf){
-  return new Promise(res=>{
-    setTimeout(()=>{
-      const el=document.getElementById(id);
-      if(!el){res();return;}
-      el.classList.add('filling');
-      setTimeout(()=>{
-        el.value=value;
-        el.classList.remove('filling');
-        el.classList.add('filled');
-        // show conf tag
-        const ct=document.getElementById('ct_'+id.replace('f_',''));
-        if(ct&&conf){ct.textContent=`✓ ${Math.round(conf*100)}% confianza`;ct.classList.add('show');}
-        res();
-      },300);
-    },delay);
-  });
-}
-
-async function runBot(){
-  if(!current||running) return;
-  running = true;
-  const btn=document.getElementById('btnBot');
-  btn.disabled=true; btn.textContent='Procesando...';
-
-  const o=current;
-  let delay=0;
-  const step=80;
-
-  await fillField('f_client', o.client_id, delay+=step, .97);
-  await fillField('f_fechae', o.fecha_entrega, delay+=step, .93);
-
-  for(let i=0;i<o.items.length;i++){
-    const it=o.items[i];
-    await fillField('f_nom'+i, it.nombre, delay+=step, .95);
-    await new Promise(res=>setTimeout(res,80));
-    const qel=document.getElementById('f_qty'+i);
-    if(qel){
-      qel.classList.add('filling');
-      await new Promise(res=>setTimeout(res,60));
-      qel.value=it.cantidad; qel.classList.remove('filling'); qel.classList.add('filled');
-      if(it.cajas){
-        const cv=document.getElementById('conv'+i);
-        if(cv)cv.classList.add('show');
-      }
-    }
-    await fillField('f_precio'+i, '$'+it.precio.toFixed(2), delay+=step, .96);
-    const imp=document.getElementById('f_imp'+i);
-    if(imp)imp.textContent='$'+(it.cantidad*it.precio).toFixed(2);
+function cargarDelMotor(){
+  let raw=null;
+  try{ raw=localStorage.getItem('pedido_mapeado_arca') || localStorage.getItem('pedido_arca'); }catch(e){}
+  const banner=document.getElementById('banner');
+  if(!raw){
+    banner.className='banner info show';
+    banner.innerHTML='No hay pedido del motor todavía. El bot puede llenar los campos directamente, o el motor debe escribir <b>pedido_mapeado_arca</b> en el navegador.';
+    return;
   }
+  let p; try{ p=JSON.parse(raw); }catch(e){ banner.className='banner info show'; banner.innerHTML='El pedido del motor no es un JSON válido.'; return; }
 
-  await new Promise(res=>setTimeout(res,80));
+  const head = p.header || p.campos || p;     // header puede venir anidado o plano
+  const set=(id,val)=>{const e=document.getElementById(id);e.value=(val!=null?val:'');flash(e);};
+  const numOrden = pick(p,'numero_orden','order_id');
+  if(numOrden) set('numero_orden', numOrden);
+  set('client_id', pick(head,'client_id','user_id'));
+  set('portal_origen', pick(p,'portal_origen','cliente_portal'));
+  set('fecha_entrega_estimada', pick(head,'fecha_entrega_estimada','delivery_date','fecha_requerida'));
 
-  const total=o.items.reduce((s,i)=>s+i.cantidad*i.precio,0);
-  const ft=document.getElementById('f_total');if(ft)ft.textContent='$'+total.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',')+' MXN';
+  document.getElementById('lines').innerHTML='';
+  (p.lineas||p.detalle||[]).forEach(l=>addLine(l));
+  if(!document.querySelector('#lines tr')) addLine();
+  [...document.querySelectorAll('#lines input')].forEach(flash);
+  recalc();
 
-  const conf=o.mapeo.reduce((s,m)=>s+m.conf,0)/o.mapeo.length;
-  const cb=document.getElementById('cbar');if(cb)cb.style.width=Math.round(conf*100)+'%';
-  const cp=document.getElementById('cpct');if(cp)cp.textContent=Math.round(conf*100)+'%';
-
-  const sb=document.getElementById('statusBadge');
-  if(sb){sb.textContent='LLENADO · IA';sb.className='badge badge-ai';}
-
-  btn.textContent='Completado'; btn.style.background='var(--ok)';
-  const bs=document.getElementById('btnSubmit');if(bs)bs.classList.add('show');
-}
-
-function submitOrder(){
-  const sb=document.getElementById('statusBadge');
-  if(sb){sb.textContent='REGISTRADO';sb.className='badge badge-ok';}
-  const s=document.getElementById('success');if(s)s.classList.add('show');
-  document.getElementById('btnSubmit').style.display='none';
-  // mark sidebar card as done
-  const card=document.querySelector('.ocard.active .obadge');
-  if(card){card.textContent='COMPLETADO';card.className='obadge done';}
-}
-
-async function runAll(){
-  const btn = document.querySelector('.btn-all');
-  btn.disabled = true;
-  btn.textContent = 'Procesando...';
-  const ids = ['heb1','san1'];
-  for(const id of ids){
-    loadOrder(id);
-    await new Promise(res=>setTimeout(res,80));
-    await runBot();
-    await new Promise(res=>setTimeout(res,100));
-    submitOrder();
-    await new Promise(res=>setTimeout(res,100));
-    running = false;
+  const conf = pick(p,'confiabilidad','confianza_global');
+  if(typeof conf==='number'){
+    document.getElementById('confbox').classList.add('show');
+    const pct=Math.round(conf*100);
+    document.getElementById('conffill').style.width=pct+'%';
+    document.getElementById('confpct').textContent=pct+'%';
   }
-  btn.textContent = 'Todos procesados';
+  banner.className='banner info show';
+  banner.innerHTML='Pedido cargado del motor · origen <b>'+(pick(p,'portal_origen','cliente_portal')||'?')+'</b>. Revisa y registra en Arca.';
 }
+
+function registrar(){
+  const rows=[...document.querySelectorAll('#lines tr')];
+  if(!document.getElementById('client_id').value || rows.length===0){
+    const b=document.getElementById('banner');b.className='banner info show';
+    b.innerHTML='Faltan datos: captura el cliente y al menos una línea (o carga el pedido del motor).';return;
+  }
+  const pedido={
+    numero_orden:document.getElementById('numero_orden').value,
+    client_id:document.getElementById('client_id').value,
+    portal_origen:document.getElementById('portal_origen').value,
+    fecha_entrega_estimada:document.getElementById('fecha_entrega_estimada').value,
+    origen_captura:document.getElementById('origen_captura').value,
+    lineas:rows.map(r=>({
+      sku:r.querySelector('.c-sku').value,
+      producto_nombre:r.querySelector('.c-prod').value,
+      cantidad:+r.querySelector('.c-qty').value||0,
+      precio_unitario:+r.querySelector('.c-price').value||0
+    }))
+  };
+  try{ localStorage.setItem('pedido_registrado_arca', JSON.stringify(pedido)); }catch(e){}
+  console.log('PEDIDO_REGISTRADO_ARCA', JSON.stringify(pedido,null,2));
+  const b=document.getElementById('banner');b.className='banner ok show';
+  b.innerHTML='<b>Pedido registrado en Arca.</b> '+pedido.numero_orden+' guardado · '+pedido.lineas.length+' líneas.';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function limpiar(){
+  ['client_id','portal_origen','fecha_entrega_estimada'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('lines').innerHTML='';
+  addLine();
+  document.getElementById('confbox').classList.remove('show');
+  document.getElementById('banner').className='banner';
+}
+
+document.getElementById('fecha_pedido').value=new Date().toISOString().slice(0,10);
+addLine();
 </script>
 </body>
 </html>
