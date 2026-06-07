@@ -142,6 +142,49 @@
   .btn{font-family:var(--sans);font-weight:600;font-size:12.5px;color:var(--ink);background:#fff;border:1.5px solid var(--line2);border-radius:var(--pill);padding:8px 16px;cursor:pointer;transition:.18s}
   .btn:hover{border-color:var(--arca);color:var(--arca)}
   .foot{margin-top:22px;font-family:var(--mono);font-size:10.5px;color:var(--dim);text-align:center;line-height:1.8}
+
+  /* ===== semáforo de confiabilidad (mapa aprendido) ===== */
+  .semgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+  .semchip{display:flex;align-items:center;gap:12px;border:1px solid var(--line2);border-radius:14px;padding:13px 15px;background:#fff;box-shadow:var(--sh)}
+  .semled{width:14px;height:14px;border-radius:50%;flex:none}
+  .semchip .sp{font-weight:700;font-size:13.5px;letter-spacing:-.2px}
+  .semchip .sc{font-family:var(--mono);font-size:10.5px;color:var(--dim);margin-top:2px}
+  .semchip .scval{margin-left:auto;font-family:var(--mono);font-weight:700;font-size:16px}
+
+  /* ===== facturación (ciclo pedido→entrega→factura) ===== */
+  .fstats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+  @media(max-width:760px){.fstats{grid-template-columns:repeat(2,1fr)}}
+  .pipe{display:flex;align-items:center;gap:0;min-width:330px}
+  .pstep{display:flex;flex-direction:column;align-items:center;gap:5px;flex:none;width:74px;text-align:center}
+  .pdot{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-family:var(--mono);font-size:12px;font-weight:700;background:var(--beige2);color:var(--dim);border:2px solid var(--line2)}
+  .pstep.done .pdot{background:var(--ok);color:#fff;border-color:var(--ok)}
+  .pstep.cur .pdot{background:var(--arca);color:#fff;border-color:var(--arca);box-shadow:0 0 0 4px var(--arca-soft)}
+  .pstep.bad .pdot{background:var(--bad);color:#fff;border-color:var(--bad)}
+  .pstep .pl{font-size:10px;color:var(--dim);font-weight:600;line-height:1.2}
+  .pstep.done .pl,.pstep.cur .pl{color:var(--ink)}
+  .pconn{flex:1;height:2px;background:var(--line2);min-width:14px;margin-bottom:17px}
+  .pconn.on{background:var(--ok)}
+
+  /* ===== retención / churn ===== */
+  .churngrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(258px,1fr));gap:14px}
+  .ccard{border:1px solid var(--line2);border-radius:16px;padding:16px 18px;background:#fff;box-shadow:var(--sh)}
+  .ccard.risk-bad{border-color:#f7d6d6;background:var(--arca-soft)}
+  .ccard.risk-warn{border-color:#f6e6c2;background:#fffdf7}
+  .ccard .cnm{font-weight:800;font-size:15px;letter-spacing:-.3px}
+  .ccard .cpt{font-family:var(--mono);font-size:10.5px;color:var(--dim);margin-top:2px}
+  .ccard .cdrop{font-weight:900;font-size:27px;letter-spacing:-1px;margin-top:10px}
+  .ccard.risk-bad .cdrop{color:var(--bad)} .ccard.risk-warn .cdrop{color:#a9740a}
+  .ccard .csub{font-size:11.5px;color:var(--muted);margin-top:2px}
+  .spark{display:block;width:100%;height:40px;margin-top:12px;overflow:visible}
+
+  /* ===== insights gemini ===== */
+  .insgrid{display:flex;flex-direction:column;gap:12px}
+  .insight{display:flex;gap:13px;align-items:flex-start;border:1px solid var(--line2);border-left:3px solid var(--arca);border-radius:12px;padding:14px 16px;background:#fff}
+  .insight .ii{width:30px;height:30px;border-radius:9px;flex:none;display:grid;place-items:center;background:var(--arca-soft);color:var(--arca);font-size:15px;font-weight:800}
+  .insight .it{font-size:13.5px;line-height:1.5} .insight .it b{font-weight:700}
+  .insight .iact{display:inline-block;margin-top:8px;font-size:11.5px;font-weight:700;color:var(--arca);background:var(--arca-soft);border-radius:var(--pill);padding:4px 12px}
+  .gemtag{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .gembadge{font-family:var(--mono);font-size:9.5px;font-weight:700;background:var(--ink);color:#fff;padding:3px 9px;border-radius:var(--pill);letter-spacing:.5px}
 </style>
 </head>
 <body>
@@ -156,6 +199,8 @@
     <button data-tab="resumen" class="on">Resumen</button>
     <button data-tab="alertas">Alertas <span class="count" id="tabAlertCount">0</span></button>
     <button data-tab="pedidos">Pedidos <span class="count" id="tabOrdCount">0</span></button>
+    <button data-tab="facturacion">Facturación <span class="count" id="tabFactCount">0</span></button>
+    <button data-tab="retencion">Retención <span class="count" id="tabRetCount">0</span></button>
   </div>
 
   <!-- ============ RESUMEN ============ -->
@@ -191,6 +236,14 @@
     </div>
 
     <div class="card">
+      <div class="hd"><h2>Semáforo de confiabilidad · mapa aprendido</h2><div class="tag">UMBRAL 70%</div></div>
+      <div class="pad">
+        <div class="proof"><span class="ic2">●</span><span><b>Confianza global por portal</b> — sale de <span class="field">mapas_aprendidos.confianza_global</span>. Verde ≥85%, amarillo 70–84%, rojo &lt;70%: un mapa en rojo se reentrena antes de operar en automático.</span></div>
+        <div class="semgrid" id="semgrid"></div>
+      </div>
+    </div>
+
+    <div class="card">
       <div class="hd"><h2>Confiabilidad de llenado · evolución</h2><div class="tag">UMBRAL 85%</div></div>
       <div class="pad chartbox" id="chart"></div>
     </div>
@@ -219,6 +272,33 @@
       </table>
     </div>
     <div class="foot" style="margin-top:0;text-align:left">Da clic en un pedido para ver el detalle campo por campo (la exactitud que el jurado evalúa).</div>
+  </section>
+
+  <!-- ============ FACTURACIÓN ============ -->
+  <section class="panel" id="tab-facturacion">
+    <div class="label first">Ciclo pedido → entrega → factura</div>
+    <div class="proof" style="margin-bottom:16px"><span class="ic2">◆</span><span>La factura se genera <b>automáticamente al entregar</b> (vía SAP, ~2 días después). Aquí cada pedido en su etapa real del ciclo, leído de <span class="field">estatus_entrega</span> / <span class="field">estatus_factura</span> / <span class="field">numero_factura</span>.</span></div>
+    <div class="fstats" id="fstats"></div>
+    <div class="card">
+      <div class="hd"><h2>Estado de facturación por pedido</h2><div class="selwrap"><select id="ffiltro"></select></div></div>
+      <table>
+        <thead><tr><th>Pedido</th><th>Cliente</th><th>Ciclo</th><th>Factura</th><th style="text-align:right">Monto</th></tr></thead>
+        <tbody id="factbody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ RETENCIÓN (churn + insights) ============ -->
+  <section class="panel" id="tab-retencion">
+    <div class="label first">Clientes en riesgo de baja · churn</div>
+    <div class="proof" style="margin-bottom:16px"><span class="ic2">▼</span><span>Riesgo calculado comparando el <b>volumen reciente</b> de cada cliente contra su <b>promedio histórico</b> (de <span class="field">pedidos.monto_total</span> por mes). Caída ≥40% = crítico · ≥25% = advertencia.</span></div>
+    <div class="churngrid" id="churngrid"></div>
+
+    <div class="label">Insights accionables · IA generativa</div>
+    <div class="card">
+      <div class="hd"><h2>Recomendaciones de retención</h2><div class="gemtag"><span class="gembadge" id="gembadge">GEMINI</span><span id="gemsrc">esperando datos…</span></div></div>
+      <div class="pad"><div class="insgrid" id="insgrid"></div></div>
+    </div>
   </section>
 
   <div class="src">
@@ -287,10 +367,27 @@ const SUCURSALES={
   SANBORNS:["Sanborns Centro","Sanborns Pabellón","Sanborns Plaza Fiesta"],
 };
 function lcg(seed){return ()=>{seed=(seed*1103515245+12345)&0x7fffffff;return seed/0x7fffffff;};}
-function genPedidos(portales){const rnd=lcg(42);const out=[];let n=2000;
-  Object.keys(portales).forEach(k=>{(SUCURSALES[k]||[k]).forEach(suc=>{const reps=1+Math.floor(rnd()*2);
-    for(let r=0;r<reps;r++){const fields=portales[k].map.map(f=>{let conf=Math.min(.99,Math.max(.55,f.conf+(rnd()-.5)*0.08));let valid=conf>=.66?1:0;if(rnd()<0.04){conf=.55+rnd()*.12;valid=0;}return [f.dst,+conf.toFixed(2),valid];});
-      out.push({id:"ORD-"+(n++),cliente:suc,portal:k,modo:"auto_IA",fields});}});});
+function genPedidos(portales){const rnd=lcg(42);const out=[];let n=2000;const today=new Date();
+  Object.keys(portales).forEach(k=>{(SUCURSALES[k]||[k]).forEach(suc=>{
+    const churn=/Sanborns Centro/i.test(suc);            // cliente que decae (señal de churn del histórico simulado)
+    const baseMonto=7000+Math.floor(rnd()*13000);
+    for(let mAgo=5;mAgo>=0;mAgo--){                       // 6 meses de historia para el cálculo de churn
+      const scale=churn?Math.max(.22,1-(5-mAgo)*0.17):(0.88+rnd()*0.24);   // los meses recientes bajan si hace churn
+      const reps=Math.max((churn&&mAgo===0)?0:1,Math.round((1+rnd()*2)*scale));
+      for(let r=0;r<reps;r++){
+        const d=new Date(today);d.setMonth(d.getMonth()-mAgo);d.setDate(1+Math.floor(rnd()*26));
+        const fecha=d.toISOString().slice(0,10);const ageD=(today-d)/864e5;
+        let ent=ageD>2?"entregado":"pendiente";
+        if(ent==="entregado"&&rnd()<0.05)ent="no_entregado";   // ~5% no entregados (igual que el seed)
+        const fact=ent==="entregado";const num=n++;
+        const fields=portales[k].map.map(f=>{let conf=Math.min(.99,Math.max(.55,f.conf+(rnd()-.5)*0.08));let valid=conf>=.66?1:0;if(rnd()<0.04){conf=.55+rnd()*.12;valid=0;}return [f.dst,+conf.toFixed(2),valid];});
+        out.push({id:"ORD-"+num,cliente:suc,portal:k,modo:"auto_IA",fields,
+          fecha,monto:Math.round(baseMonto*scale*(0.85+rnd()*0.3)),
+          estatus_entrega:ent,estatus_factura:fact?"facturado":"no_facturado",
+          numero_factura:fact?("F-"+String(num).padStart(5,"0")):null,fecha_entrega_estimada:fecha});
+      }
+    }
+  });});
   return out;}
 let ALERTAS_NEG=[
   {sev:"bad",kind:"churn",cliente:"Sanborns Pabellón",txt:"Pidió 38% menos vol. que su promedio 8-sem. → riesgo de baja"},
@@ -307,6 +404,10 @@ let PORTALES=JSON.parse(JSON.stringify(PORTALES_DEMO));
 let PEDIDOS=genPedidos(PORTALES);
 let CURRENT=Object.keys(PORTALES)[0];
 let FILTRO="ALL";
+let FFILTRO="ALL";              // filtro de la pestaña Facturación
+let MAPAS=[];                   // confianza_global por portal (mapas_aprendidos)
+let INSIGHTS=null;              // recomendaciones que escribe el motor (Gemini) en engine_output.json
+let INSIGHTS_MODEL="";
 
 const UMBRAL=0.85;
 const W={client_id:2,producto_nombre:1,cantidad:1,precio_unitario:1,fecha_entrega_estimada:1};
@@ -337,7 +438,8 @@ function renderImpact(){
 }
 
 function renderSelect(){sel.innerHTML=Object.entries(PORTALES).map(([k,v])=>`<option value="${k}">${v.nombre}</option>`).join("");if(!PORTALES[CURRENT])CURRENT=Object.keys(PORTALES)[0];sel.value=CURRENT;
-  filtro.innerHTML=`<option value="ALL">Todos los portales</option>`+Object.entries(PORTALES).map(([k,v])=>`<option value="${k}">${v.nombre}</option>`).join("");filtro.value=FILTRO;}
+  filtro.innerHTML=`<option value="ALL">Todos los portales</option>`+Object.entries(PORTALES).map(([k,v])=>`<option value="${k}">${v.nombre}</option>`).join("");filtro.value=FILTRO;
+  ffiltro.innerHTML=`<option value="ALL">Todos los portales</option>`+Object.entries(PORTALES).map(([k,v])=>`<option value="${k}">${v.nombre}</option>`).join("");ffiltro.value=FFILTRO;}
 function renderMini(){
   const confs=PEDIDOS.map(confiab),avg=confs.reduce((a,b)=>a+b,0)/confs.length;
   let okF=0,tot=0;PEDIDOS.forEach(p=>p.fields.forEach(([,,v])=>{tot++;if(v)okF++;}));

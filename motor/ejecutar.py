@@ -267,8 +267,28 @@ def aplicar_transformaciones(pedido, mapa, cur, cliente_portal=None):
         for campo in ["cantidad", "precio_unitario"]:
             info = _exigir(indice, campo)
             valor_origen = prod.get(info["origen"])
+            transf = info["transf"]
+
+            # 'calculado' anula el valor (return None): está pensado para campos que
+            # Arca DERIVA sola (ej. importe). Si el LLM (no determinista) lo aplicó a
+            # un campo que SÍ trae dato del portal, lo tratamos como 'directa' para no
+            # perder el valor real. Mismo criterio de robustez que con 'split'/'sku'.
+            if transf == "calculado":
+                print(f"[AVISO] '{campo}' venía marcado como 'calculado' en el mapa; "
+                      f"se trata como 'directa' (usa el valor del portal: {valor_origen!r}).")
+                transf = "directa"
+
+            # Guard: cantidad y precio deben traer un valor del portal. Si llegó
+            # vacío/None (portal sin llenar o campo no leído), avisamos CLARO
+            # nombrando el producto, en vez de tronar feo con int()/float() de None.
+            if valor_origen is None or str(valor_origen).strip() == "":
+                raise ValueError(
+                    f"Falta '{campo}' del producto '{nombre}' en el portal del cliente. "
+                    f"Complétalo y reintenta."
+                )
+
             item[campo] = aplicar_transformacion(
-                info["transf"], valor_origen, nombre, cur, unidad
+                transf, valor_origen, nombre, cur, unidad
             )
 
         # PRECIO POR PIEZA: si la unidad es Caja, el precio venía POR CAJA, así
