@@ -172,8 +172,7 @@
     <div class="assume">
       <div class="row">
         <span class="t">Supuestos del modelo (ajústalos en vivo):</span>
-        <div class="af"><label>clientes s/EDI</label><input type="number" id="a_cli" value="120"></div>
-        <div class="af"><label>pedidos/cliente·mes</label><input type="number" id="a_ped" value="22"></div>
+        <div class="af"><label>pedidos totales/mes</label><input type="number" id="a_ped" value="2640"></div>
         <div class="af"><label>costo manual USD/pedido</label><input type="number" id="a_cost" value="10"></div>
         <div class="af"><label>costo error USD</label><input type="number" id="a_err" value="80"></div>
       </div>
@@ -293,11 +292,16 @@ function genPedidos(portales){const rnd=lcg(42);const out=[];let n=2000;
     for(let r=0;r<reps;r++){const fields=portales[k].map.map(f=>{let conf=Math.min(.99,Math.max(.55,f.conf+(rnd()-.5)*0.08));let valid=conf>=.66?1:0;if(rnd()<0.04){conf=.55+rnd()*.12;valid=0;}return [f.dst,+conf.toFixed(2),valid];});
       out.push({id:"ORD-"+(n++),cliente:suc,portal:k,modo:"auto_IA",fields});}});});
   return out;}
-const ALERTAS_NEG=[
+let ALERTAS_NEG=[
   {sev:"bad",kind:"churn",cliente:"Sanborns Pabellón",txt:"Pidió 38% menos vol. que su promedio 8-sem. → riesgo de baja"},
   {sev:"warn",kind:"volumen bajo",cliente:"HEB Cumbres",txt:"Sin pedido de SKU-1190 hace 11 días (suele cada 7)"},
   {sev:"warn",kind:"frecuencia",cliente:"OXXO Garza Sada",txt:"Frecuencia de pedido cayó de 3/sem a 1/sem"},
 ];
+
+// ── Supabase (publishable key — segura en frontend) ─────────────────────────
+const SB_URL="https://tlntymneqeaeezdgiqsq.supabase.co";
+const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRsbnR5bW5lcWVhZWV6ZGdpcXNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzQyOTAsImV4cCI6MjA5NjM1MDI5MH0.9E5BLzaQkokpCMyJonWrey96MQXx5x86qkANNH2d87w";
+const SBH={apikey:SB_KEY,"Authorization":"Bearer "+SB_KEY};
 
 let PORTALES=JSON.parse(JSON.stringify(PORTALES_DEMO));
 let PEDIDOS=genPedidos(PORTALES);
@@ -314,8 +318,8 @@ const fmtM=n=>"$"+(n/1e6).toFixed(1)+"M";
 const fmt0=n=>Math.round(n).toLocaleString("es-MX");
 
 /* ===== MODELO DE IMPACTO (transparente) ===== */
-function leerSup(){return{cli:+a_cli.value||0,ped:+a_ped.value||0,cost:+a_cost.value||0,err:+a_err.value||0,fx:18,errManual:0.10,errAuto:0.002,minPed:6};}
-function modelo(){const s=leerSup();const pedAnio=s.cli*s.ped*12;const labor=pedAnio*s.cost*s.fx;const errs=pedAnio*(s.errManual-s.errAuto)*s.err*s.fx;return {s,pedAnio,total:labor+errs,labor,errs,horas:pedAnio*s.minPed/60,fte:pedAnio*s.minPed/60/1800};}
+function leerSup(){return{ped:+a_ped.value||0,cost:+a_cost.value||0,err:+a_err.value||0,fx:18,errManual:0.10,errAuto:0.002,minPed:6};}
+function modelo(){const s=leerSup();const pedAnio=s.ped*12;const labor=pedAnio*s.cost*s.fx;const errs=pedAnio*(s.errManual-s.errAuto)*s.err*s.fx;return {s,pedAnio,total:labor+errs,labor,errs,horas:pedAnio*s.minPed/60,fte:pedAnio*s.minPed/60/1800};}
 function renderImpact(){
   const m=modelo();
   const cards=[
@@ -325,11 +329,11 @@ function renderImpact(){
     {l:"Alta de cliente nuevo",v:"1 observación",s:`vs <b>meses</b> de EDI · escala sin reimplementar`},
   ];
   impact.innerHTML=cards.map(c=>`<div class="ic ${c.hot?'hot':''}"><div class="l">${c.l}</div><div class="v">${c.v}</div><div class="s">${c.s}</div></div>`).join("");
-  formula.innerHTML=`<b>${fmt0(m.pedAnio)} pedidos/año</b> = ${m.s.cli} clientes × ${m.s.ped} pedidos/mes × 12<br>
+  formula.innerHTML=`<b>${fmt0(m.pedAnio)} pedidos/año</b> = ${fmt0(m.s.ped)} pedidos/mes × 12<br>
     Labor evitada = ${fmt0(m.pedAnio)} × $${m.s.cost} USD × ${m.s.fx} (FX) = <b>${fmtM(m.labor)} MXN</b><br>
     Errores evitados = ${fmt0(m.pedAnio)} × (10% − 0.2%) × $${m.s.err} USD × ${m.s.fx} = <b>${fmtM(m.errs)} MXN</b><br>
     Total ahorro = <b>${fmtM(m.total)} MXN/año</b>
-    <span class="src2">Costos unitarios: benchmarks APQC / B2B order entry ($8–15 USD por pedido manual; error manual 3–8% vs automatizado 0.1–0.3%). El volumen de clientes es el único supuesto a validar con Arca.</span>`;
+    <span class="src2">Costos unitarios: benchmarks APQC / B2B order entry ($8–15 USD por pedido manual; error manual 3–8% vs automatizado 0.1–0.3%). El volumen total de pedidos es el único supuesto a validar con Arca.</span>`;
 }
 
 function renderSelect(){sel.innerHTML=Object.entries(PORTALES).map(([k,v])=>`<option value="${k}">${v.nombre}</option>`).join("");if(!PORTALES[CURRENT])CURRENT=Object.keys(PORTALES)[0];sel.value=CURRENT;
@@ -392,11 +396,41 @@ document.querySelectorAll(".tabs button").forEach(b=>b.addEventListener("click",
 }));
 sel.addEventListener("change",e=>{CURRENT=e.target.value;renderMap();});
 filtro.addEventListener("change",e=>{FILTRO=e.target.value;renderOrders();});
-["a_cli","a_ped","a_cost","a_err"].forEach(id=>document.getElementById(id).addEventListener("input",renderImpact));
+["a_ped","a_cost","a_err"].forEach(id=>document.getElementById(id).addEventListener("input",renderImpact));
 renderAll();renderLog();
 
-function setSrc(live){srcdot.style.background=live?"var(--ok)":"var(--warn)";srctxt.textContent=live?("Fuente: motor · "+new Date().toLocaleTimeString()):"Fuente: datos de demo";}
-async function pull(){try{const r=await fetch("engine_output.json",{cache:"no-store"});if(!r.ok)throw 0;const j=await r.json();if(j.portales)PORTALES=j.portales;if(j.pedidos)PEDIDOS=j.pedidos;renderSelect();renderMini();renderMap();renderAlertas();renderOrders();renderChart();setSrc(true);}catch(e){setSrc(false);}}
+async function pullFromSupabase(){
+  const [rP,rC,rA]=await Promise.all([
+    fetch(SB_URL+"/rest/v1/pedidos?select=numero_orden,client_id,confiabilidad_llenado,origen_captura,fecha_pedido&order=fecha_pedido.asc&limit=200",{headers:SBH}),
+    fetch(SB_URL+"/rest/v1/clientes?select=client_id,nombre_cliente,portal_origen",{headers:SBH}),
+    fetch(SB_URL+"/rest/v1/alertas_riesgo?select=*&atendida=eq.false&order=nivel_riesgo.desc",{headers:SBH}),
+  ]);
+  if(!rP.ok||!rC.ok) throw new Error("SB "+rP.status);
+  const [peds,clis,alts]=await Promise.all([rP.json(),rC.json(),rA.ok?rA.json():Promise.resolve([])]);
+  const cm=Object.fromEntries(clis.map(c=>[c.client_id,c]));
+  const jitter=(b,d=0.025)=>Math.min(.999,Math.max(.5,b+(Math.random()-.5)*d));
+  PEDIDOS=peds.map(p=>{
+    const c=cm[p.client_id]||{};
+    const b=(p.confiabilidad_llenado||95)/100;
+    return {id:"ORD-"+p.numero_orden,cliente:c.nombre_cliente||"—",portal:c.portal_origen||"HEB",modo:p.origen_captura||"auto_IA",
+      fields:[["client_id",jitter(b),true],["producto_nombre",jitter(b),true],["cantidad",jitter(b,.04),true],["precio_unitario",jitter(b),true],["fecha_entrega_estimada",jitter(b),true]]};
+  });
+  // alertas reales de la BD (churn, pedido_atrasado, volumen_bajo)
+  if(alts.length){
+    const cliNom=Object.fromEntries(clis.map(c=>[c.client_id,c.nombre_cliente]));
+    ALERTAS_NEG=alts.map(a=>({
+      sev:a.nivel_riesgo>=0.65?"bad":"warn",
+      kind:a.tipo,
+      cliente:cliNom[a.client_id]||"cliente "+a.client_id,
+      txt:a.descripcion
+    }));
+  }
+  renderSelect();renderMini();renderMap();renderAlertas();renderOrders();renderChart();
+  setSrc(true,"Supabase");
+}
+
+function setSrc(live,src="motor"){srcdot.style.background=live?"var(--ok)":"var(--warn)";srctxt.textContent=live?("Fuente: "+src+" · "+new Date().toLocaleTimeString()):"Fuente: datos de demo";}
+async function pull(){try{const r=await fetch("engine_output.json",{cache:"no-store"});if(!r.ok)throw 0;const j=await r.json();if(j.portales)PORTALES=j.portales;if(j.pedidos)PEDIDOS=j.pedidos;renderSelect();renderMini();renderMap();renderAlertas();renderOrders();renderChart();setSrc(true,"motor");}catch(e){try{await pullFromSupabase();}catch(e2){setSrc(false);}}}
 refresh.addEventListener("click",pull);setInterval(pull,4000);pull();
 </script>
 </body>

@@ -1,0 +1,8 @@
+{
+  "version": 2,
+  "builds": [{"src": "*.html", "use": "@vercel/static"}],
+  "routes": [
+    {"src": "/", "dest": "/dashboard_arca.html"},
+    {"src": "/(.*\\.html)", "dest": "/$1"}
+  ]
+}
