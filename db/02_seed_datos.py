@@ -60,10 +60,22 @@ PRODUCTOS = [
     ("SKU-0002", "Coca-Cola Sin Azúcar 600ml", "Refresco", "Botella 600ml", 18.00, 24),
     ("SKU-0003", "Sprite 600ml",         "Refresco", "Botella 600ml", 17.00, 24),
     ("SKU-0004", "Agua Ciel 1L",         "Agua",     "Botella 1L",    12.00, 12),
-    ("SKU-0005", "Powerade Mora Azul 500ml", "Hidratante", "Botella 500ml", 20.00, 12),
+    ("SKU-0005", "Powerade Mora Azul 600ml", "Hidratante", "Botella 600ml", 20.00, 12),
     ("SKU-0006", "Bokados Mix 60g",      "Botana",   "Bolsa 60g",      15.00, 30),
     ("SKU-0007", "Topo Chico 355ml",     "Agua Mineral", "Botella 355ml", 16.00, 24),
     ("SKU-0008", "Fuze Tea Durazno 600ml", "Té",     "Botella 600ml",  19.00, 24),
+    # Productos reales de Arca presentes en los portales de cliente (HEB).
+    # Agregar productos reales NO es hardcodear: completa el catálogo de Arca.
+    ("SKU-0009", "Fanta Naranja 600ml",  "Refresco", "Botella 600ml", 17.00, 24),
+    ("SKU-0010", "Fresca Toronja 600ml", "Refresco", "Botella 600ml", 17.00, 24),
+    ("SKU-0011", "Agua Ciel 600ml",      "Agua",     "Botella 600ml", 11.00, 24),
+    ("SKU-0012", "Ciel Mineralizada 600ml", "Agua Mineral", "Botella 600ml", 12.00, 24),
+    ("SKU-0013", "Té Verde Limón 600ml", "Té",       "Botella 600ml", 18.00, 24),
+    ("SKU-0014", "Del Valle Manzana 413ml", "Jugo",  "Botella 413ml", 13.00, 24),
+    ("SKU-0015", "Del Valle Durazno 413ml", "Jugo",  "Botella 413ml", 13.00, 24),
+    ("SKU-0016", "Santa Clara Fresa 200ml", "Lácteo", "Botella 200ml",  9.50, 27),
+    ("SKU-0017", "Santa Clara Chocolate 200ml", "Lácteo", "Botella 200ml", 9.50, 27),
+    ("SKU-0018", "Monster Energy 473ml", "Energético", "Lata 473ml",   36.00, 24),
 ]
 
 # ---------------------------------------------------------------------

@@ -52,8 +52,8 @@ from playwright.sync_api import sync_playwright
 # Mismo patrón que leer_portal_*.py: hay que correr antes
 #     python -m http.server 3000 -d fronts
 PORTALES = {
-    "sanborns": "http://localhost:3000/portal_sanborns.html",
-    "heb": "http://localhost:3000/portal_heb.html",
+    "sanborns": "http://localhost:3000/sanborns_portal.html",
+    "heb": "http://localhost:3000/heb_portal.html",
 }
 
 

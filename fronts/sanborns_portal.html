@@ -1,42 +1,429 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Portal Sanborns - Pedidos (DUMMY)</title>
-  <style>
-    body { font-family: Georgia, serif; max-width: 700px; margin: 40px auto; padding: 20px; }
-    h1 { color: #0a4d2e; }  /* verde Sanborns */
-    .caja { border: 1px solid #ddd; border-radius: 8px; padding: 24px; }
-    label { display: block; margin: 12px 0 4px; font-weight: bold; }
-    input { padding: 6px; width: 60%; }
-    button { background: #0a4d2e; color: white; border: none; padding: 10px 20px;
-             border-radius: 6px; cursor: pointer; font-size: 14px; margin-top: 16px; }
-    .nota { color: #888; font-size: 12px; }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sanborns · Abastecimiento de Proveedores</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --red:#D81E1A; --red2:#B4161A; --red-deep:#8E1014; --red-soft:#fdeded; --rose:#fbe9ea;
+    --ink:#241b1c; --muted:#7b7173; --line:#ece5e5; --soft:#f6f1f1; --bg:#f3eded;
+    --ok:#0d7d4d; --ok-soft:#e6f4ee;
+    --sans:'Hanken Grotesk',system-ui,sans-serif; --disp:'Bricolage Grotesque',system-ui,sans-serif; --mono:'IBM Plex Mono',monospace;
+    --r-sm:10px; --r:14px; --r-lg:18px;
+    --shadow:0 1px 2px rgba(142,16,20,.05),0 10px 30px -14px rgba(142,16,20,.2);
+    --shadow-card:0 1px 2px rgba(142,16,20,.06),0 14px 38px -18px rgba(142,16,20,.24);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:var(--sans);color:var(--ink);-webkit-font-smoothing:antialiased;min-height:100vh;
+    background:
+      radial-gradient(820px 360px at 84% -10%, rgba(216,30,26,.08), transparent 58%),
+      radial-gradient(circle at 1px 1px, rgba(142,16,20,.05) 1px, transparent 0) 0 0/24px 24px,
+      var(--bg);
+  }
+
+  .topbar{
+    background:linear-gradient(180deg,var(--red),var(--red2));
+    height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 30px;
+    box-shadow:0 1px 0 rgba(0,0,0,.12),0 4px 18px -8px rgba(142,16,20,.55);position:sticky;top:0;z-index:50}
+  .brand{display:flex;align-items:center;gap:16px}
+  .brand .logo{display:flex;align-items:center}
+  .brand .logo img{height:38px;display:block}
+  .brand .mod{font-family:var(--disp);font-weight:700;font-size:11px;color:rgba(255,255,255,.94);letter-spacing:.12em;text-transform:uppercase;border-left:1px solid rgba(255,255,255,.4);padding-left:16px}
+  .sess{font-size:12px;color:rgba(255,255,255,.85);font-weight:500}
+
+  .shell{max-width:1000px;margin:30px auto;padding:0 24px 70px}
+
+  /* stepper */
+  .stepper{display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);padding:20px 28px;margin-bottom:24px;box-shadow:var(--shadow)}
+  .step{display:flex;align-items:center;gap:12px;flex:1;position:relative}
+  .step:not(:last-child)::after{content:"";position:absolute;top:18px;left:48px;right:14px;height:2px;background:var(--line);transition:.3s}
+  .step.done:not(:last-child)::after{background:linear-gradient(90deg,#e3726e,var(--red))}
+  .scirc{width:36px;height:36px;border-radius:50%;background:var(--soft);border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-weight:800;font-size:14px;color:var(--muted);flex-shrink:0;z-index:1;transition:.25s}
+  .step.active .scirc{background:var(--red);border-color:var(--red);color:#fff;box-shadow:0 0 0 4px var(--red-soft)}
+  .step.done .scirc{background:#e3726e;border-color:#e3726e;color:#fff}
+  .slabel{font-size:11.5px;font-weight:700;color:var(--muted);line-height:1.25;letter-spacing:.01em;position:relative;z-index:2;background:#fff;padding-right:10px}
+  .step.active .slabel,.step.done .slabel{color:var(--ink)}
+
+  .panel{background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow-card);overflow:hidden;display:none}
+  .panel.show{display:block;animation:fade .28s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .phd{padding:22px 30px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#fff,#fdf8f8)}
+  .phd h2{font-family:var(--disp);font-size:21px;font-weight:800;letter-spacing:-.02em}
+  .phd p{font-size:13px;color:var(--muted);margin-top:5px}
+  .pbd{padding:28px 30px}
+
+  label{display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px}
+  input,select{width:100%;font-family:var(--sans);font-size:14px;font-weight:500;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:var(--r-sm);padding:11px 13px;transition:border-color .15s,box-shadow .15s}
+  input:focus,select:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px rgba(216,30,26,.14)}
+  input[readonly]{background:var(--soft);color:var(--muted);cursor:default}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px}
+  .field{margin-bottom:20px}.field:last-child{margin-bottom:0}
+
+  /* catalog */
+  .search{margin-bottom:18px}
+  .catalog{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .citem{display:flex;align-items:center;gap:13px;border:1.5px solid var(--line);border-radius:var(--r);padding:12px 15px;cursor:pointer;transition:.15s;background:#fff}
+  .citem:hover{border-color:var(--red);background:var(--soft);transform:translateY(-1px)}
+  .citem.sel{border-color:var(--red);background:var(--rose);box-shadow:0 0 0 3px rgba(216,30,26,.1)}
+  .cchk{width:22px;height:22px;border-radius:7px;border:2px solid var(--line);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;font-weight:800;transition:.15s}
+  .citem.sel .cchk{background:var(--red);border-color:var(--red)}
+  .cthumb{flex-shrink:0;line-height:0}
+  .cthumb svg{display:block;border-radius:13px}
+  .cinfo .cn{font-weight:700;font-size:13.5px;line-height:1.2}
+  .cinfo .cc{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:3px}
+  .selcount{margin-top:16px;font-size:12.5px;color:var(--muted)}
+  .selcount b{color:var(--red);font-weight:700}
+
+  /* qty rows */
+  .qrow{display:grid;grid-template-columns:1fr 130px 130px 140px;gap:14px;align-items:end;padding:16px 0;border-bottom:1px solid var(--soft)}
+  .qrow:last-child{border-bottom:none}
+  .qthumb{flex-shrink:0;line-height:0}
+  .qthumb svg{display:block;width:40px;height:40px;border-radius:12px}
+  .qrow .qn{font-weight:700;font-size:14px}
+  .qrow .qc{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:4px}
+  .hintbox{margin-top:20px;background:#faf3f3;border:1px solid var(--line);border-left:3px solid var(--red);border-radius:var(--r-sm);padding:13px 16px;font-size:12.5px;color:#6b5a5b;line-height:1.5}
+
+  /* review */
+  .rev{width:100%;border-collapse:collapse;margin-bottom:20px}
+  .rev th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700;padding:10px 13px;background:var(--soft);border-bottom:1px solid var(--line)}
+  .rev th:first-child{border-top-left-radius:var(--r-sm)}.rev th:last-child{border-top-right-radius:var(--r-sm)}
+  .rev td{padding:12px 13px;font-size:13px;border-bottom:1px solid var(--soft)}
+  .rev .mono{font-family:var(--mono);font-size:12px}
+  .revmeta{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:6px}
+  .rm-item{background:var(--soft);border:1px solid var(--line);border-radius:var(--r);padding:13px 16px}
+  .rm-item .l{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700}
+  .rm-item .v{font-weight:700;font-size:14px;margin-top:4px}
+
+  .nav{display:flex;justify-content:space-between;align-items:center;padding:20px 30px;border-top:1px solid var(--line);background:linear-gradient(180deg,#fdf8f8,#faf3f3)}
+  .btn{font-family:var(--disp);font-weight:800;font-size:14px;border:none;border-radius:999px;padding:12px 30px;cursor:pointer;transition:transform .1s,box-shadow .15s,background .15s}
+  .btn:active{transform:translateY(1px)}
+  .btn-primary{background:var(--red);color:#fff;box-shadow:0 4px 16px -3px rgba(216,30,26,.42)}
+  .btn-primary:hover{background:var(--red2);box-shadow:0 6px 20px -4px rgba(216,30,26,.5)}
+  .btn-amber{background:var(--red-deep);color:#fff;box-shadow:0 4px 18px -3px rgba(142,16,20,.5)}
+  .btn-amber:hover{background:#730d11;box-shadow:0 6px 24px -4px rgba(142,16,20,.6)}
+  .btn-ghost{background:#fff;color:var(--ink);border:1.5px solid var(--line)}
+  .btn-ghost:hover{border-color:var(--muted);background:var(--soft)}
+  .btn:disabled{opacity:.4;cursor:default}
+
+  /* success */
+  .done-screen{display:none;background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);padding:52px;text-align:center;box-shadow:var(--shadow-card)}
+  .done-screen.show{display:block;animation:fade .3s ease}
+  .done-screen .ring{width:66px;height:66px;border-radius:50%;background:var(--ok-soft);border:2px solid #a8e6c9;color:var(--ok);display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-size:24px;font-weight:800;margin:0 auto 20px}
+  .done-screen h2{font-family:var(--disp);font-size:23px;font-weight:800;letter-spacing:-.02em}
+  .done-screen p{font-size:14px;color:var(--muted);margin-top:9px}
+  .done-screen .folio{font-family:var(--mono);font-size:13px;color:var(--red);margin-top:16px;background:var(--soft);border:1px solid var(--line);display:inline-block;padding:9px 18px;border-radius:999px}
+
+  /* modal conversión caja */
+  .modal{display:none;position:fixed;inset:0;background:rgba(60,8,10,.5);backdrop-filter:blur(3px);align-items:center;justify-content:center;z-index:100}
+  .modal.show{display:flex;animation:fade .2s ease}
+  .modal .box{background:#fff;border-radius:var(--r-lg);padding:30px;width:440px;max-width:90vw;box-shadow:0 30px 80px -20px rgba(60,8,10,.42)}
+  .modal h3{font-family:var(--disp);font-size:18px;font-weight:800;color:var(--red);margin-bottom:11px;display:flex;align-items:center;gap:9px}
+  .modal h3::before{content:"24";font-family:var(--mono);font-size:12px;width:30px;height:30px;border-radius:9px;background:var(--rose);color:var(--red);display:flex;align-items:center;justify-content:center;font-weight:600}
+  .modal p{font-size:13.5px;color:var(--ink);line-height:1.7;margin-bottom:24px}
+  .modal p b{color:var(--red)}
+  .modal .mbtns{display:flex;gap:12px;justify-content:flex-end}
+</style>
 </head>
 <body>
-  <h1>Sanborns — Captura de Pedido</h1>
-  <p class="nota">Nota: las cantidades se piden en CAJAS (no piezas).</p>
 
-  <div class="caja" id="formulario">
-    <label>client_id</label>
-    <input id="client_id" value="2">
-
-    <label>articulo</label>
-    <input id="articulo" value="Bokados Mix 60g">
-
-    <label>unidades_pedidas (cajas)</label>
-    <input id="unidades_pedidas" value="4">
-
-    <label>costo</label>
-    <input id="costo" value="15.00">
-
-    <label>fecha_requerida</label>
-    <input id="fecha_requerida" value="2025-06-25">
-
-    <br>
-    <button id="btn-guardar" onclick="document.getElementById('resultado').innerText='Pedido guardado ✓'">Guardar pedido</button>
-    <p id="resultado"></p>
+<div class="topbar">
+  <div class="brand">
+    <span class="logo"><img src="data:image/png;base64,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" alt="Sanborns"></span>
+    <span class="mod">ABASTECIMIENTO DE PROVEEDORES</span>
   </div>
+  <div class="sess">Comprador institucional · Sesión 0x7F</div>
+</div>
+
+<div class="shell">
+
+  <!-- STEPPER -->
+  <div class="stepper" id="stepper">
+    <div class="step" data-i="0"><div class="scirc">1</div><div class="slabel">Identificación</div></div>
+    <div class="step" data-i="1"><div class="scirc">2</div><div class="slabel">Catálogo</div></div>
+    <div class="step" data-i="2"><div class="scirc">3</div><div class="slabel">Cantidades</div></div>
+    <div class="step" data-i="3"><div class="scirc">4</div><div class="slabel">Programación</div></div>
+    <div class="step" data-i="4"><div class="scirc">5</div><div class="slabel">Revisión</div></div>
+  </div>
+
+  <!-- FASE 1 -->
+  <div class="panel" data-step="0">
+    <div class="phd"><h2>Identificación del cliente</h2><p>Selecciona la cuenta institucional que emite el pedido.</p></div>
+    <div class="pbd">
+      <div class="grid2">
+        <div class="field"><label>Cuenta / cliente</label>
+          <select id="client_id" data-field="client_id">
+            <option value="2">2 — Sanborns Centro Histórico</option>
+            <option value="5">5 — Sanborns Plaza Galerías</option>
+            <option value="9">9 — Sanborns San Ángel</option>
+          </select>
+        </div>
+        <div class="field"><label>Comprador responsable</label><input id="comprador" value="L. Hernández · Abastecimiento"></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>Centro de recepción</label><input id="centro" value="Almacén Central — Vallejo"></div>
+        <div class="field"><label>Proveedor</label><input value="Arca Continental S.A.B. de C.V." readonly></div>
+      </div>
+    </div>
+    <div class="nav"><span></span><button class="btn btn-primary" id="next0" onclick="next(0)">Siguiente</button></div>
+  </div>
+
+  <!-- FASE 2 -->
+  <div class="panel" data-step="1">
+    <div class="phd"><h2>Selección de artículos</h2><p>Agrega los artículos del catálogo del proveedor. Los nombres son los del catálogo Sanborns.</p></div>
+    <div class="pbd">
+      <div class="search"><input id="buscar" placeholder="Buscar artículo…" oninput="renderCat()"></div>
+      <div class="catalog" id="catalog"></div>
+      <div class="selcount">Seleccionados: <b id="seln">0</b> artículo(s)</div>
+    </div>
+    <div class="nav"><button class="btn btn-ghost" onclick="back(1)">Atrás</button><button class="btn btn-primary" id="next1" onclick="next(1)">Siguiente</button></div>
+  </div>
+
+  <!-- FASE 3 -->
+  <div class="panel" data-step="2">
+    <div class="phd"><h2>Cantidades por artículo</h2><p>Captura las unidades solicitadas. Puedes registrarlas por pieza o por caja.</p></div>
+    <div class="pbd">
+      <div id="qrows"></div>
+    </div>
+    <div class="nav"><button class="btn btn-ghost" onclick="back(2)">Atrás</button><button class="btn btn-primary" onclick="next(2)">Siguiente</button></div>
+  </div>
+
+  <!-- FASE 4 -->
+  <div class="panel" data-step="3">
+    <div class="phd"><h2>Programación de entrega</h2><p>Define las fechas y la ventana logística del pedido.</p></div>
+    <div class="pbd">
+      <div class="grid3">
+        <div class="field"><label>Fecha de solicitud</label><input id="fecha_solicitud" readonly></div>
+        <div class="field"><label>Fecha requerida</label><input type="date" id="fecha_requerida" data-field="fecha_requerida"></div>
+        <div class="field"><label>Ventana de entrega</label>
+          <select id="ventana"><option>Matutina (07:00–11:00)</option><option>Vespertina (13:00–17:00)</option></select>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>Prioridad</label>
+          <select id="prioridad"><option>Normal</option><option>Alta — reposición crítica</option></select>
+        </div>
+        <div class="field"><label>Días de crédito</label><input value="45 días" readonly></div>
+      </div>
+    </div>
+    <div class="nav"><button class="btn btn-ghost" onclick="back(3)">Atrás</button><button class="btn btn-primary" onclick="next(3)">Siguiente</button></div>
+  </div>
+
+  <!-- FASE 5 -->
+  <div class="panel" data-step="4">
+    <div class="phd"><h2>Revisión y confirmación</h2><p>Verifica el pedido antes de enviarlo al proveedor.</p></div>
+    <div class="pbd">
+      <table class="rev"><thead><tr><th>Artículo</th><th>Unidades</th><th>Unidad</th><th>Costo unit.</th></tr></thead><tbody id="revbody"></tbody></table>
+      <div class="revmeta">
+        <div class="rm-item"><div class="l">Cliente</div><div class="v" id="rev_cli"></div></div>
+        <div class="rm-item"><div class="l">Fecha requerida</div><div class="v" id="rev_fecha"></div></div>
+        <div class="rm-item"><div class="l">Ventana</div><div class="v" id="rev_ventana"></div></div>
+      </div>
+    </div>
+    <div class="nav"><button class="btn btn-ghost" onclick="back(4)">Atrás</button><button class="btn btn-amber" onclick="confirmar()">Confirmar pedido</button></div>
+  </div>
+
+  <!-- SUCCESS -->
+  <div class="done-screen" id="done">
+    <div class="ring">OK</div>
+    <h2>Pedido enviado al proveedor</h2>
+    <p>El pedido quedó registrado. El motor de IA puede leerlo y capturarlo en el portal de Arca.</p>
+    <div class="folio" id="folio"></div>
+  </div>
+
+</div>
+
+<div class="modal" id="cajaModal">
+  <div class="box">
+    <h3>Conversión por caja</h3>
+    <p id="caja_info"></p>
+    <div class="mbtns">
+      <button class="btn btn-ghost" onclick="cancelarCaja()">Cancelar</button>
+      <button class="btn btn-amber" onclick="aplicarCaja()">Aceptar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// catálogo (nombres propios de Sanborns; el LLM debe mapearlos al SKU de Arca)
+const CAT=[
+  {articulo:"Refresco Cola 600 ml", cod:"SB-RC600", costo:432.00, kind:"botella", color:"#7a3b1d"},
+  {articulo:"Refresco Cola Sin Azúcar 600 ml", cod:"SB-RCZ600", costo:432.00, kind:"botella", color:"#2b2b2b"},
+  {articulo:"Refresco Lima-Limón 600 ml", cod:"SB-LL600", costo:408.00, kind:"botella", color:"#3aa856"},
+  {articulo:"Refresco Naranja 600 ml", cod:"SB-RN600", costo:408.00, kind:"botella", color:"#f0871f"},
+  {articulo:"Refresco Toronja 600 ml", cod:"SB-RT600", costo:420.00, kind:"botella", color:"#ef5a78"},
+  {articulo:"Agua Natural 600 ml", cod:"SB-AG600", costo:264.00, kind:"botella", color:"#2f9bd6"},
+  {articulo:"Agua Mineral 600 ml", cod:"SB-AM600", costo:288.00, kind:"botella", color:"#56b3e0"},
+  {articulo:"Agua Saborizada Limón 1 L", cod:"SB-ASL1L", costo:360.00, kind:"botella", color:"#9bcf3f"},
+  {articulo:"Té Sabor Durazno 600 ml", cod:"SB-TD600", costo:456.00, kind:"botella", color:"#e0962f"},
+  {articulo:"Té Verde Limón 600 ml", cod:"SB-TV600", costo:456.00, kind:"botella", color:"#7cae3f"},
+  {articulo:"Jugo de Manzana 413 ml", cod:"SB-JM413", costo:312.00, kind:"botella", color:"#d9a441"},
+  {articulo:"Leche Saborizada Fresa 200 ml", cod:"SB-LF200", costo:228.00, kind:"carton", color:"#e98aa6"},
+  {articulo:"Leche Saborizada Chocolate 200 ml", cod:"SB-LC200", costo:228.00, kind:"carton", color:"#6f4a2f"},
+  {articulo:"Bebida Energética 473 ml", cod:"SB-BE473", costo:864.00, kind:"lata", color:"#1f2937"},
+  {articulo:"Bebida Energética Sin Azúcar 473 ml", cod:"SB-BEZ473", costo:864.00, kind:"lata", color:"#8c97a3"},
+];
+
+// miniaturas de producto (SVG estilizado, sin marcas reales)
+function thumb(p){
+  const c=p.color;
+  const tile=`<rect width="44" height="44" rx="13" fill="${c}" opacity="0.13"/>`;
+  if(p.kind==='lata'){
+    return `<svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg">${tile}`+
+      `<rect x="15" y="9" width="14" height="26" rx="4" fill="${c}"/>`+
+      `<ellipse cx="22" cy="9.5" rx="7" ry="2.4" fill="${c}"/>`+
+      `<rect x="15" y="19" width="14" height="7" fill="#fff" opacity="0.88"/></svg>`;
+  }
+  if(p.kind==='carton'){
+    return `<svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg">${tile}`+
+      `<path d="M16 14 L22 9 L28 14 V35 H16 Z" fill="${c}"/>`+
+      `<rect x="16" y="22" width="12" height="7" fill="#fff" opacity="0.88"/></svg>`;
+  }
+  return `<svg viewBox="0 0 44 44" width="44" height="44" xmlns="http://www.w3.org/2000/svg">${tile}`+
+    `<rect x="19.5" y="6" width="5" height="4.5" rx="1.4" fill="${c}"/>`+
+    `<path d="M18 10.5 h8 v3 q3 1.8 3 5.6 V31 q0 4 -4 4 h-6 q-4 0 -4 -4 V19.1 q0 -3.8 3 -5.6 Z" fill="${c}"/>`+
+    `<rect x="15.5" y="23" width="13" height="7" rx="1.5" fill="#fff" opacity="0.88"/></svg>`;
+}
+
+let step=0;
+let sel={};        // articulo -> {qty, unidad, costo}
+const order={};
+
+function renderStepper(){
+  [...document.querySelectorAll('.step')].forEach(s=>{
+    const i=+s.dataset.i; s.classList.toggle('active',i===step); s.classList.toggle('done',i<step);
+  });
+}
+function showPanel(){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('show',+p.dataset.step===step));
+  document.getElementById('done').classList.remove('show');
+  renderStepper(); window.scrollTo({top:0,behavior:'smooth'});
+}
+function renderCat(){
+  const q=(document.getElementById('buscar').value||'').toLowerCase();
+  const c=document.getElementById('catalog'); c.innerHTML='';
+  CAT.filter(x=>x.articulo.toLowerCase().includes(q)).forEach(x=>{
+    const on=!!sel[x.articulo];
+    const d=document.createElement('div');
+    d.className='citem'+(on?' sel':'');
+    d.innerHTML=`<div class="cchk">${on?'✓':''}</div><div class="cthumb">${thumb(x)}</div><div class="cinfo"><div class="cn">${x.articulo}</div><div class="cc">${x.cod} · $${x.costo.toFixed(2)}/caja</div></div>`;
+    d.onclick=()=>{ if(sel[x.articulo]) delete sel[x.articulo]; else sel[x.articulo]={qty:10,unidad:'Pieza',costo:+(x.costo/24).toFixed(2)}; renderCat(); document.getElementById('seln').textContent=Object.keys(sel).length; };
+    c.appendChild(d);
+  });
+  document.getElementById('seln').textContent=Object.keys(sel).length;
+}
+function renderQty(){
+  const box=document.getElementById('qrows'); box.innerHTML='';
+  Object.keys(sel).forEach(art=>{
+    const it=sel[art];
+    const ci=CAT.find(c=>c.articulo===art);
+    const r=document.createElement('div'); r.className='qrow';
+    r.innerHTML=`
+      <div style="display:flex;align-items:center;gap:13px"><div class="qthumb">${thumb(ci)}</div><div><div class="qn">${art}</div><div class="qc">${ci.cod}</div></div></div>
+      <div><label>Unidades</label><input type="number" value="${it.qty}" data-art="${art}" class="q-u"></div>
+      <div><label>Unidad</label><select data-art="${art}" class="q-un"><option${it.unidad==='Caja'?' selected':''}>Caja</option><option${it.unidad==='Pieza'?' selected':''}>Pieza</option></select></div>
+      <div><label>Costo unit.</label><input type="number" step="0.01" value="${it.costo}" data-art="${art}" class="q-c"></div>`;
+    box.appendChild(r);
+  });
+  box.querySelectorAll('.q-u').forEach(e=>e.oninput=()=>sel[e.dataset.art].qty=+e.value||0);
+  box.querySelectorAll('.q-un').forEach(e=>e.onchange=()=>onUnidad(e));
+  box.querySelectorAll('.q-c').forEach(e=>e.oninput=()=>sel[e.dataset.art].costo=+e.value||0);
+}
+let _pendingCaja=null;
+function onUnidad(e){
+  const art=e.dataset.art, nv=e.value, cur=sel[art].unidad;
+  if(nv===cur) return;
+  if(nv==='Caja'){
+    _pendingCaja={art:art, selEl:e};
+    const pz=sel[art].qty*24, cajaPrice=+(sel[art].costo*24).toFixed(2);
+    document.getElementById('caja_info').innerHTML='1 caja contiene <b>24 piezas</b>.<br>Se registrarán <b>'+pz+'</b> piezas y el costo se ajustará a <b>$'+cajaPrice.toFixed(2)+'</b> por caja.';
+    document.getElementById('cajaModal').classList.add('show');
+  } else {
+    sel[art].qty=+(sel[art].qty/24);
+    sel[art].costo=+(sel[art].costo/24).toFixed(2);
+    sel[art].unidad='Pieza';
+    renderQty();
+  }
+}
+function aplicarCaja(){
+  if(_pendingCaja){
+    const art=_pendingCaja.art;
+    sel[art].qty=sel[art].qty*24;
+    sel[art].costo=+(sel[art].costo*24).toFixed(2);
+    sel[art].unidad='Caja';
+    _pendingCaja=null;
+    renderQty();
+  }
+  document.getElementById('cajaModal').classList.remove('show');
+}
+function cancelarCaja(){
+  if(_pendingCaja){ _pendingCaja.selEl.value=sel[_pendingCaja.art].unidad; _pendingCaja=null; }
+  document.getElementById('cajaModal').classList.remove('show');
+}
+function renderReview(){
+  const b=document.getElementById('revbody'); b.innerHTML='';
+  Object.keys(sel).forEach(art=>{
+    const it=sel[art];
+    b.innerHTML+=`<tr><td>${art}</td><td class="mono">${it.qty}</td><td>${it.unidad}</td><td class="mono">$${it.costo.toFixed(2)}</td></tr>`;
+  });
+  const cliSel=document.getElementById('client_id');
+  document.getElementById('rev_cli').textContent=cliSel.options[cliSel.selectedIndex].text;
+  const fr=document.getElementById('fecha_requerida').value;
+  document.getElementById('rev_fecha').textContent=fr?fr.split('-').reverse().join('/'):'—';
+  document.getElementById('rev_ventana').textContent=document.getElementById('ventana').value.split(' ')[0];
+}
+function next(from){
+  if(from===1 && Object.keys(sel).length===0){alert('Selecciona al menos un artículo.');return;}
+  step=from+1;
+  if(step===2) renderQty();
+  if(step===4) renderReview();
+  showPanel();
+}
+function back(from){step=from-1;showPanel();}
+function confirmar(){
+  const cliSel=document.getElementById('client_id');
+  const lineas=Object.keys(sel).map(art=>({
+    articulo:art,
+    unidades_pedidas:sel[art].qty,
+    unidad:sel[art].unidad,
+    costo:sel[art].costo
+  }));
+  const folio='SB-'+Math.floor(100000+Math.random()*899999);
+  const orden={
+    portal:"Sanborns", tabla_origen:"sanborns_pedidos", folio,
+    campos:{
+      client_id:cliSel.value,
+      fecha_requerida:document.getElementById('fecha_requerida').value,
+      lineas
+    },
+    fases:{
+      fecha_solicitud:document.getElementById('fecha_solicitud').dataset.iso,
+      ventana_entrega:document.getElementById('ventana').value,
+      prioridad:document.getElementById('prioridad').value
+    },
+    timestamp:new Date().toISOString()
+  };
+  localStorage.setItem('orden_origen_sanborns', JSON.stringify(orden));
+  console.log('ORDEN_ORIGEN_SANBORNS', JSON.stringify(orden,null,2));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('show'));
+  document.getElementById('folio').textContent='Folio: '+folio;
+  document.getElementById('done').classList.add('show');
+  step=5; renderStepper();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+// init
+(function(){
+  const t=new Date();
+  document.getElementById('fecha_solicitud').value=t.toLocaleDateString('es-MX',{day:'2-digit',month:'long',year:'numeric'});
+  document.getElementById('fecha_solicitud').dataset.iso=t.toISOString().slice(0,10);
+  const d=new Date();d.setDate(d.getDate()+3);document.getElementById('fecha_requerida').value=d.toISOString().slice(0,10);
+  renderCat(); showPanel();
+})();
+</script>
 </body>
 </html>

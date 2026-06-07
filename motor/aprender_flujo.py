@@ -36,7 +36,7 @@ from grabar_acciones import grabar_acciones, PORTALES
 from cerebro_aprender import aprender_mapa_desde_observacion, guardar_mapa
 
 # El portal de Arca (destino) para la observación. El portal NUEVO de las compañeras.
-URL_ARCA = "http://localhost:3000/portal_arca.html"
+URL_ARCA = "http://localhost:3000/arca_portal.html"
 
 
 def aprender_desde_observaciones(cliente_portal, obs_origen, obs_destino,

@@ -27,13 +27,14 @@ Cómo correr la prueba con un pedido dummy de Sanborns:
 """
 
 import os
+import unicodedata
 from datetime import datetime, date
 
 from dotenv import load_dotenv
 import psycopg2
 
 # URL del portal de Arca NUEVO (el de las compañeras). Se sirve en localhost.
-URL_ARCA = "http://localhost:3000/portal_arca.html"
+URL_ARCA = "http://localhost:3000/arca_portal.html"
 
 # Carga DB_* del .env (nunca se imprimen).
 load_dotenv()
@@ -96,28 +97,47 @@ def _indexar_mapa(mapa):
 # ---------------------------------------------------------------------------
 # 2. LAS TRANSFORMACIONES (el corazón de ejecutar)
 # ---------------------------------------------------------------------------
+def _norm(s):
+    """
+    Normaliza un nombre de producto para comparar SOLO por FORMATO: minúsculas,
+    sin acentos y SIN espacios. Quitar todos los espacios (no solo colapsarlos)
+    es necesario para que 'Coca-Cola 600 ml' (con espacio, como viene del front)
+    matchee 'Coca-Cola 600ml' del catálogo: la diferencia es justo ese espacio.
+
+    NO hace match difuso ni por substring: nombres genuinamente distintos
+    ('Refresco Cola' de Sanborns vs 'Coca-Cola') NO matchean y siguen
+    resolviéndose por el LLM (no se meten nombres-disfraz al catálogo).
+    """
+    if s is None:
+        return ""
+    s = unicodedata.normalize("NFKD", str(s))
+    s = "".join(c for c in s if not unicodedata.combining(c))   # quita acentos
+    return "".join(s.lower().split())                           # minúsculas + sin espacios
+
+
+def _buscar_producto(cur, producto_nombre):
+    """
+    Resuelve UNA fila del catálogo (tabla productos) por nombre, con match
+    tolerante al FORMATO (ver _norm). Devuelve (sku, piezas_por_caja).
+    El catálogo es chico, así que traemos las filas y comparamos normalizado.
+    Lanza ValueError claro si no hay coincidencia (exacta tras normalizar).
+    """
+    objetivo = _norm(producto_nombre)
+    cur.execute("select sku, nombre, piezas_por_caja from productos")
+    for sku, nombre, ppc in cur.fetchall():
+        if _norm(nombre) == objetivo:
+            return sku, ppc
+    raise ValueError(f"Producto no encontrado en catálogo: {producto_nombre!r}")
+
+
 def _piezas_por_caja(cur, producto_nombre):
-    """Busca en el catálogo (tabla productos) cuántas piezas trae una caja."""
-    cur.execute(
-        "select piezas_por_caja from productos where nombre = %s",
-        (producto_nombre,),
-    )
-    fila = cur.fetchone()
-    if not fila:
-        raise ValueError(f"Producto no encontrado en catálogo: {producto_nombre}")
-    return fila[0]
+    """Cuántas piezas trae una caja (del catálogo), con match tolerante al formato."""
+    return _buscar_producto(cur, producto_nombre)[1]
 
 
 def _buscar_sku(cur, producto_nombre):
-    """Busca el SKU interno de Arca por el nombre del producto (lookup_catalogo)."""
-    cur.execute(
-        "select sku from productos where nombre = %s",
-        (producto_nombre,),
-    )
-    fila = cur.fetchone()
-    if not fila:
-        raise ValueError(f"No hay SKU para el producto: {producto_nombre}")
-    return fila[0]
+    """SKU interno de Arca por nombre de producto (lookup_catalogo), match tolerante."""
+    return _buscar_producto(cur, producto_nombre)[0]
 
 
 def _normalizar_fecha(valor):
@@ -322,7 +342,7 @@ def ejecutar(cliente_portal, pedido_nuevo):
 # ---------------------------------------------------------------------------
 def llenar_portal_arca(cliente_portal, datos, pedido_origen, mapa, numero_orden):
     """
-    Abre el portal de Arca NUEVO (portal_arca.html) y TECLEA los datos
+    Abre el portal de Arca NUEVO (arca_portal.html) y TECLEA los datos
     transformados con Playwright, para que en el demo se VEA al bot llenar el
     formulario, y al final hace clic en 'Registrar en Arca'.
 
@@ -433,7 +453,7 @@ if __name__ == "__main__":
         # HEB: el bot recorre SOLO las 3 pantallas guiado por el navigation_flow.
         print("Ejecutando HEB: el bot recorre el portal multi-pantalla solo...\n")
         pedido, lecturas, datos, numero_orden, monto_total = ejecutar_desde_portal(
-            "HEB", "http://localhost:3000/portal_heb.html"
+            "HEB", "http://localhost:3000/heb_portal.html"
         )
         print("DATOS LEÍDOS POR PANTALLA:")
         print(json.dumps(lecturas, indent=2, ensure_ascii=False))
