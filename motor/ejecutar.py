@@ -165,7 +165,15 @@ def aplicar_transformacion(transformacion, valor, producto_nombre, cur, unidad=N
         return _normalizar_fecha(valor)
     if transformacion == "calculado":
         return None                             # importe se calcula en guardar_pedido
-    raise ValueError(f"Transformación desconocida en el mapa: {transformacion}")
+    # El LLM es no determinista: a veces etiqueta transformaciones que no soportamos
+    # (split, concat, etc.). En vez de tronar el flujo, hacemos el fallback más seguro
+    # —tratarla como "directa" (copiar el valor tal cual)— y avisamos claro para saberlo.
+    print(
+        f"[AVISO] Transformacion desconocida '{transformacion}'"
+        f"{f' en campo (producto={producto_nombre})' if producto_nombre else ''}"
+        f"; se aplica 'directa' (valor copiado tal cual): {valor!r}"
+    )
+    return valor
 
 
 def aplicar_transformaciones(pedido, mapa, cur):
@@ -397,7 +405,7 @@ if __name__ == "__main__":
         # HEB: el bot recorre SOLO las 3 pantallas guiado por el navigation_flow.
         print("Ejecutando HEB: el bot recorre el portal multi-pantalla solo...\n")
         pedido, lecturas, datos, numero_orden, monto_total = ejecutar_desde_portal(
-            "HEB", "http://localhost:3000/heb_portal.html"
+            "HEB", "http://localhost:3000/portal_heb.html"
         )
         print("DATOS LEÍDOS POR PANTALLA:")
         print(json.dumps(lecturas, indent=2, ensure_ascii=False))

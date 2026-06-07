@@ -27,7 +27,7 @@ Antes de correr, hay que servir los portales:
 from playwright.sync_api import sync_playwright
 
 # El portal se sirve como archivo estático en localhost:3000 (carpeta fronts).
-URL_SANBORNS = "http://localhost:3000/sanborns_portal.html"
+URL_SANBORNS = "http://localhost:3000/portal_sanborns.html"
 
 
 def leer_portal_sanborns():
