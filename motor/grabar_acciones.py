@@ -106,6 +106,15 @@ LISTENER_JS = r"""
     if (env) return env.textContent.trim();
     const prev = el.previousElementSibling;
     if (prev && prev.tagName === 'LABEL') return prev.textContent.trim();
+    // Si el campo está en una celda de tabla, usar el encabezado <th> de su
+    // columna (genérico para cualquier portal con tablas, como HEB o Arca).
+    const td = el.closest('td');
+    if (td && td.parentElement) {
+      const idx = [...td.parentElement.children].indexOf(td);
+      const tabla = el.closest('table');
+      const ths = tabla ? tabla.querySelectorAll('thead th') : [];
+      if (ths[idx]) return ths[idx].textContent.trim();
+    }
     return (el.getAttribute('placeholder') || el.getAttribute('name')
             || el.id || el.className || el.tagName.toLowerCase()).trim();
   }
@@ -155,7 +164,13 @@ LISTENER_JS = r"""
       if (el.id && el.id.indexOf('__grab') === 0) return;   // ignorar nuestra propia UI
       if (!esVisible(el)) return;                            // solo lo visible en este momento
       const sel = rutaCss(el);
+      // "campo" = identificador LIMPIO del campo (id, name o primera clase).
+      // Coincide con las claves que produce la lectura del portal (leer_portal_*),
+      // por eso el mapa resultante es directamente aplicable por ejecutar.py.
+      const campo = el.id || el.getAttribute('name')
+                    || (el.className || '').trim().split(/\s+/)[0] || '';
       window.__grabSnapshot.set(sel, {
+        campo: campo,
         selector: sel,
         label: etiquetaDe(el),
         valor: String(valorCampo(el)),

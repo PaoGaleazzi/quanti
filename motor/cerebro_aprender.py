@@ -125,17 +125,16 @@ def _limpiar_json(texto):
     return texto.strip()
 
 
-def aprender_mapa(datos_origen, datos_destino, cliente_portal,
-                  modelo="gemini-3.5-flash", reintentos=4):
+def _generar_json(prompt, modelo, reintentos):
     """
-    Llama a Gemini para inferir el mapa. Devuelve el dict mapa_json.
+    Manda un prompt a Gemini y devuelve el JSON parseado (dict).
 
-    Maneja errores 429 (cuota/rate limit) con reintentos y backoff
-    exponencial: espera 1s, 2s, 4s, 8s entre intentos.
+    Maneja errores TRANSITORIOS con backoff exponencial:
+      - 429 = demasiadas peticiones / cuota excedida
+      - 503 = modelo saturado por demanda (UNAVAILABLE)
+    Espera 1s, 2s, 4s, 8s entre intentos. Lo usan tanto aprender_mapa (datos
+    estáticos) como aprender_mapa_desde_observacion (traza + snapshot).
     """
-    prompt = construir_prompt(datos_origen, datos_destino)
-
-    # Pedimos respuesta en JSON puro: el SDK la devuelve sin texto extra.
     config = types.GenerateContentConfig(response_mime_type="application/json")
 
     for intento in range(reintentos):
@@ -143,16 +142,8 @@ def aprender_mapa(datos_origen, datos_destino, cliente_portal,
             resp = cliente_gemini.models.generate_content(
                 model=modelo, contents=prompt, config=config,
             )
-            mapa = json.loads(_limpiar_json(resp.text))
-            # Metadatos para guardar/auditar (no afectan al mapeo inferido).
-            mapa["cliente_portal"] = cliente_portal
-            mapa["modelo_llm"] = modelo
-            return mapa
-
+            return json.loads(_limpiar_json(resp.text))
         except errors.APIError as e:
-            # Errores TRANSITORIOS que vale la pena reintentar:
-            #   429 = demasiadas peticiones / cuota excedida
-            #   503 = modelo saturado por demanda (UNAVAILABLE)
             if e.code in (429, 503) and intento < reintentos - 1:
                 espera = 2 ** intento  # backoff exponencial: 1, 2, 4, 8 segundos
                 print(f"[{e.code}] Error transitorio. Reintento {intento+1}/"
@@ -162,6 +153,105 @@ def aprender_mapa(datos_origen, datos_destino, cliente_portal,
             raise  # otro error de API, o ya no quedan reintentos
 
     raise RuntimeError("No se pudo generar el mapa tras varios intentos.")
+
+
+def aprender_mapa(datos_origen, datos_destino, cliente_portal,
+                  modelo="gemini-3.5-flash", reintentos=4):
+    """
+    [Versión clásica] Infiere el mapa a partir de dos dicts ESTÁTICOS
+    (origen y destino). Se mantiene para compatibilidad. Devuelve el mapa_json.
+    """
+    prompt = construir_prompt(datos_origen, datos_destino)
+    mapa = _generar_json(prompt, modelo, reintentos)
+    # Metadatos para guardar/auditar (no afectan al mapeo inferido).
+    mapa["cliente_portal"] = cliente_portal
+    mapa["modelo_llm"] = modelo
+    return mapa
+
+
+def construir_prompt_flujo(obs_origen, obs_destino):
+    """
+    Arma el prompt para la observación ESCALABLE (traza + snapshot).
+
+    Cada observación trae:
+      - traza:    acciones EN ORDEN (input/click/navegacion). De aquí sale la
+                  SECUENCIA de pantallas (navigation_flow).
+      - snapshot: estado FINAL de todos los campos visibles, con su valor
+                  (incluye los que el portal autocompletó solo).
+
+    Igual que la versión clásica: le decimos la TAREA y los campos FIJOS de
+    Arca, pero NUNCA la correspondencia campo-a-campo. Eso lo infiere el LLM.
+    """
+    return f"""Eres un sistema que aprende a mapear datos entre dos sistemas web
+observando UNA sesión real. NO conoces de antemano la correspondencia entre
+campos ni cuántas pantallas hay; debes INFERIRLO de lo observado.
+
+El sistema DESTINO (Arca) es fijo y tiene estos campos:
+{CAMPOS_ARCA}
+El sistema ORIGEN es un portal de cliente DESCONOCIDO y varía por cliente
+(nombres de campo distintos, otro idioma, otras unidades, una o varias pantallas).
+
+Para CADA sistema te doy dos cosas observadas durante el llenado a mano:
+  - "traza": la lista ORDENADA de acciones del usuario. Tipos:
+        input      = escribió/cambió un campo (selector, valor, label)
+        click      = pulsó un botón/enlace (selector, label)
+        navegacion = cambió de pantalla (aparece otra sección o cambia la URL)
+  - "snapshot": el estado FINAL de TODOS los campos visibles. Cada campo trae:
+        "campo" (identificador limpio: id/name/clase), "selector", "label" y
+        "valor". Incluye campos que el portal AUTOCOMPLETÓ solo (no están en la
+        traza porque el usuario no los tecleó). USA EL SNAPSHOT como fuente de
+        verdad de los VALORES, y la TRAZA para el ORDEN y las PANTALLAS.
+
+IMPORTANTE: en field_mappings, "campo_origen" debe ser el valor de "campo"
+(el identificador limpio del campo de origen), NUNCA el selector CSS.
+
+Tu tarea, infiere:
+1) navigation_flow: la SECUENCIA de pantallas/pasos del ORIGEN, deducida de las
+   transiciones 'navegacion' de su traza. Si el origen es de UNA sola pantalla,
+   navigation_flow tiene UN solo paso (leer y guardar). Cada paso:
+   {{"paso": 1, "pantalla": "...", "accion": "leer_datos|click",
+     "descripcion": "...", "selector_referencia": "...", "confianza": 0.0}}
+2) field_mappings: de qué campo del ORIGEN viene cada campo de Arca. Cada uno:
+   {{"campo_origen": "...", "campo_destino": "...",
+     "transformacion": "una de [{TRANSFORMACIONES}]",
+     "pantalla_origen": "...", "confianza": 0.0, "razonamiento": "..."}}
+   - Compara los VALORES del snapshot de ambos lados para deducir el mapeo.
+   - Si un campo de Arca no tiene origen claro (ej. sku), explícalo en el
+     razonamiento y usa la transformación adecuada (ej. lookup_catalogo).
+   - Si el origen está en cajas y Arca en piezas, usa conversion_unidad.
+
+OBSERVACION DEL ORIGEN (cliente):
+{json.dumps(obs_origen, ensure_ascii=False)}
+
+OBSERVACION DEL DESTINO (Arca):
+{json.dumps(obs_destino, ensure_ascii=False)}
+
+Devuelve SOLO un JSON válido con esta estructura, sin texto adicional:
+{{
+  "navigation_flow": [
+    {{"paso": 1, "pantalla": "...", "accion": "...", "descripcion": "...",
+      "selector_referencia": "...", "confianza": 0.0}}
+  ],
+  "field_mappings": [
+    {{"campo_origen": "...", "campo_destino": "...", "transformacion": "...",
+      "pantalla_origen": "...", "confianza": 0.0, "razonamiento": "..."}}
+  ],
+  "confianza_global": 0.0
+}}"""
+
+
+def aprender_mapa_desde_observacion(obs_origen, obs_destino, cliente_portal,
+                                    modelo="gemini-3.5-flash", reintentos=4):
+    """
+    [Versión escalable] Infiere el mapa a partir de las observaciones
+    {traza, snapshot} del portal origen y del portal Arca (las que captura
+    grabar_acciones.py). Devuelve el mapa_json con navigation_flow + field_mappings.
+    """
+    prompt = construir_prompt_flujo(obs_origen, obs_destino)
+    mapa = _generar_json(prompt, modelo, reintentos)
+    mapa["cliente_portal"] = cliente_portal
+    mapa["modelo_llm"] = modelo
+    return mapa
 
 
 def guardar_mapa(mapa, cliente_portal):
