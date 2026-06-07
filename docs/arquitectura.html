@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<style>
+  :root{
+    --arca:#ed1c2e; --arca-deep:#a90f18; --arca-soft:#fdecec;
+    --ink:#1d1d1f; --muted:#6b6b70; --line:#e4e4e7;
+    --origen:#0f6fbf; --origen-soft:#eaf4fc;
+    --aprender:#7b2ff7; --aprender-soft:#f1eafe;
+    --ejec:#0a8f5b; --ejec-soft:#e7f7f0;
+    --data:#b8860b; --data-soft:#fcf5e3;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{
+    font-family:'Segoe UI',-apple-system,system-ui,sans-serif;
+    background:#ffffff; color:var(--ink);
+    width:1680px; padding:46px 54px 40px;
+  }
+  /* ---------- Encabezado ---------- */
+  .head{ display:flex; align-items:center; gap:20px; padding-bottom:22px;
+    border-bottom:3px solid var(--arca); margin-bottom:30px; }
+  .logo{ width:60px; height:60px; border-radius:14px; background:var(--arca);
+    color:#fff; display:flex; align-items:center; justify-content:center;
+    font-weight:900; font-size:30px; box-shadow:0 6px 18px rgba(237,28,46,.28); }
+  .head h1{ font-size:30px; font-weight:900; letter-spacing:-.3px; }
+  .head .sub{ color:var(--muted); font-size:15.5px; margin-top:3px; font-weight:500; }
+  .tag{ margin-left:auto; background:var(--arca-soft); color:var(--arca-deep);
+    border:1px solid #f6c9cd; border-radius:999px; padding:9px 18px;
+    font-weight:800; font-size:13.5px; }
+
+  /* ---------- Banda de fases ---------- */
+  .phases{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:22px; margin-bottom:26px; }
+  .phase{ border:1.5px solid var(--line); border-radius:18px; background:#fff;
+    box-shadow:0 8px 26px rgba(0,0,0,.05); overflow:hidden; }
+  .phase .top{ padding:15px 20px; display:flex; align-items:center; gap:12px;
+    color:#fff; }
+  .phase .num{ width:32px; height:32px; border-radius:50%; background:rgba(255,255,255,.25);
+    display:flex; align-items:center; justify-content:center; font-weight:900; font-size:16px; }
+  .phase .top .ti{ font-weight:900; font-size:19px; }
+  .phase .top .de{ font-size:12.5px; opacity:.92; font-weight:500; }
+  .p1 .top{ background:linear-gradient(135deg,#1583d6,#0f6fbf); }
+  .p2 .top{ background:linear-gradient(135deg,#8a45f8,#7b2ff7); }
+  .p3 .top{ background:linear-gradient(135deg,#11a86b,#0a8f5b); }
+  .phase .body{ padding:16px 18px 18px; }
+
+  .step{ display:flex; gap:11px; padding:9px 0; border-bottom:1px dashed var(--line); }
+  .step:last-child{ border-bottom:none; }
+  .step .ic{ flex:none; width:30px; height:30px; border-radius:9px;
+    display:flex; align-items:center; justify-content:center; font-size:15px; }
+  .p1 .ic{ background:var(--origen-soft); }
+  .p2 .ic{ background:var(--aprender-soft); }
+  .p3 .ic{ background:var(--ejec-soft); }
+  .step .tx b{ font-size:14px; font-weight:800; display:block; }
+  .step .tx span{ font-size:12.5px; color:var(--muted); line-height:1.4; }
+  .file{ font-family:'Consolas',monospace; font-size:11px; background:#f5f5f7;
+    border:1px solid var(--line); border-radius:5px; padding:1px 6px; color:#444; }
+
+  /* flecha entre fases */
+  .flowrow{ position:relative; height:0; }
+  .arrow{ position:absolute; top:-150px; font-size:30px; color:var(--arca);
+    font-weight:900; }
+  .arrow.a1{ left:33.0%; }
+  .arrow.a2{ left:66.3%; }
+
+  /* ---------- Capa de datos ---------- */
+  .data{ border:1.5px solid var(--data); background:var(--data-soft);
+    border-radius:18px; padding:18px 22px; margin-bottom:22px; }
+  .data h3{ font-size:15px; color:#8a6508; margin-bottom:13px; display:flex;
+    align-items:center; gap:9px; }
+  .data h3 .dot{ width:11px; height:11px; border-radius:50%; background:var(--data); }
+  .tables{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+  .tcol{ background:#fff; border:1px solid #ecdcb0; border-radius:12px; padding:13px 15px; }
+  .tcol .h{ font-weight:800; font-size:13px; margin-bottom:8px; color:#7a5a06; }
+  .tcol code{ font-family:'Consolas',monospace; font-size:11.5px; display:block;
+    padding:3px 0; color:#3d3d40; }
+  .tcol code b{ color:var(--arca-deep); }
+
+  /* ---------- Stack tecnológico ---------- */
+  .stack{ display:grid; grid-template-columns:repeat(5,1fr); gap:16px; margin-bottom:8px; }
+  .tool{ border:1.5px solid var(--line); border-radius:14px; padding:15px 16px;
+    background:#fff; box-shadow:0 5px 16px rgba(0,0,0,.04); }
+  .tool .ic{ font-size:22px; margin-bottom:8px; }
+  .tool .nm{ font-weight:900; font-size:15px; }
+  .tool .ds{ font-size:12px; color:var(--muted); margin-top:4px; line-height:1.4; }
+
+  .sechead{ font-size:13px; font-weight:900; letter-spacing:1.2px; text-transform:uppercase;
+    color:var(--muted); margin:6px 0 14px; }
+
+  /* ---------- Regla de oro ---------- */
+  .gold{ display:flex; align-items:center; gap:14px; background:#1d1d1f; color:#fff;
+    border-radius:14px; padding:15px 22px; margin-top:26px; }
+  .gold .g-ic{ font-size:26px; }
+  .gold b{ color:#ffd34d; }
+  .gold .g-tx{ font-size:14px; line-height:1.5; }
+  .foot{ margin-top:18px; text-align:center; color:#a0a0a5; font-size:12px; }
+</style>
+</head>
+<body>
+
+  <div class="head">
+    <div class="logo">A</div>
+    <div>
+      <h1>Always on Shelf — Arquitectura de la solución</h1>
+      <div class="sub">"EDI de IA" para Arca Continental · Observa una vez → Aprende el mapeo con LLM → Ejecuta sola</div>
+    </div>
+    <div class="tag">Reto Arca Continental</div>
+  </div>
+
+  <!-- ============ FASES (flujo principal) ============ -->
+  <div class="phases">
+
+    <!-- FASE 1 -->
+    <div class="phase p1">
+      <div class="top">
+        <div class="num">1</div>
+        <div><div class="ti">OBSERVAR</div><div class="de">Captura una sesión real (una sola vez)</div></div>
+      </div>
+      <div class="body">
+        <div class="step"><div class="ic">👤</div><div class="tx">
+          <b>Persona llena los 2 portales a mano</b>
+          <span>Portal del cliente (HEB / Sanborns) y luego el portal de Arca</span></div></div>
+        <div class="step"><div class="ic">🎬</div><div class="tx">
+          <b>Grabador genérico de acciones</b>
+          <span>Inyecta listeners JS: capta <i>traza</i> (clicks, inputs, navegación) + <i>snapshot</i> de campos. Sin saber nada del portal</span>
+          <span class="file">grabar_acciones.py · Playwright</span></div></div>
+        <div class="step"><div class="ic">🖱️</div><div class="tx">
+          <b>Botón flotante "✅ Listo"</b>
+          <span>La persona marca fin de la observación de cada portal</span></div></div>
+      </div>
+    </div>
+
+    <!-- FASE 2 -->
+    <div class="phase p2">
+      <div class="top">
+        <div class="num">2</div>
+        <div><div class="ti">APRENDER</div><div class="de">El LLM infiere el mapeo (sin reglas)</div></div>
+      </div>
+      <div class="body">
+        <div class="step"><div class="ic">🧠</div><div class="tx">
+          <b>Cerebro de aprendizaje (Gemini)</b>
+          <span>Compara snapshots origen vs. destino e infiere campo→campo + tipo de transformación</span>
+          <span class="file">cerebro_aprender.py · gemini-flash</span></div></div>
+        <div class="step"><div class="ic">🗺️</div><div class="tx">
+          <b>Mapa aprendido (JSON)</b>
+          <span>navigation_flow + field_mappings + confianza + razonamiento</span></div></div>
+        <div class="step"><div class="ic">💾</div><div class="tx">
+          <b>Se guarda 1 vez por cliente</b>
+          <span>Upsert en <span class="file">mapas_aprendidos</span> — no se vuelve a llamar al LLM para mapear</span>
+          <span class="file">aprender_flujo.py</span></div></div>
+      </div>
+    </div>
+
+    <!-- FASE 3 -->
+    <div class="phase p3">
+      <div class="top">
+        <div class="num">3</div>
+        <div><div class="ti">EJECUTAR</div><div class="de">El bot lo hace solo, con datos nuevos</div></div>
+      </div>
+      <div class="body">
+        <div class="step"><div class="ic">📥</div><div class="tx">
+          <b>Lee el pedido nuevo del cliente</b>
+          <span>Recorre el portal guiado por navigation_flow (1 o varias pantallas)</span>
+          <span class="file">leer_portal_guiado.py</span></div></div>
+        <div class="step"><div class="ic">🔄</div><div class="tx">
+          <b>Aplica el mapa (sin LLM = gratis)</b>
+          <span>directa · conversión caja→pieza · formato_fecha · lookup_catálogo + resuelve nombre de producto por significado</span>
+          <span class="file">ejecutar.py · resolver_producto.py</span></div></div>
+        <div class="step"><div class="ic">✍️</div><div class="tx">
+          <b>Llena el portal de Arca + guarda</b>
+          <span>Teclea en arca_portal.html con Playwright e inserta en <span class="file">pedidos / pedido_detalle</span></span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="flowrow">
+    <div class="arrow a1">➜</div>
+    <div class="arrow a2">➜</div>
+  </div>
+
+  <!-- ============ CAPA DE DATOS ============ -->
+  <div class="data">
+    <h3><span class="dot"></span>CAPA DE DATOS · Postgres en Supabase (nube, compartida) — dos mundos separados</h3>
+    <div class="tables">
+      <div class="tcol">
+        <div class="h">🔵 ORIGEN — Portales cliente <i>(varían)</i></div>
+        <code><b>heb_orders</b> · user_id, qty…</code>
+        <code><b>sanborns_pedidos</b> · cajas…</code>
+        <code>Nombres distintos por portal</code>
+      </div>
+      <div class="tcol">
+        <div class="h">🔴 DESTINO — Arca <i>(fijo)</i></div>
+        <code><b>clientes</b> · <b>productos</b></code>
+        <code><b>pedidos</b> · <b>pedido_detalle</b></code>
+        <code>piezas_por_caja → conversión</code>
+      </div>
+      <div class="tcol">
+        <div class="h">🟣 CONOCIMIENTO IA</div>
+        <code><b>mapas_aprendidos</b> (JSON)</code>
+        <code><b>equivalencias_productos</b></code>
+        <code>caché semántica + confianza</code>
+      </div>
+      <div class="tcol">
+        <div class="h">🟢 INTELIGENCIA DE NEGOCIO</div>
+        <code><b>patron_cliente</b> · predictivo</code>
+        <code><b>alertas_riesgo</b> · churn</code>
+        <code><b>borradores</b> · autollenado</code>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ STACK ============ -->
+  <div class="sechead">Herramientas &amp; stack tecnológico</div>
+  <div class="stack">
+    <div class="tool"><div class="ic">🐍</div><div class="nm">Python + uv</div>
+      <div class="ds">Lenguaje y entorno del motor (núcleo)</div></div>
+    <div class="tool"><div class="ic">🎭</div><div class="nm">Playwright</div>
+      <div class="ds">Observa, lee y llena los portales en el navegador</div></div>
+    <div class="tool"><div class="ic">✨</div><div class="nm">Gemini (LLM)</div>
+      <div class="ds">Infiere el mapeo y resuelve productos por significado</div></div>
+    <div class="tool"><div class="ic">🐘</div><div class="nm">Supabase / Postgres</div>
+      <div class="ds">BD compartida · psycopg2 · vía session pooler</div></div>
+    <div class="tool"><div class="ic">📊</div><div class="nm">Streamlit</div>
+      <div class="ds">Interfaz del asesor + dashboard de Arca</div></div>
+  </div>
+
+  <!-- ============ REGLA DE ORO ============ -->
+  <div class="gold">
+    <div class="g-ic">🏆</div>
+    <div class="g-tx"><b>Regla de oro — cero mapeo hardcodeado.</b>
+      El destino (Arca) es fijo y se describe en el prompt; la correspondencia campo→campo de cada portal cliente la
+      <b>infiere el LLM por observación</b>. Por eso escala a cualquier portal nuevo sin programar reglas.</div>
+  </div>
+
+  <div class="foot">Always on Shelf · Equipo Fer · Xime · Steff · Pao — motor de aprendizaje: observación → mapeo con LLM → ejecución autónoma</div>
+
+</body>
+</html>

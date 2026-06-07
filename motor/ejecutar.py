@@ -237,11 +237,25 @@ def aplicar_transformaciones(pedido, mapa, cur, cliente_portal=None):
     datos = {}
 
     # --- CABECERA (datos que no se repiten por producto) ---
+    # La cabecera (client_id, fechas...) NO tiene productos, así que las
+    # transformaciones de PRODUCTO no aplican aquí: 'lookup_catalogo' y
+    # 'conversion_unidad' necesitan un nombre de producto y un catálogo. Si el LLM
+    # (no determinista) etiquetó un campo de cabecera con una de ésas, la tratamos
+    # como 'directa' y avisamos, en vez de tronar buscando un producto None. Mismo
+    # blindaje que ya hacemos con 'calculado'/'split'/'sku': protege el motor de la
+    # no-determinación del LLM SIN tocar la correspondencia origen->destino.
+    TRANSF_SOLO_PRODUCTO = {"lookup_catalogo", "conversion_unidad"}
     for campo in CAMPOS_CABECERA:
         if campo in indice:
             info = indice[campo]
             valor_origen = pedido.get(info["origen"])
-            datos[campo] = aplicar_transformacion(info["transf"], valor_origen, None, cur)
+            transf = info["transf"]
+            if transf in TRANSF_SOLO_PRODUCTO:
+                print(f"[AVISO] El campo de cabecera '{campo}' venía con "
+                      f"transformacion de producto '{transf}'; no aplica en cabecera "
+                      f"(no hay productos). Se trata como 'directa': {valor_origen!r}")
+                transf = "directa"
+            datos[campo] = aplicar_transformacion(transf, valor_origen, None, cur)
 
     # --- PRODUCTOS (un item por cada producto del pedido) ---
     datos["items"] = []
@@ -388,7 +402,7 @@ def _fill_editable(page, selector, valor):
     if el is None:
         return                                   # el campo no existe en este portal
     if not el.is_editable():                      # False si es readonly o disabled
-        print(f"[AVISO] Campo '{selector}' es readonly/no editable; se omite (no se teclea).")
+        print(f"[AVISO] Campo '{selector}' es readonly/no editable; se omite.")
         return
     page.fill(selector, str(valor))
 
