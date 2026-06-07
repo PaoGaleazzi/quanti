@@ -41,7 +41,8 @@ El núcleo del aprendizaje y la ejecución vive en `motor/`:
 | `ejecutar.py` | Aplica el mapa a un pedido nuevo, resuelve productos contra el catálogo y registra el pedido. |
 | `resolver_producto.py` | Traduce el nombre de producto del cliente al del catálogo de Arca (coincidencia por formato y, si hace falta, por significado vía modelo de lenguaje, con caché). |
 | `leer_portal_guiado.py` | Lee un portal de una o varias pantallas siguiendo el flujo aprendido. |
-| `demo.py` | Corre el ciclo completo (observar, aprender, ejecutar) para una demostración. |
+| `app.py` | Interfaz web (Streamlit) que opera el ciclo completo con botones, sin terminal. |
+| `demo.py` | Versión por terminal del mismo ciclo; se conserva como respaldo. |
 
 Hay dos "mundos" de datos. El **origen** son los portales de cliente, con estructuras y nombres distintos. El **destino** es el sistema interno de Arca, con un esquema fijo (clientes, pedidos, detalle de pedido y catálogo de productos). El modelo aprende a traducir del primero al segundo.
 
@@ -98,7 +99,7 @@ El esquema está documentado en `db/01_esquema.sql` y `db/03_portales_cliente.sq
 
 ## Ejecución
 
-La demostración necesita dos procesos: un servidor estático que sirva los portales y el motor que los recorre.
+La aplicación se opera desde una interfaz web hecha en Streamlit (`motor/app.py`), que envuelve el ciclo completo en botones para que un asesor pueda usarla sin terminal. Hacen falta dos procesos: un servidor estático que sirva los portales y la app de Streamlit.
 
 1. Servir los portales (en una terminal):
 
@@ -106,14 +107,23 @@ La demostración necesita dos procesos: un servidor estático que sirva los port
    python -m http.server 3000 -d fronts
    ```
 
-2. Correr la demostración completa (en otra terminal), eligiendo el cliente:
+2. Levantar la interfaz (en otra terminal):
 
    ```bash
-   uv run python motor/demo.py sanborns
-   uv run python motor/demo.py heb
+   uv run streamlit run motor/app.py
    ```
 
-El script `demo.py` ejecuta el ciclo completo: parte sin conocimiento previo del portal, observa y aprende el mapa, y luego registra un pedido nuevo de forma autónoma. El mismo código sirve para un portal de una pantalla (Sanborns) o de varias (HEB), sin lógica específica por cliente.
+   Streamlit abre la app en el navegador (por defecto en `http://localhost:8501`).
+
+Desde la interfaz, el asesor escribe el ID del cliente (los IDs 2, 5 y 9 son tiendas Sanborns; cualquier otro es HEB; el portal correspondiente se deduce solo) y usa los botones del flujo:
+
+- **Iniciar observación (aprender):** abre el portal del cliente y el de Arca para llenarlos una vez; al terminar, el sistema infiere y guarda el mapa.
+- **Ejecutar (llenar Arca):** con un pedido nuevo, el sistema lee el portal del cliente y registra el pedido en Arca de forma autónoma.
+- **Desaprender:** borra el mapa de un cliente para empezar desde cero.
+
+El llenado manual de cada portal ocurre en la ventana del navegador que abre la automatización; al terminar se confirma con el botón "Listo" que aparece en esa ventana. El mismo flujo sirve para un portal de una pantalla (Sanborns) o de varias (HEB), sin lógica específica por cliente.
+
+> El script de terminal `motor/demo.py` sigue disponible como respaldo del mismo flujo, pero la forma habitual de operarlo es la interfaz de Streamlit.
 
 ## Estructura del repositorio
 
@@ -125,10 +135,5 @@ El script `demo.py` ejecuta el ciclo completo: parte sin conocimiento previo del
 ├── motor/                       Aprendizaje, resolución y ejecución
 ├── fronts/                      Portales de cliente y de Arca (HTML)
 ├── db/                          Esquema SQL y generador de datos
-└── docs/                        Plan de trabajo y diseño de la base de datos
+└── docs/                        Diagramas de arquitectura y anexo técnico
 ```
-
-## Documentación adicional
-
-- Plan de trabajo y alcance: `docs/Plan_Hackathon_AlwaysOnShelf.md`
-- Diseño de la base de datos: `docs/Esquema_Base_de_Datos.md`
