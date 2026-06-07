@@ -30,7 +30,7 @@ from playwright.sync_api import sync_playwright
 # Estructura FIJA de Arca: qué campos de destino son de PRODUCTO (se repiten por
 # renglón) y cuáles de cabecera. Conocer esto es legítimo (Arca es fijo). NO es
 # el mapeo origen->destino, que sigue saliendo del mapa aprendido.
-CAMPOS_PRODUCTO_DESTINO = {"producto_nombre", "cantidad", "precio_unitario", "sku"}
+CAMPOS_PRODUCTO_DESTINO = {"producto_nombre", "cantidad", "precio_unitario", "sku", "unidad"}
 
 
 def _resolver(page, campo, solo_visibles=True):
@@ -44,13 +44,59 @@ def _resolver(page, campo, solo_visibles=True):
                            cuando la persona ya navegó y otras pantallas quedaron
                            ocultas pero sus valores siguen en el DOM).
     """
-    for selector in (f"#{campo}", f".{campo}", f"[name='{campo}']"):
+    # Orden: id y clase primero (como hoy, para no cambiar los dummies), luego
+    # name, y por último el marcador data-field de los portales nuevos.
+    for selector in (f"#{campo}", f".{campo}", f"[name='{campo}']",
+                     f"[data-field='{campo}']"):
         elementos = page.query_selector_all(selector)
         if solo_visibles:
             elementos = [e for e in elementos if e.is_visible()]
         if elementos:
             return elementos
     return []
+
+
+def _valor(el):
+    """
+    Lee el valor de un elemento de forma genérica, sin importar su tipo:
+      - <select>          -> la opción elegida (su value).
+      - <input>/<textarea>-> lo escrito (input_value()).
+      - cualquier otro    -> su TEXTO (text_content), para nombres en tarjetas/celdas.
+    Para inputs el resultado es idéntico a input_value() -> no cambia los dummies.
+    """
+    tag = (el.evaluate("e => e.tagName") or "").upper()
+    if tag in ("INPUT", "SELECT", "TEXTAREA"):
+        return el.input_value()
+    return (el.text_content() or "").strip()
+
+
+def _leer_campo(page, campo, solo_visibles=True):
+    """
+    Devuelve la LISTA de valores de un campo (uno por elemento/renglón).
+
+    1) Primero como campo normal (input/select/texto), vía _resolver + _valor.
+    2) Si no hay nada, FALLBACK genérico: el dato puede vivir en un ATRIBUTO
+       data-<campo> (ej. el nombre del producto en data-art). Leemos el valor del
+       atributo, deduplicado y en orden (la misma fila repite el atributo en
+       varios inputs; nos quedamos con un valor por dato).
+
+    Criterio general (no específico de un portal): "si un campo no es un valor
+    de formulario, búscalo en un atributo data-<campo>".
+    """
+    elementos = _resolver(page, campo, solo_visibles)
+    if elementos:
+        return [_valor(e) for e in elementos]
+
+    # Fallback por atributo data-<campo>.
+    nodos = page.query_selector_all(f"[data-{campo}]")
+    if solo_visibles:
+        nodos = [n for n in nodos if n.is_visible()]
+    valores = []
+    for n in nodos:
+        v = n.get_attribute(f"data-{campo}")
+        if v is not None and v not in valores:   # dedup en orden
+            valores.append(v)
+    return valores
 
 
 def _leer_visibles(page, mappings, pedido, columnas_item):
@@ -64,18 +110,16 @@ def _leer_visibles(page, mappings, pedido, columnas_item):
         campo = m.get("campo_origen")
         if not campo:
             continue
-        elementos = _resolver(page, campo)
-        if not elementos:
+        valores = _leer_campo(page, campo, solo_visibles=True)
+        if not valores:
             continue  # no visible en esta pantalla (o no existe)
 
         if m.get("campo_destino") in CAMPOS_PRODUCTO_DESTINO:
-            valores = [e.input_value() for e in elementos]   # un valor por renglón
-            columnas_item[campo] = valores
+            columnas_item[campo] = valores                    # un valor por renglón
             leido[campo] = valores if len(valores) > 1 else valores[0]
         else:
-            valor = elementos[0].input_value()               # campo de cabecera
-            pedido[campo] = valor
-            leido[campo] = valor
+            pedido[campo] = valores[0]                         # campo de cabecera
+            leido[campo] = valores[0]
     return leido
 
 
@@ -179,20 +223,18 @@ def _leer_todo(page, mappings):
         campo = m.get("campo_origen")
         if not campo:
             continue
-        elementos = _resolver(page, campo, solo_visibles=False)
-        if not elementos:
+        valores = _leer_campo(page, campo, solo_visibles=False)
+        if not valores:
             continue
         pantalla = m.get("pantalla_origen") or "pantalla"
         if m.get("campo_destino") in CAMPOS_PRODUCTO_DESTINO:
-            valores = [e.input_value() for e in elementos]
             columnas_item[campo] = valores
             por_pantalla.setdefault(pantalla, {})[campo] = (
                 valores if len(valores) > 1 else (valores[0] if valores else "")
             )
         else:
-            valor = elementos[0].input_value()
-            pedido[campo] = valor
-            por_pantalla.setdefault(pantalla, {})[campo] = valor
+            pedido[campo] = valores[0]
+            por_pantalla.setdefault(pantalla, {})[campo] = valores[0]
 
     pedido["productos"] = _armar_productos(columnas_item)
     lecturas = [{"pantalla": k, "leido": v} for k, v in por_pantalla.items()]

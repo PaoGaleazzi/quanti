@@ -158,24 +158,82 @@ LISTENER_JS = r"""
     return el.value;
   }
 
+  // Identificador LIMPIO del campo. Prefiere data-field (portales nuevos lo usan
+  // con el nombre canónico, ej. "client_id") y si no, id/name/primera clase
+  // (dummies). Así el mapa aprendido usa el mejor nombre disponible.
+  function campoDe(el) {
+    return el.getAttribute('data-field') || el.id || el.getAttribute('name')
+           || (el.className || '').trim().split(/\s+/)[0] || '';
+  }
+
+  // Texto visible de la opción elegida de un <select> (además de su value).
+  function textoSelect(el) {
+    if (el.tagName === 'SELECT' && el.selectedIndex >= 0)
+      return (el.options[el.selectedIndex].text || '').trim();
+    return null;
+  }
+
+  // Atributos data-* del elemento como objeto (ej. {art:'Coca-Cola 600ml'}).
+  // Sirve para recuperar el dato asociado a campos sin etiqueta (tablas dinámicas).
+  function datosDe(el) {
+    const d = {};
+    for (const k in el.dataset) d[k] = el.dataset[k];
+    return Object.keys(d).length ? d : null;
+  }
+
+  // Expone cada atributo data-* (SALVO data-field, que es marcador de nombre de
+  // campo) como un campo propio del snapshot. Así un dato guardado en un atributo
+  // (ej. data-art="Coca-Cola 600ml" en la fila) se vuelve un campo "art" que el
+  // cerebro puede mapear (producto_nombre <- art). Deduplica por clave+valor
+  // (la misma fila repite data-art en varios inputs).
+  function emitirDatos(el) {
+    for (const k in el.dataset) {
+      if (k === 'field') continue;                 // data-field NO es un dato
+      const v = el.dataset[k];
+      if (v == null || v === '') continue;
+      window.__grabSnapshot.set('attr:' + k + '=' + v, {
+        campo: k, selector: 'attr:' + k, label: k, valor: String(v), tipo: 'atributo',
+      });
+    }
+  }
+
   // Recorre los campos visibles AHORA y los vuelca al acumulador (último gana).
   window.__grabCapturar = function () {
+    // (a) Campos de formulario: input / select / textarea.
     document.querySelectorAll('input, select, textarea').forEach(el => {
       if (el.id && el.id.indexOf('__grab') === 0) return;   // ignorar nuestra propia UI
       if (!esVisible(el)) return;                            // solo lo visible en este momento
       const sel = rutaCss(el);
-      // "campo" = identificador LIMPIO del campo (id, name o primera clase).
-      // Coincide con las claves que produce la lectura del portal (leer_portal_*),
-      // por eso el mapa resultante es directamente aplicable por ejecutar.py.
-      const campo = el.id || el.getAttribute('name')
-                    || (el.className || '').trim().split(/\s+/)[0] || '';
-      window.__grabSnapshot.set(sel, {
-        campo: campo,
+      const dato = {
+        campo: campoDe(el),
         selector: sel,
         label: etiquetaDe(el),
         valor: String(valorCampo(el)),
         tipo: el.tagName.toLowerCase(),
+      };
+      const texto = textoSelect(el);     // <select>: texto de la opción elegida
+      if (texto != null) dato.texto = texto;
+      const datos = datosDe(el);         // data-* asociados (ej. data-art = nombre)
+      if (datos) dato.datos = datos;
+      window.__grabSnapshot.set(sel, dato);
+      emitirDatos(el);                   // y los data-* como campos propios
+    });
+
+    // (b) Datos que NO son inputs pero están marcados con data-field/data-art
+    //     (ej. el nombre de un producto en una tarjeta/celda). Leemos su TEXTO.
+    document.querySelectorAll('[data-field], [data-art]').forEach(el => {
+      const tag = el.tagName;
+      if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return; // ya en (a)
+      if (!esVisible(el)) return;
+      const sel = rutaCss(el);
+      window.__grabSnapshot.set(sel, {
+        campo: el.getAttribute('data-field') || el.getAttribute('data-art') || campoDe(el),
+        selector: sel,
+        label: etiquetaDe(el),
+        valor: (el.textContent || '').trim(),
+        tipo: 'texto',
       });
+      emitirDatos(el);
     });
   };
 
@@ -213,7 +271,10 @@ LISTENER_JS = r"""
     // Capturamos el estado de la pantalla ANTES de que el clic la cambie/oculte.
     // (Estamos en fase de captura, corremos antes del onclick del portal.)
     window.__grabCapturar();
-    const el = e.target.closest('button, a, [role=button], input[type=submit], input[type=button]')
+    // Buscamos el elemento "clickeable" más cercano: un botón/enlace, o una
+    // tarjeta/ítem marcado con data-*. Si no, el elemento clicado tal cual.
+    const el = e.target.closest('button, a, [role=button], input[type=submit], '
+               + 'input[type=button], [data-art], [data-field]')
                || e.target;
     if (el.id === '__grab_btn') return;  // ignorar nuestro botón "Listo"
     enviar({
@@ -222,6 +283,7 @@ LISTENER_JS = r"""
       valor: null,
       url: location.href,
       label: (el.textContent || el.value || el.getAttribute('aria-label') || '').trim().slice(0, 80),
+      datos: datosDe(el),   // data-* del elemento (ej. data-art = producto elegido)
     });
   }, true);
 

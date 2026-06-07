@@ -53,6 +53,7 @@ CAMPOS_ARCA = """
 - client_id (identificador del cliente)
 - producto_nombre (nombre del producto)
 - cantidad (en PIEZAS; ojo: algunos portales piden en cajas)
+- unidad (la unidad en que el ORIGEN expresa la cantidad: caja/tarima/pieza; sirve para la conversión)
 - precio_unitario
 - sku (codigo interno; puede requerir lookup por nombre de producto)
 - fecha_entrega_estimada
@@ -142,7 +143,13 @@ def _generar_json(prompt, modelo, reintentos):
             resp = cliente_gemini.models.generate_content(
                 model=modelo, contents=prompt, config=config,
             )
-            return json.loads(_limpiar_json(resp.text))
+            texto = _limpiar_json(resp.text)
+            try:
+                return json.loads(texto)
+            except json.JSONDecodeError:
+                # A veces el modelo añade texto tras el JSON: tomamos el 1er objeto.
+                obj, _ = json.JSONDecoder().raw_decode(texto)
+                return obj
         except errors.APIError as e:
             if e.code in (429, 503) and intento < reintentos - 1:
                 espera = 2 ** intento  # backoff exponencial: 1, 2, 4, 8 segundos

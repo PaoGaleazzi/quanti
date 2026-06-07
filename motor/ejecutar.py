@@ -32,8 +32,8 @@ from datetime import datetime, date
 from dotenv import load_dotenv
 import psycopg2
 
-# URL del portal de Arca (genérico, sin datos precargados). Se sirve en localhost.
-URL_ARCA = "http://localhost:3000/portal_arca_bot.html"
+# URL del portal de Arca NUEVO (el de las compañeras). Se sirve en localhost.
+URL_ARCA = "http://localhost:3000/portal_arca.html"
 
 # Carga DB_* del .env (nunca se imprimen).
 load_dotenv()
@@ -132,24 +132,33 @@ def _normalizar_fecha(valor):
     return valor  # si no reconoce el formato, lo deja igual
 
 
-def aplicar_transformacion(transformacion, valor, producto_nombre, cur):
+def aplicar_transformacion(transformacion, valor, producto_nombre, cur, unidad=None):
     """
     Aplica UNA transformación a UN valor, según lo que diga el mapa.
 
       - directa:           copia el valor tal cual.
-      - conversion_unidad: cajas -> piezas (multiplica por piezas_por_caja).
+      - conversion_unidad: convierte a piezas según la UNIDAD del origen.
       - lookup_catalogo:   busca el SKU por nombre de producto.
       - formato_fecha:     reformatea a YYYY-MM-DD.
       - calculado:         se deriva al guardar (ej. importe); aquí no aplica.
 
     `producto_nombre` se usa en las transformaciones que consultan el catálogo.
+    `unidad` (Caja/Tarima/…) decide el factor en conversion_unidad.
     """
     if transformacion == "directa":
         return valor
     if transformacion == "conversion_unidad":
-        cajas = int(valor)
+        # Por ahora SOLO soportamos Caja (factor = piezas_por_caja del catálogo).
+        # Si la unidad es otra (ej. Tarima) avisamos claro en vez de convertir mal.
+        u = (unidad or "caja").strip().lower()
+        if u not in ("caja", "cajas", ""):
+            raise ValueError(
+                f"Unidad '{unidad}' no soportada aún (solo Caja). "
+                f"Falta el factor en el catálogo de productos."
+            )
+        cantidad = int(valor)
         ppc = _piezas_por_caja(cur, producto_nombre)
-        return cajas * ppc                      # 3 cajas x 24 = 72 piezas
+        return cantidad * ppc                   # ej. 3 cajas x 24 = 72 piezas
     if transformacion == "lookup_catalogo":
         return _buscar_sku(cur, producto_nombre)
     if transformacion == "formato_fecha":
@@ -192,11 +201,17 @@ def aplicar_transformaciones(pedido, mapa, cur):
         info_nombre = indice["producto_nombre"]
         nombre = prod.get(info_nombre["origen"])
 
+        # Unidad del origen para este producto (si el mapa la capturó). Decide el
+        # factor de conversion_unidad. Si no hay, se asume Caja (compatibilidad).
+        unidad = prod.get(indice["unidad"]["origen"]) if "unidad" in indice else None
+
         item = {"producto_nombre": nombre}
         for campo in ["cantidad", "precio_unitario", "sku"]:
             info = indice[campo]
             valor_origen = prod.get(info["origen"])
-            item[campo] = aplicar_transformacion(info["transf"], valor_origen, nombre, cur)
+            item[campo] = aplicar_transformacion(
+                info["transf"], valor_origen, nombre, cur, unidad
+            )
         datos["items"].append(item)
 
     return datos
@@ -271,68 +286,49 @@ def ejecutar(cliente_portal, pedido_nuevo):
 # ---------------------------------------------------------------------------
 def llenar_portal_arca(cliente_portal, datos, pedido_origen, mapa, numero_orden):
     """
-    Abre el portal de Arca (genérico) y TECLEA los datos transformados con
-    Playwright, para que en el demo se VEA al bot llenar el formulario, y al
-    final hace clic en 'Registrar en Arca'.
+    Abre el portal de Arca NUEVO (portal_arca.html) y TECLEA los datos
+    transformados con Playwright, para que en el demo se VEA al bot llenar el
+    formulario, y al final hace clic en 'Registrar en Arca'.
+
+    Usa los ids/clases reales del portal: #client_id, #fecha_entrega_estimada,
+    #numero_orden, y la tabla #lines con .c-sku/.c-prod/.c-qty/.c-price (un
+    renglón por producto, agregados con el botón "+ Agregar línea").
 
     OJO: esto NO guarda en la base (eso ya lo hizo ejecutar()). Es la capa visual.
-    El portal no trae datos ni factor fijos: todo sale de lo que el bot teclea.
+    (pedido_origen y mapa se mantienen en la firma por compatibilidad; no se usan.)
     """
     from playwright.sync_api import sync_playwright
 
-    # ¿La cantidad se obtuvo convirtiendo cajas->piezas? Lo dice el mapa aprendido.
-    indice = _indexar_mapa(mapa)
-    info_cant = indice.get("cantidad", {})
-    es_conversion = info_cant.get("transf") == "conversion_unidad"
-    campo_cajas = info_cant.get("origen")  # nombre del campo origen (ej. "unidades_pedidas")
-
-    # % de confiabilidad del mapa (para la barra del portal).
-    conf = mapa.get("confianza_global")
-    pct = round(float(conf) * 100) if conf else 90
-
-    hoy = date.today().isoformat()
-
     with sync_playwright() as p:
         # headless=False + slow_mo para VER al bot teclear (importante en el demo).
-        browser = p.chromium.launch(headless=False, slow_mo=700)
+        browser = p.chromium.launch(headless=False, slow_mo=600)
         page = browser.new_page()
         page.goto(URL_ARCA)
 
-        # Crea tantos renglones VACÍOS como productos tenga el pedido.
-        page.evaluate(f"nuevoPedido({len(datos['items'])})")
-
-        # Datos de contexto que el bot NO teclea (orden, portal, fecha pedido).
+        # CABECERA (ids/data-field reales del portal nuevo).
+        page.fill("#numero_orden", f"ORD-{numero_orden}")
+        page.fill("#client_id", str(datos["client_id"]))
+        page.fill("#fecha_entrega_estimada", str(datos["fecha_entrega_estimada"]))
+        # portal_origen es readonly -> lo ponemos por JS (contexto, no se teclea).
         page.evaluate(
-            "(d) => setMeta(d.orden, d.cliente, d.portal, d.fechap)",
-            {
-                "orden": f"ORD-{numero_orden}",
-                "cliente": f"{cliente_portal} · client_id {datos['client_id']}",
-                "portal": cliente_portal,
-                "fechap": hoy,
-            },
+            "(v) => { const e = document.getElementById('portal_origen'); if (e) e.value = v; }",
+            cliente_portal,
         )
 
-        # CABECERA: el bot teclea client_id y la fecha de entrega.
-        page.fill("#f_client", str(datos["client_id"]))
-        page.fill("#f_fechae", str(datos["fecha_entrega_estimada"]))
+        # RENGLONES: tabla limpia y un renglón por producto.
+        page.evaluate("document.getElementById('lines').innerHTML = ''")
+        for it in datos["items"]:
+            page.click(".addline")                 # botón "+ Agregar línea"
+            fila = "#lines tr:last-of-type"
+            page.fill(f"{fila} .c-sku", str(it["sku"]))
+            page.fill(f"{fila} .c-prod", str(it["producto_nombre"]))
+            page.fill(f"{fila} .c-qty", str(it["cantidad"]))
+            page.fill(f"{fila} .c-price", str(it["precio_unitario"]))
+            # (el total se recalcula solo por el oninput del portal)
 
-        # RENGLONES: un producto por fila.
-        for i, it in enumerate(datos["items"]):
-            page.fill(f"#f_sku{i}", str(it["sku"]))
-            page.fill(f"#f_nom{i}", str(it["producto_nombre"]))
-            page.fill(f"#f_qty{i}", str(it["cantidad"]))
-            page.fill(f"#f_precio{i}", str(it["precio_unitario"]))
-            # Si hubo conversión cajas->piezas, mostramos el badge con el factor REAL.
-            if es_conversion and campo_cajas:
-                cajas = int(pedido_origen["productos"][i][campo_cajas])
-                piezas = int(it["cantidad"])
-                factor = piezas // cajas if cajas else 0
-                page.evaluate(f"setConversion({i}, {cajas}, {factor}, {piezas})")
-
-        # Barra de confiabilidad y clic final en 'Registrar en Arca'.
-        page.evaluate(f"setConfianza({pct})")
-        page.click("#btnSubmit")
-        page.wait_for_timeout(2000)  # pausa para que se vea el banner de éxito
+        # Clic final en 'Registrar en Arca'.
+        page.click("button:has-text('Registrar en Arca')")
+        page.wait_for_timeout(2000)  # pausa para ver el banner de éxito
         browser.close()
 
 
