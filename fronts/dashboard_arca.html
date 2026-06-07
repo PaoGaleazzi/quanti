@@ -250,6 +250,33 @@
   .capt-row{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:var(--muted);margin-bottom:6px}
   .capt-row b{font-family:var(--mono);font-size:13px}
   .cli-meta{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10.5px;color:var(--dim);margin-top:12px}
+
+  /* ===== animaciones + gauge + donut ===== */
+  @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .panel.on{animation:fadeUp .35s ease}
+  .ic,.acard,.ccard{animation:fadeUp .42s ease}
+  .ccard{position:relative}
+  .ccard .cnm{padding-right:58px}
+  .cgauge{position:absolute;top:14px;right:14px;text-align:center}
+  .glab{font-family:var(--mono);font-size:8.5px;color:var(--dim);margin-top:-3px;letter-spacing:.3px}
+  .gauge .gtxt{font-family:var(--disp);font-weight:800;font-size:15px}
+  .mrisk{display:flex;flex-direction:column;align-items:center}
+  .mrisk .gauge .gtxt{font-size:19px}
+  .dn-v{font-family:var(--disp);font-weight:800;font-size:21px;fill:var(--ink)} .dn-l{font-family:var(--mono);font-size:9px;fill:var(--dim)}
+  .dleg-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)} .dleg-row:last-child{border-bottom:0}
+  .dleg-dot{width:12px;height:12px;border-radius:4px;flex:none}
+  .dleg-l{flex:1;font-size:13px;font-weight:600} .dleg-v{font-family:var(--mono);font-size:12.5px;font-weight:700}
+
+  /* ===== detalle de productos por pedido (facturación) ===== */
+  .fchev{font-size:12px;transition:color .15s}
+  .frow.click:hover .fchev{color:var(--arca)}
+  .fdet>td{background:#faf6f6;padding:0}
+  .fdet-inner{padding:6px 16px 16px}
+  .fdet-t{width:100%;max-width:540px;border-collapse:collapse}
+  .fdet-t th{font-family:var(--mono);font-size:9.5px;letter-spacing:.4px;text-transform:uppercase;color:var(--dim);text-align:left;font-weight:700;padding:7px 8px;border-bottom:1px solid var(--line2)}
+  .fdet-t td{font-size:12.5px;padding:7px 8px;border-bottom:1px solid var(--line)}
+  .fdet-t tbody tr:last-child td{border-bottom:0}
+  .fdet-tot td{font-weight:800;font-family:var(--disp);border-top:1.5px solid var(--line2)!important;padding-top:9px}
 </style>
 </head>
 <body>
@@ -294,11 +321,14 @@
   <!-- ============ FACTURACIÓN ============ -->
   <section class="panel" id="tab-facturacion">
     <div class="label first">Del pedido a la factura</div>
-    <div class="fstats" id="fstats"></div>
+    <div class="card" style="margin-bottom:18px"><div class="pad" style="display:flex;align-items:center;gap:32px;flex-wrap:wrap;justify-content:center">
+      <div id="factdonut"></div>
+      <div id="factleg" style="flex:1;min-width:240px"></div>
+    </div></div>
     <div class="card">
       <div class="hd"><h2>En qué va cada pedido</h2><div class="selwrap"><select id="ffiltro"></select></div></div>
       <table>
-        <thead><tr><th>Pedido</th><th>Cliente</th><th>Ciclo</th><th>Factura</th><th style="text-align:right">Monto</th></tr></thead>
+        <thead><tr><th>Pedido</th><th>Cliente</th><th>Ciclo</th><th>Factura</th><th style="text-align:right">Monto</th><th style="width:22px"></th></tr></thead>
         <tbody id="factbody"></tbody>
       </table>
     </div>
@@ -519,21 +549,21 @@ function renderSelect(){ffiltro.innerHTML=`<option value="ALL">Todas las cadenas
 function renderKPIs(){
   const k=kpis();
   const cards=[
-    {hot:1,l:"Facturación capturada",v:money(k.facturado),s:`${fmt0(k.nFact)} facturas emitidas`},
-    {l:"Por facturar",v:money(k.porFacturar),s:`${fmt0(k.enCamino)} pedidos en camino · se factura al entregar`},
-    {l:"Cumplimiento de entrega",v:pct(k.cumpl),s:`${fmt0(k.noEnt)} pedidos sin entregar`},
-    {l:"Ingreso mensual en riesgo",v:money(k.ingresoRiesgo),s:`<span class="arrow2" style="color:#ffd9dc">▼</span> ${k.enRiesgo.length} clientes en riesgo`},
+    {hot:1,l:"Facturación capturada",v:money(k.facturado),n:k.facturado,fmt:"money",s:`${fmt0(k.nFact)} facturas emitidas`},
+    {l:"Por facturar",v:money(k.porFacturar),n:k.porFacturar,fmt:"money",s:`${fmt0(k.enCamino)} pedidos en camino · se factura al entregar`},
+    {l:"Cumplimiento de entrega",v:pct(k.cumpl),n:k.cumpl,fmt:"pct",s:`${fmt0(k.noEnt)} pedidos sin entregar`},
+    {l:"Ingreso mensual en riesgo",v:money(k.ingresoRiesgo),n:k.ingresoRiesgo,fmt:"money",s:`<span class="arrow2" style="color:#ffd9dc">▼</span> ${k.enRiesgo.length} clientes en riesgo`},
   ];
-  impact.innerHTML=cards.map(c=>`<div class="ic ${c.hot?'hot':''}"><div class="l">${c.l}</div><div class="v">${c.v}</div><div class="s">${c.s}</div></div>`).join("");
+  impact.innerHTML=cards.map(c=>`<div class="ic ${c.hot?'hot':''}"><div class="l">${c.l}</div><div class="v" data-n="${c.n}" data-fmt="${c.fmt}">${c.v}</div><div class="s">${c.s}</div></div>`).join("");
   const lowCapt=clientesResumen().filter(c=>c.captura<0.80).length;
   const ms=[
-    {l:"Pedidos del periodo",v:fmt0(k.total),d:"capturados automáticamente",c:"neutral"},
-    {l:"Clientes activos",v:fmt0(k.clientes),d:"con compras recientes",c:"up"},
-    {l:"Clientes en riesgo",v:fmt0(k.enRiesgo.length),d:k.enRiesgo.length?"requieren seguimiento · ver":"todo en orden",c:k.enRiesgo.length?"down":"up",jump:"abandono"},
-    {l:"Captura por revisar",v:fmt0(lowCapt),d:lowCapt?"clientes <80% · ver":"todos arriba de 80%",c:lowCapt?"down":"up",jump:"clientes"},
-    {l:"Captura sin errores",v:pct(k.conf),d:k.conf>=0.85?"sin intervención manual":"revisar captura",c:k.conf>=0.85?"up":"down"},
+    {l:"Pedidos del periodo",v:fmt0(k.total),n:k.total,fmt:"int",d:"capturados automáticamente",c:"neutral"},
+    {l:"Clientes activos",v:fmt0(k.clientes),n:k.clientes,fmt:"int",d:"con compras recientes",c:"up"},
+    {l:"Clientes en riesgo",v:fmt0(k.enRiesgo.length),n:k.enRiesgo.length,fmt:"int",d:k.enRiesgo.length?"requieren seguimiento · ver":"todo en orden",c:k.enRiesgo.length?"down":"up",jump:"abandono"},
+    {l:"Captura por revisar",v:fmt0(lowCapt),n:lowCapt,fmt:"int",d:lowCapt?"clientes <80% · ver":"todos arriba de 80%",c:lowCapt?"down":"up",jump:"clientes"},
+    {l:"Captura sin errores",v:pct(k.conf),n:k.conf,fmt:"pct",d:k.conf>=0.85?"sin intervención manual":"revisar captura",c:k.conf>=0.85?"up":"down"},
   ];
-  ministats.innerHTML=ms.map(x=>`<div class="ms ${x.jump?'click':''}" ${x.jump?`data-jump="${x.jump}"`:''}><div class="l">${x.l}</div><div class="v">${x.v}</div><div class="d ${x.c}">${x.c==="up"?"▲":x.c==="down"?"▼":"●"} ${x.d}</div></div>`).join("");
+  ministats.innerHTML=ms.map(x=>`<div class="ms ${x.jump?'click':''}" ${x.jump?`data-jump="${x.jump}"`:''}><div class="l">${x.l}</div><div class="v" data-n="${x.n}" data-fmt="${x.fmt}">${x.v}</div><div class="d ${x.c}">${x.c==="up"?"▲":x.c==="down"?"▼":"●"} ${x.d}</div></div>`).join("");
   tabFactCount.textContent=k.total;
   renderAtencion(k);
 }
@@ -556,10 +586,13 @@ function renderAtencion(k){
 function renderFacturacion(){
   let cam=0,fac=0,noent=0,montoCam=0,montoFac=0;
   PEDIDOS.forEach(p=>{const i=cicloIdx(p),m=+p.monto||0;if(i===-1)noent++;else if(i===3){fac++;montoFac+=m;}else{cam++;montoCam+=m;}});
-  fstats.innerHTML=`
-    <div class="acard c-warn"><div class="n">${cam}</div><div class="t">En camino · por facturar ${money(montoCam)}</div></div>
-    <div class="acard c-ok"><div class="n">${fac}</div><div class="t">Entregados y facturados · ${money(montoFac)}</div></div>
-    <div class="acard c-bad"><div class="n">${noent}</div><div class="t">No se entregaron</div></div>`;
+  const parts=[
+    {label:"En camino · por facturar",value:cam,monto:montoCam,color:"#e09b16"},
+    {label:"Entregados y facturados",value:fac,monto:montoFac,color:"#0d7d4d"},
+    {label:"No se entregaron",value:noent,monto:0,color:"#ed1c2e"},
+  ];
+  factdonut.innerHTML=donut(parts);
+  factleg.innerHTML=parts.map(p=>`<div class="dleg-row"><span class="dleg-dot" style="background:${p.color}"></span><span class="dleg-l">${p.label}</span><b class="dleg-v">${p.value}${p.monto?" · "+money(p.monto):""}</b></div>`).join("");
   const list=PEDIDOS.filter(p=>FFILTRO==="ALL"||p.portal===FFILTRO).slice()
     .sort((a,b)=>(b.fecha||"").localeCompare(a.fecha||"")||((b.numero_orden||0)-(a.numero_orden||0)));  // más recientes arriba
   factbody.innerHTML=list.map(p=>{
@@ -575,18 +608,26 @@ function renderFacturacion(){
     });
     const facCell=i===3?`<span class="badge b-ok">${p.numero_factura||"facturado"}</span>`
       :i===-1?`<span class="badge b-bad">cancelado</span>`:`<span class="badge b-warn">por facturar</span>`;
-    return `<tr class="frow click" data-cli="${p.cliente}"><td style="font-family:var(--mono);font-size:11px;color:var(--dim)">${p.id}</td><td style="font-weight:700">${p.cliente}</td><td><div class="pipe">${pipe}</div></td><td>${facCell}</td><td style="text-align:right;font-family:var(--mono);font-size:12px">${money(+p.monto||0)}</td></tr>`;
-  }).join("")||`<tr><td colspan="5" style="color:var(--muted)">Sin pedidos.</td></tr>`;
+    const lineas=p.lineas||[];
+    const tot=lineas.reduce((a,l)=>a+(+l.importe||0),0)||(+p.monto||0);
+    const det=lineas.length
+      ? `<table class="fdet-t"><thead><tr><th>Producto</th><th style="text-align:right">Cantidad</th><th style="text-align:right">Importe</th></tr></thead><tbody>${lineas.map(l=>`<tr><td>${l.nombre||l.sku}</td><td style="text-align:right;font-family:var(--mono)">${fmt0(l.cantidad)} pz</td><td style="text-align:right;font-family:var(--mono)">${money(+l.importe||0)}</td></tr>`).join("")}<tr class="fdet-tot"><td>Total del pedido</td><td></td><td style="text-align:right;font-family:var(--mono)">${money(tot)}</td></tr></tbody></table>`
+      : `<div style="color:var(--muted);font-size:12.5px">Este pedido no tiene detalle de productos cargado.</div>`;
+    return `<tr class="frow click" data-orden="${p.id}"><td style="font-family:var(--mono);font-size:11px;color:var(--dim)">${p.id}</td><td style="font-weight:700">${p.cliente}</td><td><div class="pipe">${pipe}</div></td><td>${facCell}</td><td style="text-align:right;font-family:var(--mono);font-size:12px">${money(+p.monto||0)}</td><td class="fchev" style="text-align:right;color:var(--dim)">▾</td></tr>`+
+      `<tr class="fdet" data-det="${p.id}" style="display:none"><td colspan="6"><div class="fdet-inner">${det}</div></td></tr>`;
+  }).join("")||`<tr><td colspan="6" style="color:var(--muted)">Sin pedidos.</td></tr>`;
 }
 
 /* ===== abandono · resultado del modelo de riesgo ===== */
+let _spk=0;
 function sparkline(serie,color){
   color=color||"var(--bad)";
   const w=220,h=40,mx=Math.max(...serie),mn=Math.min(...serie),rng=(mx-mn)||1;
   const pts=serie.map((v,i)=>[serie.length<2?w/2:i*w/(serie.length-1),h-3-((v-mn)/rng)*(h-8)]);
-  const path=pts.map((p,i)=>`${i?'L':'M'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(" ");
-  const last=pts[pts.length-1];
-  return `<svg class="spark" viewBox="0 0 ${w} ${h}"><path d="${path}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round"/><circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="3.2" fill="${color}"/></svg>`;
+  const line=pts.map((p,i)=>`${i?'L':'M'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(" ");
+  const area=line+` L${pts[pts.length-1][0].toFixed(1)},${h} L${pts[0][0].toFixed(1)},${h} Z`;
+  const last=pts[pts.length-1],id="spk"+(_spk++);
+  return `<svg class="spark" viewBox="0 0 ${w} ${h}"><defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${color}" stop-opacity="0.30"/><stop offset="100%" stop-color="${color}" stop-opacity="0"/></linearGradient></defs><path d="${area}" fill="url(#${id})"/><path d="${line}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round"/><circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="3.2" fill="${color}"/></svg>`;
 }
 function accionRiesgo(r){
   switch(r.razon){
@@ -618,10 +659,10 @@ function renderAbandono(){
     const bd=f.length?f.join(" · "):"comportamiento estable";
     const spkCol=r.trend>=0.15?"var(--bad)":(r.dropVol>=0.15?"#a9740a":"var(--ok)");  // la línea refleja la tendencia que mide el modelo
     return `<div class="ccard click ${lv==="ok"?"":"risk-"+lv}" data-cli="${r.cliente}">
+      <div class="cgauge">${gauge(r.riesgo,col,58)}<div class="glab">riesgo</div></div>
       <div class="cnm">${r.cliente}</div>
       <div class="cpt">${(PORTALES[r.portal]||{}).nombre||r.portal} · gasto mensual</div>
-      <div class="cdrop" style="color:${col}">${Math.round(r.riesgo*100)}% riesgo</div>
-      <div class="csub">${bd}</div>
+      <div class="csub" style="margin-top:12px">${bd}</div>
       ${sparkline(r.serie,spkCol)}
       <div class="csub" style="margin-top:10px;color:var(--ink)">${r.riesgo>=0.45?accionRiesgo(r)+` · ~${money(r.ingresoRiesgo)}/mes en juego`:"Comprando estable."}</div>
       <div class="cardlink">Ver detalle →</div>
@@ -730,7 +771,7 @@ function openCliente(nombre){
   const prods=prodTrends(nombre),dropped=prods.filter(p=>p.tend==="down"),nuevos=sugerirNuevos(prods);
   const riesgo=r.riesgo||0,lv=riesgo>=0.66?"bad":riesgo>=0.45?"warn":"ok";
   const histo=peds.reduce((a,p)=>a+(+p.monto||0),0);
-  mhead.innerHTML=`<div class="mrisk"><div class="rv">${Math.round(riesgo*100)}%</div><div class="rl">riesgo de abandono</div></div>
+  mhead.innerHTML=`<div class="mrisk">${gauge(riesgo,"#fff",74,"rgba(255,255,255,.35)")}<div class="rl">riesgo de abandono</div></div>
     <h2>${nombre}</h2><div class="msub">${(PORTALES[portal]||{}).nombre||portal} · ${peds.length} pedidos · ${money(histo)} histórico</div>`;
   const mp=MAPAMAP[portal]||null;
   const conf=mp?(+mp.confianza_global||0):confianzaCaptura();
@@ -798,7 +839,39 @@ function renderClientes(){
   }).join(""):`<div class="pad" style="color:var(--muted)">Sin clientes con pedidos.</div>`;
 }
 
-function renderAll(){renderSelect();renderKPIs();renderChart();renderClientes();renderFacturacion();renderAbandono();}
+/* ===== anillo de riesgo (gauge) ===== */
+function gauge(p,color,size,track){
+  size=size||60;track=track||"var(--line2)";
+  const r=size/2-6,c=2*Math.PI*r,off=c*(1-clamp(p,0,1)),cx=size/2;
+  return `<svg class="gauge" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+    <circle cx="${cx}" cy="${cx}" r="${r}" fill="none" stroke="${track}" stroke-width="6"/>
+    <circle cx="${cx}" cy="${cx}" r="${r}" fill="none" stroke="${color}" stroke-width="6" stroke-linecap="round" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" transform="rotate(-90 ${cx} ${cx})"><animate attributeName="stroke-dashoffset" from="${c.toFixed(1)}" to="${off.toFixed(1)}" dur="0.7s" fill="freeze"/></circle>
+    <text x="50%" y="50%" text-anchor="middle" dominant-baseline="central" class="gtxt" style="fill:${color}">${Math.round(p*100)}%</text></svg>`;
+}
+/* ===== donut (distribución de pedidos) ===== */
+function donut(parts){
+  const total=parts.reduce((a,p)=>a+p.value,0)||1,R=52,sw=22,c=2*Math.PI*R,cx=70;let off=0;
+  const segs=parts.filter(p=>p.value>0).map(p=>{const len=c*(p.value/total);const el=`<circle cx="${cx}" cy="${cx}" r="${R}" fill="none" stroke="${p.color}" stroke-width="${sw}" stroke-dasharray="${len.toFixed(1)} ${(c-len).toFixed(1)}" stroke-dashoffset="${(-off).toFixed(1)}" transform="rotate(-90 ${cx} ${cx})"/>`;off+=len;return el;}).join("");
+  return `<svg width="140" height="140" viewBox="0 0 140 140">${segs}<text x="${cx}" y="${cx-3}" text-anchor="middle" class="dn-v">${fmt0(total)}</text><text x="${cx}" y="${cx+14}" text-anchor="middle" class="dn-l">pedidos</text></svg>`;
+}
+/* ===== count-up de los KPIs ===== */
+function animateNums(){
+  document.querySelectorAll("[data-n]").forEach(el=>{
+    const target=+el.getAttribute("data-n")||0,fmt=el.getAttribute("data-fmt");
+    const f=fmt==="money"?money:fmt==="pct"?pct:fmt0;
+    const dur=850,t0=performance.now();
+    function step(t){const k=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-k,3);el.textContent=f(target*e);if(k<1)requestAnimationFrame(step);else el.textContent=f(target);}
+    requestAnimationFrame(step);
+  });
+}
+
+let _sig="";
+function renderAll(){
+  const sig=PEDIDOS.length+"|"+Math.round(PEDIDOS.reduce((a,p)=>a+(+p.monto||0),0))+"|"+Object.keys(MAPAMAP).length+"|"+MAPAS.length;
+  if(sig===_sig)return;_sig=sig;                 // solo re-renderiza (y anima) cuando cambian los datos
+  renderSelect();renderKPIs();renderChart();renderClientes();renderFacturacion();renderAbandono();
+  animateNums();
+}
 
 /* tabs */
 document.querySelectorAll(".tabs button").forEach(b=>b.addEventListener("click",()=>{
@@ -810,6 +883,7 @@ ffiltro.addEventListener("change",e=>{FFILTRO=e.target.value;renderFacturacion()
 /* interactividad: clic en cualquier elemento con data-cli abre su detalle */
 document.addEventListener("click",e=>{
   const jp=e.target.closest("[data-jump]");if(jp){const btn=document.querySelector(`.tabs button[data-tab="${jp.getAttribute("data-jump")}"]`);if(btn){btn.click();window.scrollTo({top:0,behavior:"smooth"});}return;}
+  const fr=e.target.closest("[data-orden]");if(fr){const d=document.querySelector(`.fdet[data-det="${fr.getAttribute("data-orden")}"]`);if(d){const open=d.style.display!=="none";d.style.display=open?"none":"table-row";const ch=fr.querySelector(".fchev");if(ch)ch.textContent=open?"▾":"▴";}return;}
   const el=e.target.closest("[data-cli]");if(el)openCliente(el.getAttribute("data-cli"));
 });
 mclose.onclick=closeModal;
