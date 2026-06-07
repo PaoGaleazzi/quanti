@@ -27,10 +27,13 @@ Cómo correr la prueba con un pedido dummy de Sanborns:
 """
 
 import os
-from datetime import datetime
+from datetime import datetime, date
 
 from dotenv import load_dotenv
 import psycopg2
+
+# URL del portal de Arca (genérico, sin datos precargados). Se sirve en localhost.
+URL_ARCA = "http://localhost:3000/portal_arca_bot.html"
 
 # Carga DB_* del .env (nunca se imprimen).
 load_dotenv()
@@ -257,14 +260,84 @@ def ejecutar(cliente_portal, pedido_nuevo):
         datos = aplicar_transformaciones(pedido_nuevo, mapa, cur)
         numero_orden, monto_total = guardar_pedido(datos, cur)
         conn.commit()
-        return datos, numero_orden, monto_total
+        return datos, numero_orden, monto_total, mapa
     finally:
         conn.close()
 
 
 # ---------------------------------------------------------------------------
+# 4. LLENAR EL PORTAL VISUAL DE ARCA (Playwright) — solo demo, no toca la base.
+# ---------------------------------------------------------------------------
+def llenar_portal_arca(cliente_portal, datos, pedido_origen, mapa, numero_orden):
+    """
+    Abre el portal de Arca (genérico) y TECLEA los datos transformados con
+    Playwright, para que en el demo se VEA al bot llenar el formulario, y al
+    final hace clic en 'Registrar en Arca'.
+
+    OJO: esto NO guarda en la base (eso ya lo hizo ejecutar()). Es la capa visual.
+    El portal no trae datos ni factor fijos: todo sale de lo que el bot teclea.
+    """
+    from playwright.sync_api import sync_playwright
+
+    # ¿La cantidad se obtuvo convirtiendo cajas->piezas? Lo dice el mapa aprendido.
+    indice = _indexar_mapa(mapa)
+    info_cant = indice.get("cantidad", {})
+    es_conversion = info_cant.get("transf") == "conversion_unidad"
+    campo_cajas = info_cant.get("origen")  # nombre del campo origen (ej. "unidades_pedidas")
+
+    # % de confiabilidad del mapa (para la barra del portal).
+    conf = mapa.get("confianza_global")
+    pct = round(float(conf) * 100) if conf else 90
+
+    hoy = date.today().isoformat()
+
+    with sync_playwright() as p:
+        # headless=False + slow_mo para VER al bot teclear (importante en el demo).
+        browser = p.chromium.launch(headless=False, slow_mo=700)
+        page = browser.new_page()
+        page.goto(URL_ARCA)
+
+        # Crea tantos renglones VACÍOS como productos tenga el pedido.
+        page.evaluate(f"nuevoPedido({len(datos['items'])})")
+
+        # Datos de contexto que el bot NO teclea (orden, portal, fecha pedido).
+        page.evaluate(
+            "(d) => setMeta(d.orden, d.cliente, d.portal, d.fechap)",
+            {
+                "orden": f"ORD-{numero_orden}",
+                "cliente": f"{cliente_portal} · client_id {datos['client_id']}",
+                "portal": cliente_portal,
+                "fechap": hoy,
+            },
+        )
+
+        # CABECERA: el bot teclea client_id y la fecha de entrega.
+        page.fill("#f_client", str(datos["client_id"]))
+        page.fill("#f_fechae", str(datos["fecha_entrega_estimada"]))
+
+        # RENGLONES: un producto por fila.
+        for i, it in enumerate(datos["items"]):
+            page.fill(f"#f_sku{i}", str(it["sku"]))
+            page.fill(f"#f_nom{i}", str(it["producto_nombre"]))
+            page.fill(f"#f_qty{i}", str(it["cantidad"]))
+            page.fill(f"#f_precio{i}", str(it["precio_unitario"]))
+            # Si hubo conversión cajas->piezas, mostramos el badge con el factor REAL.
+            if es_conversion and campo_cajas:
+                cajas = int(pedido_origen["productos"][i][campo_cajas])
+                piezas = int(it["cantidad"])
+                factor = piezas // cajas if cajas else 0
+                page.evaluate(f"setConversion({i}, {cajas}, {factor}, {piezas})")
+
+        # Barra de confiabilidad y clic final en 'Registrar en Arca'.
+        page.evaluate(f"setConfianza({pct})")
+        page.click("#btnSubmit")
+        page.wait_for_timeout(2000)  # pausa para que se vea el banner de éxito
+        browser.close()
+
+
+# ---------------------------------------------------------------------------
 # FLUJO COMPLETO de Sanborns:
-#   leer portal cliente (Playwright) -> transformar (mapa) -> guardar en Arca.
+#   leer portal cliente -> transformar (mapa) -> guardar en BD -> llenar portal Arca.
 # NO se llama al LLM aquí: solo lectura + aplicar el mapa ya aprendido.
 #
 # Antes de correr, servir los portales:
@@ -280,11 +353,16 @@ if __name__ == "__main__":
     print("DATOS LEÍDOS DEL PORTAL (crudos, en cajas):")
     print(json.dumps(pedido_sanborns, indent=2, ensure_ascii=False))
 
-    # 2) y 3) TRANSFORMAR + GUARDAR: aplica el mapa aprendido y registra en Arca.
-    print("\nPaso 2: aplicando el mapa y guardando en Arca (sin LLM)...\n")
-    datos, numero_orden, monto_total = ejecutar("Sanborns", pedido_sanborns)
+    # 2) y 3) TRANSFORMAR + GUARDAR: aplica el mapa aprendido y registra en la base.
+    print("\nPaso 2: aplicando el mapa y guardando en la base (sin LLM)...\n")
+    datos, numero_orden, monto_total, mapa = ejecutar("Sanborns", pedido_sanborns)
 
     print("DATOS TRANSFORMADOS (listos para Arca):")
     print(json.dumps(datos, indent=2, ensure_ascii=False))
     print(f"\nGuardado OK -> pedidos.numero_orden = {numero_orden}, "
           f"monto_total = {monto_total}")
+
+    # 4) LLENAR EL PORTAL DE ARCA en pantalla (el bot teclea solo, para el demo).
+    print("\nPaso 3: el bot llena el portal de Arca (mira la ventana)...")
+    llenar_portal_arca("Sanborns", datos, pedido_sanborns, mapa, numero_orden)
+    print("Portal de Arca llenado y registrado.")
