@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HEB — Orden de Compra #PO-2026-00847</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --heb-red:#D0021B; --heb-dark:#1A0005; --heb-deep:#8B0011;
+    --ink:#111318; --ink-mid:#3E4351; --ink-soft:#6B7080;
+    --line:#E4E6EB; --line-soft:#F1F2F5; --white:#FFFFFF; --bg:#F6F7F9;
+    --ok:#0D7D4D; --ok-soft:#E6F4EE; --warn:#B45309; --warn-soft:#FEF3C7; --red-soft:#FFF1F2;
+    --sans:'IBM Plex Sans',system-ui,sans-serif; --mono:'IBM Plex Mono',monospace;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html{font-size:14px}
+  body{font-family:var(--sans);background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;min-height:100vh}
+
+  .topbar{background:var(--heb-dark);height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 32px;position:sticky;top:0;z-index:100;border-bottom:2px solid var(--heb-red)}
+  .topbar-left{display:flex;align-items:center;gap:20px}
+  .heb-logo{font-family:var(--sans);font-weight:700;font-size:18px;color:var(--white);letter-spacing:-.5px;display:flex;align-items:center;gap:10px}
+  .heb-logo .badge{background:var(--heb-red);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:3px;letter-spacing:.5px}
+  .topbar-sep{width:1px;height:20px;background:rgba(255,255,255,.15)}
+  .topbar-module{font-family:var(--mono);font-size:11px;color:rgba(255,255,255,.5);letter-spacing:.5px}
+  .topbar-right{display:flex;align-items:center;gap:16px}
+  .topbar-user{font-size:12px;color:rgba(255,255,255,.6);display:flex;align-items:center;gap:8px}
+  .topbar-dot{width:6px;height:6px;border-radius:50%;background:#22c55e;animation:pulse 2.5s infinite}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,.5)}50%{box-shadow:0 0 0 5px rgba(34,197,94,0)}}
+
+  .subbar{background:var(--white);border-bottom:1px solid var(--line);padding:0 32px;height:40px;display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;color:var(--ink-soft)}
+  .subbar a{color:var(--ink-soft);text-decoration:none}.subbar a:hover{color:var(--heb-red)}
+  .subbar .crumb-sep{opacity:.4}.subbar .current{color:var(--ink);font-weight:500}
+
+  .container{max-width:1100px;margin:0 auto;padding:28px 32px 60px}
+
+  .po-header{background:var(--white);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,.04),0 4px 16px rgba(0,0,0,.04)}
+  .po-header-top{background:var(--heb-dark);padding:20px 28px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  .po-label{font-family:var(--mono);font-size:10px;color:rgba(255,255,255,.4);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px}
+  .po-number{font-family:var(--mono);font-size:22px;font-weight:600;color:var(--white);letter-spacing:-.5px}
+  .po-badges{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .po-status{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.5px;padding:5px 12px;border-radius:4px}
+  .status-emitida{background:rgba(255,255,255,.1);color:var(--white);border:1px solid rgba(255,255,255,.2)}
+  .status-dot-w{width:6px;height:6px;border-radius:50%;background:#fbbf24}
+  .type-badge{font-family:var(--mono);font-size:10px;font-weight:600;padding:4px 10px;border-radius:4px;background:var(--heb-red);color:#fff;letter-spacing:.5px}
+
+  .po-meta{padding:20px 28px;display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--line)}
+  .meta-item{padding:0 20px 0 0;border-right:1px solid var(--line);margin-right:20px}
+  .meta-item:last-child{border-right:none;margin-right:0;padding-right:0}
+  .meta-label{font-family:var(--mono);font-size:9.5px;color:var(--ink-soft);letter-spacing:.8px;text-transform:uppercase;margin-bottom:5px}
+  .meta-value{font-size:13.5px;font-weight:600;color:var(--ink)}.meta-value.red{color:var(--heb-red)}
+
+  .supplier-strip{padding:14px 28px;background:var(--line-soft);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  .supplier-block{display:flex;align-items:center;gap:12px}
+  .supplier-logo{width:38px;height:38px;background:var(--heb-red);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;font-family:var(--mono);flex-shrink:0}
+  .supplier-name{font-weight:600;font-size:13.5px}
+  .supplier-id{font-family:var(--mono);font-size:10.5px;color:var(--ink-soft);margin-top:2px}
+  .supplier-meta{display:flex;gap:24px}
+  .sup-field-label{font-family:var(--mono);font-size:9px;color:var(--ink-soft);letter-spacing:.5px;text-transform:uppercase}
+  .sup-field-val{font-size:12px;font-weight:500;color:var(--ink-mid);margin-top:2px}
+
+  .section{background:var(--white);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.03),0 4px 12px rgba(0,0,0,.03)}
+  .sec-hd{display:flex;align-items:center;justify-content:space-between;padding:13px 22px;border-bottom:1px solid var(--line);background:#fafafa}
+  .sec-title{font-size:12px;font-weight:700;color:var(--ink);letter-spacing:.2px;text-transform:uppercase}
+  .sec-tag{font-family:var(--mono);font-size:10px;color:var(--ink-soft)}
+
+  .parties-grid{display:grid;grid-template-columns:1fr 1fr}
+  .party-col{padding:20px 24px}.party-col:first-child{border-right:1px solid var(--line)}
+  .party-type{font-family:var(--mono);font-size:9.5px;color:var(--ink-soft);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+  .party-name{font-size:14px;font-weight:700;margin-bottom:10px}
+  .party-fields{display:flex;flex-direction:column;gap:5px}
+  .party-field{display:flex;gap:12px;font-size:12px}
+  .pf-label{color:var(--ink-soft);width:120px;flex-shrink:0}
+  .pf-val{color:var(--ink);font-weight:500}.pf-val.mono{font-family:var(--mono);font-size:11.5px}
+
+  .items-table{width:100%;border-collapse:collapse}
+  .items-table thead tr{background:#f5f6f8;border-bottom:1px solid var(--line)}
+  .items-table th{text-align:left;padding:10px 16px;font-size:10px;font-weight:700;color:var(--ink-soft);letter-spacing:.5px;text-transform:uppercase;white-space:nowrap}
+  .items-table th.right{text-align:right}
+  .items-table td{padding:13px 16px;font-size:13px;border-bottom:1px solid var(--line-soft);vertical-align:middle}
+  .items-table tr:last-child td{border-bottom:none}
+  .items-table td.right{text-align:right}
+  .items-table tr:hover td{background:#fafafa}
+  .sku-pill{display:inline-block;font-family:var(--mono);font-size:10.5px;background:var(--line-soft);border:1px solid var(--line);border-radius:5px;padding:2px 7px;color:var(--ink-mid)}
+  .prod-name{font-weight:600;color:var(--ink);margin-bottom:2px}
+  .prod-desc{font-size:11px;color:var(--ink-soft)}
+  .qty-cell{font-family:var(--mono);font-weight:600;font-size:13px}
+  .price-cell{font-family:var(--mono);font-size:12.5px;color:var(--ink-mid)}
+  .total-cell{font-family:var(--mono);font-weight:700;font-size:13px;color:var(--ink)}
+  .uom-pill{display:inline-block;font-family:var(--mono);font-size:9.5px;background:var(--ok-soft);color:var(--ok);border:1px solid rgba(13,125,77,.15);border-radius:4px;padding:2px 6px;margin-left:5px}
+  .cat-dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px}
+
+  .totals-area{display:flex;justify-content:flex-end;padding:16px 22px;border-top:1px solid var(--line);background:#fafafa}
+  .totals-box{width:280px}
+  .tot-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:12.5px;border-bottom:1px solid var(--line-soft)}
+  .tot-row:last-child{border-bottom:none}
+  .tot-label{color:var(--ink-soft)}.tot-val{font-family:var(--mono);font-weight:600}
+  .tot-row.grand{margin-top:6px;padding-top:10px;border-top:2px solid var(--ink)}
+  .tot-row.grand .tot-label{font-weight:700;font-size:13px;color:var(--ink)}
+  .tot-row.grand .tot-val{font-size:15px;color:var(--heb-red)}
+
+  .cond-grid{display:grid;grid-template-columns:repeat(3,1fr)}
+  .cond-item{padding:16px 22px;border-right:1px solid var(--line)}.cond-item:last-child{border-right:none}
+  .cond-label{font-family:var(--mono);font-size:9.5px;color:var(--ink-soft);letter-spacing:.6px;text-transform:uppercase;margin-bottom:5px}
+  .cond-value{font-size:13px;font-weight:600;color:var(--ink)}.cond-value.mono{font-family:var(--mono)}
+  .cond-sub{font-size:11px;color:var(--ink-soft);margin-top:2px}
+
+  .notes-body{padding:18px 24px;display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .note-label{font-family:var(--mono);font-size:9.5px;color:var(--ink-soft);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px}
+  .note-text{font-size:12.5px;color:var(--ink-mid);line-height:1.6}
+  .note-text.alert{color:var(--warn);background:var(--warn-soft);border:1px solid rgba(180,83,9,.2);border-radius:6px;padding:8px 12px;font-size:12px}
+
+  .sig-strip{background:var(--white);border:1px solid var(--line);border-radius:12px;padding:18px 28px;display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.03)}
+  .sig-block{display:flex;align-items:center;gap:12px}
+  .sig-icon{width:36px;height:36px;border-radius:50%;background:var(--ok-soft);border:1px solid rgba(13,125,77,.2);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--ok);font-family:var(--mono);flex-shrink:0}
+  .sig-name{font-weight:600;font-size:13px}.sig-role{font-size:11px;color:var(--ink-soft);margin-top:2px}
+  .sig-hash{font-family:var(--mono);font-size:10px;color:var(--ink-soft);background:var(--line-soft);padding:4px 10px;border-radius:5px;border:1px solid var(--line)}
+  .sig-verified{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10.5px;color:var(--ok);font-weight:600}
+
+  .actions-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:24px;flex-wrap:wrap}
+  .ab-title{font-size:18px;font-weight:700;color:var(--ink);letter-spacing:-.3px}
+  .ab-sub{font-size:12px;color:var(--ink-soft);margin-top:2px}
+  .ab-right{display:flex;gap:8px;flex-wrap:wrap}
+  .btn{display:inline-flex;align-items:center;gap:6px;font-family:var(--sans);font-size:12px;font-weight:600;padding:8px 16px;border-radius:7px;cursor:pointer;border:none;transition:.15s}
+  .btn-ghost{background:var(--white);color:var(--ink-mid);border:1px solid var(--line)}
+  .btn-ghost:hover{border-color:var(--ink-mid);background:var(--line-soft)}
+  .btn-primary{background:var(--heb-red);color:#fff;box-shadow:0 2px 8px rgba(208,2,27,.25)}
+  .btn-primary:hover{background:var(--heb-deep)}
+
+  .po-stamp{position:fixed;top:120px;right:40px;background:var(--red-soft);border:2px solid var(--heb-red);border-radius:8px;padding:10px 16px;font-family:var(--mono);font-size:11px;color:var(--heb-red);font-weight:600;text-align:center;transform:rotate(2.5deg);box-shadow:0 4px 16px rgba(208,2,27,.15);pointer-events:none;letter-spacing:.5px}
+
+  @media (max-width:768px){
+    .container{padding:16px}
+    .po-meta{grid-template-columns:repeat(2,1fr);gap:16px}.meta-item{border-right:none;margin-right:0}
+    .parties-grid{grid-template-columns:1fr}.party-col:first-child{border-right:none;border-bottom:1px solid var(--line)}
+    .cond-grid{grid-template-columns:1fr}.cond-item{border-right:none;border-bottom:1px solid var(--line)}
+    .notes-body{grid-template-columns:1fr}.po-stamp{display:none}
+    .topbar,.subbar{padding:0 16px}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="heb-logo">
+      <svg width="32" height="20" viewBox="0 0 32 20" fill="none"><rect width="32" height="20" rx="2" fill="#D0021B"/><text x="50%" y="14" text-anchor="middle" fill="white" font-family="sans-serif" font-weight="800" font-size="12">HEB</text></svg>
+      <span>Mercado HEB</span><span class="badge">B2B</span>
+    </div>
+    <div class="topbar-sep"></div>
+    <span class="topbar-module">PORTAL DE COMPRAS · CANAL MODERNO</span>
+  </div>
+  <div class="topbar-right">
+    <div class="topbar-user"><div class="topbar-dot"></div>Dpto. Compras · Ana M. Villarreal</div>
+  </div>
+</div>
+
+<div class="subbar">
+  <a href="#">Inicio</a><span class="crumb-sep">›</span>
+  <a href="#">Compras</a><span class="crumb-sep">›</span>
+  <a href="#">Órdenes de Compra</a><span class="crumb-sep">›</span>
+  <span class="current">PO-2026-00847</span>
+</div>
+
+<!-- data-field marca cada dato que el bot lee del portal HEB (origen) -->
+<div class="container" id="purchase-order" data-portal="HEB" data-tabla-origen="heb_orders">
+
+  <div class="po-stamp">ORDEN<br>EMITIDA<br>2026-06-06</div>
+
+  <div class="actions-bar">
+    <div class="ab-left">
+      <div>
+        <div class="ab-title">Orden de Compra — <span data-field="po_number">PO-2026-00847</span></div>
+        <div class="ab-sub">Emitida el 06 Jun 2026 · Proveedor: Arca Continental S.A.B. de C.V.</div>
+      </div>
+    </div>
+    <div class="ab-right">
+      <button class="btn btn-ghost" onclick="window.print()">Imprimir PDF</button>
+      <button class="btn btn-ghost">Exportar XML</button>
+      <button class="btn btn-primary">Contactar Proveedor</button>
+    </div>
+  </div>
+
+  <div class="po-header">
+    <div class="po-header-top">
+      <div>
+        <div class="po-label">NÚMERO DE ORDEN DE COMPRA</div>
+        <div class="po-number">PO-2026-00847</div>
+      </div>
+      <div class="po-badges">
+        <div class="po-status status-emitida"><div class="status-dot-w"></div>PENDIENTE DE CONFIRMACIÓN</div>
+        <div class="type-badge">REPOSICIÓN REGULAR</div>
+      </div>
+    </div>
+
+    <div class="po-meta">
+      <div class="meta-item"><div class="meta-label">Fecha de emisión</div><div class="meta-value">06 Jun 2026</div></div>
+      <div class="meta-item"><div class="meta-label">Fecha de entrega requerida</div><div class="meta-value red" data-field="delivery_date" data-value="2026-06-09">09 Jun 2026</div></div>
+      <div class="meta-item"><div class="meta-label">Condición de pago</div><div class="meta-value">30 días neto</div></div>
+      <div class="meta-item"><div class="meta-label">Incoterm / Entrega</div><div class="meta-value">DDP — CD Valle Oriente</div></div>
+    </div>
+
+    <div class="supplier-strip">
+      <div class="supplier-block">
+        <div class="supplier-logo">AC</div>
+        <div>
+          <div class="supplier-name">Arca Continental S.A.B. de C.V.</div>
+          <div class="supplier-id">PROV-ID: 000038 · RFC: ACO880201SN2 · Proveedor certificado HEB</div>
+        </div>
+      </div>
+      <div class="supplier-meta">
+        <div><div class="sup-field-label">Ejecutivo de cuenta</div><div class="sup-field-val">Lic. Roberto Garza T.</div></div>
+        <div><div class="sup-field-label">Teléfono</div><div class="sup-field-val">+52 81 8151-1400</div></div>
+        <div><div class="sup-field-label">Correo electrónico</div><div class="sup-field-val">pedidos.heb@arcacontinen.com.mx</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-hd"><div class="sec-title">Compradora y Proveedor</div><div class="sec-tag">DATOS DE LAS PARTES</div></div>
+    <div class="parties-grid">
+      <div class="party-col">
+        <div class="party-type">Compradora (Bill-To / Ship-To)</div>
+        <div class="party-name">Mercado HEB, S. de R.L. de C.V.</div>
+        <div class="party-fields">
+          <div class="party-field"><span class="pf-label">RFC</span><span class="pf-val mono">MHE931201KD5</span></div>
+          <div class="party-field"><span class="pf-label">Unidad de negocio</span><span class="pf-val">HEB Valle Oriente — MTY Norte</span></div>
+          <div class="party-field"><span class="pf-label">Dirección entrega</span><span class="pf-val">Av. Gonzalitos 600, Col. Mitras Centro, Monterrey, N.L., C.P. 64460</span></div>
+          <div class="party-field"><span class="pf-label">Centro de distribución</span><span class="pf-val">CD Monterrey Norte — Dock 14</span></div>
+          <div class="party-field"><span class="pf-label">Contacto recepción</span><span class="pf-val">Lic. Carlos Medina · +52 81 8340-0011</span></div>
+          <div class="party-field"><span class="pf-label">ID del comprador</span><span class="pf-val mono" data-field="user_id" data-value="COMP-00421">COMP-00421</span></div>
+          <div class="party-field"><span class="pf-label">Departamento</span><span class="pf-val">Bebidas y Lácteos</span></div>
+        </div>
+      </div>
+      <div class="party-col">
+        <div class="party-type">Proveedor (Sell-From)</div>
+        <div class="party-name">Arca Continental S.A.B. de C.V.</div>
+        <div class="party-fields">
+          <div class="party-field"><span class="pf-label">RFC</span><span class="pf-val mono">ACO880201SN2</span></div>
+          <div class="party-field"><span class="pf-label">Planta de despacho</span><span class="pf-val">Planta Monterrey — Av. Digon 10</span></div>
+          <div class="party-field"><span class="pf-label">Dirección fiscal</span><span class="pf-val">Av. San Jerónimo 813 Pte., Col. San Jerónimo, Monterrey, N.L., C.P. 64640</span></div>
+          <div class="party-field"><span class="pf-label">Número de proveedor</span><span class="pf-val mono">000038</span></div>
+          <div class="party-field"><span class="pf-label">Categoría</span><span class="pf-val">Bebidas · Lácteos · Snacks</span></div>
+          <div class="party-field"><span class="pf-label">Cuenta bancaria</span><span class="pf-val mono">BANAMEX ····4712</span></div>
+          <div class="party-field"><span class="pf-label">Calificación</span><span class="pf-val">Proveedor Gold (5/5)</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-hd"><div class="sec-title">Líneas del Pedido</div><div class="sec-tag">8 PRODUCTOS · 8 LÍNEAS</div></div>
+    <table class="items-table">
+      <thead><tr><th>#</th><th>SKU HEB / SKU Proveedor</th><th>Descripción del Producto</th><th class="right">Cantidad</th><th>U.M.</th><th class="right">Precio Unit.</th><th class="right">Importe</th></tr></thead>
+      <tbody id="lineas">
+        <tr data-line="1">
+          <td style="font-family:var(--mono);color:var(--ink-soft);font-size:11px;">01</td>
+          <td><div class="sku-pill">HEB-00210</div><br><span style="font-family:var(--mono);font-size:10px;color:var(--ink-soft);">AC-278689</span></td>
+          <td><div class="prod-name" data-field="product" data-value="Coca-Cola 600ml"><span class="cat-dot" style="background:#3b82f6;"></span>Coca-Cola Sabor Original 600 ml</div><div class="prod-desc">Botella PET · 24 pzas por caja · Ref. SKU-0001 · Bebidas carbonatadas</div></td>
+          <td class="right qty-cell" data-field="qty" data-value="480">480 <span class="uom-pill">PZA</span></td>
+          <td style="font-family:var(--mono);font-size:11px;color:var(--ink-soft);">Pieza</td>
+          <td class="right price-cell" data-field="unit_price" data-value="18.00">$18.00</td>
+          <td class="right total-cell">$8,640.00</td>
+        </tr>
+        <tr data-line="2">
+          <td style="font-family:var(--mono);color:var(--ink-soft);font-size:11px;">02</td>
+          <td><div class="sku-pill">HEB-00212</div><br><span style="font-family:var(--mono);font-size:10px;color:var(--ink-soft);">AC-339417</span></td>
+          <td><div class="prod-name" data-field="product" data-value="Coca-Cola Sin Azúcar 600ml"><span class="cat-dot" style="background:#3b82f6;"></span>Coca-Cola Zero Azúcar 600 ml</div><div class="prod-desc">Botella PET · 24 pzas por caja · Ref. SKU-0002 · Bebidas sin azúcar</div></td>
+          <td class="right qty-cell" data-field="qty" data-value="360">360 <span class="uom-pill">PZA</span></td>
+          <td style="font-family:var(--mono);font-size:11px;color:var(--ink-soft);">Pieza</td>
+          <td class="right price-cell" data-field="unit_price" data-value="18.50">$18.50</td>
+          <td class="right total-cell">$6,660.00</td>
+        </tr>
+        <tr data-line="3">
+          <td style="font-family:var(--mono);color:var(--ink-soft);font-size:11px;">03</td>
+          <td><div class="sku-pill">HEB-00318</div><br><span style="font-family:var(--mono);font-size:10px;color:var(--ink-soft);">AC-450968</span></td>
+          <td><div class="prod-name" data-field="product" data-value="Sprite 600ml"><span class="cat-dot" style="background:#3b82f6;"></span>Sprite Lima Limón 600 ml</div><div class="prod-desc">Botella PET · 24 pzas por caja · Ref. SKU-0003 · Bebidas carbonatadas</div></td>
+          <td class="right qty-cell" data-field="qty" data-value="240">240 <span class="uom-pill">PZA</span></td>
+          <td style="font-family:var(--mono);font-size:11px;color:var(--ink-soft);">Pieza</td>
+          <td class="right price-cell" data-field="unit_price" data-value="17.00">$17.00</td>
+          <td class="right total-cell">$4,080.00</td>
+        </tr>
+        <tr data-line="4">
+          <td style="font-family:var(--mono);color:var(--ink-soft);font-size:11px;">04</td>
+          <td><div class="sku-pill">HEB-00415</div><br><span style="font-family:var(--mono);font-size:10px;color:var(--ink-soft);">AC-691542</span></td>
+          <td><div class="prod-name" data-field="product" data-value="Agua Ciel 1L"><span class="cat-dot" style="background:#06b6d4;"></span>Ciel Agua Purificada 600 ml</div><div class="prod-desc">Botella PET · 24 pzas por caja · Sin gas · Agua natural</div></td>
+          <td class="right qty-cell" data-field="qty" data-value="600">600 <span class="uom-pill">PZA</span></td>
+          <td style="font-family:var(--mono);font-size:11px;color:var(--ink-soft);">Pieza</td>
+          <td class="right price-cell" data-field="unit_price" data-value="11.00">$11.00</td>
+          <td class="right total-cell">$6,600.00</td>
+        </tr>
+        <tr data-line="5">
+          <td style="font-family:var(--mono);color:var(--ink-soft);font-size:11px;">05</td>
+          <td><div class="sku-pill">HEB-00501</div><br><span style="font-family:var(--mono);font-size:10px;color:var(--ink-soft);">AC-417641</span></td>
+          <td><div class="prod-name" data-field="product" data-value="Leche Saborizada Toni Frutilla Poma 200 Ml."><span class="cat-dot" style="background:#ec4899;"></span>Leche Saborizada Toni Frutilla Poma 200 ml</div><div class="prod-desc">Poma · 24 unidades por caja · Lácteos saborizados</div></td>
+          <td class="right qty-cell" data-field="qty" data-value="288">288 <span class="uom-pill">PZA</span></td>
+          <td style="font-family:var(--mono);font-size:11px;color:var(--ink-soft);">Pieza</td>
+          <td class="right price-cell" data-field="unit_price" data-value="9.50">$9.50</td>
+          <td class="right total-cell">$2,736.00</td>
+        </tr>
+        <tr data-line="6">
+          <td style="font-family:var(--mono);color:var(--ink-soft);font-size:11px;">06</td>
+          <td><div class="sku-pill">HEB-00502</div><br><span style="font-family:var(--mono);font-size:10px;color:var(--ink-soft);">AC-805749</span></td>
+          <td><div class="prod-name" data-field="product" data-value="Leche Saborizada Toni Chocolate Poma 200 Ml."><span class="cat-dot" style="background:#ec4899;"></span>Leche Saborizada Toni Chocolate Poma 200 ml</div><div class="prod-desc">Poma · 24 unidades por caja · Lácteos saborizados</div></td>
+          <td class="right qty-cell" data-field="qty" data-value="288">288 <span class="uom-pill">PZA</span></td>
+          <td style="font-family:var(--mono);font-size:11px;color:var(--ink-soft);">Pieza</td>
+          <td class="right price-cell" data-field="unit_price" data-value="9.50">$9.50</td>
+          <td class="right total-cell">$2,736.00</td>
+        </tr>
+        <tr data-line="7">
+          <td style="font-family:var(--mono);color:var(--ink-soft);font-size:11px;">07</td>
+          <td><div class="sku-pill">HEB-00601</div><br><span style="font-family:var(--mono);font-size:10px;color:var(--ink-soft);">AC-361323</span></td>
+          <td><div class="prod-name" data-field="product" data-value="Yogurt Mix Frutilla con Galletas 175 Gr."><span class="cat-dot" style="background:#a855f7;"></span>Yogurt Chiqui Mix Frutilla con Hojuelas 92 g</div><div class="prod-desc">Individual · 12 unidades por caja · Lácteos / Yogurt</div></td>
+          <td class="right qty-cell" data-field="qty" data-value="144">144 <span class="uom-pill">PZA</span></td>
+          <td style="font-family:var(--mono);font-size:11px;color:var(--ink-soft);">Pieza</td>
+          <td class="right price-cell" data-field="unit_price" data-value="12.00">$12.00</td>
+          <td class="right total-cell">$1,728.00</td>
+        </tr>
+        <tr data-line="8">
+          <td style="font-family:var(--mono);color:var(--ink-soft);font-size:11px;">08</td>
+          <td><div class="sku-pill">HEB-00701</div><br><span style="font-family:var(--mono);font-size:10px;color:var(--ink-soft);">AC-284446</span></td>
+          <td><div class="prod-name" data-field="product" data-value="Fuze Tea Durazno 600ml"><span class="cat-dot" style="background:#f59e0b;"></span>Fuze Tea Durazno 600 ml</div><div class="prod-desc">Botella PET · 24 unidades por caja · Tés</div></td>
+          <td class="right qty-cell" data-field="qty" data-value="120">120 <span class="uom-pill">PZA</span></td>
+          <td style="font-family:var(--mono);font-size:11px;color:var(--ink-soft);">Pieza</td>
+          <td class="right price-cell" data-field="unit_price" data-value="19.00">$19.00</td>
+          <td class="right total-cell">$2,280.00</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="totals-area">
+      <div class="totals-box">
+        <div class="tot-row"><span class="tot-label">Subtotal (8 líneas)</span><span class="tot-val">$35,460.00</span></div>
+        <div class="tot-row"><span class="tot-label">Descuento comercial (3%)</span><span class="tot-val" style="color:var(--ok);">−$1,063.80</span></div>
+        <div class="tot-row"><span class="tot-label">IVA (16%)</span><span class="tot-val">$5,503.39</span></div>
+        <div class="tot-row grand"><span class="tot-label">TOTAL MXN</span><span class="tot-val">$39,899.59</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-hd"><div class="sec-title">Condiciones de la Orden</div><div class="sec-tag">TÉRMINOS COMERCIALES</div></div>
+    <div class="cond-grid">
+      <div class="cond-item"><div class="cond-label">Moneda</div><div class="cond-value mono">MXN — Peso Mexicano</div><div class="cond-sub">Tipo de cambio fijo al día de emisión</div></div>
+      <div class="cond-item"><div class="cond-label">Condiciones de pago</div><div class="cond-value">30 días neto</div><div class="cond-sub">Vencimiento: 06 Jul 2026</div></div>
+      <div class="cond-item"><div class="cond-label">Transporte</div><div class="cond-value">Cargo al Proveedor</div><div class="cond-sub">Entrega en CD — DDP Incoterms 2020</div></div>
+    </div>
+    <div class="cond-grid" style="border-top:1px solid var(--line);">
+      <div class="cond-item"><div class="cond-label">Ventana de entrega</div><div class="cond-value">09 Jun · 07:00–15:00 hrs</div><div class="cond-sub">Presentarse en Dock 14 con guía firmada</div></div>
+      <div class="cond-item"><div class="cond-label">Temperatura requerida</div><div class="cond-value">4°C – 8°C (lácteos)</div><div class="cond-sub">Bebidas: temperatura ambiente</div></div>
+      <div class="cond-item"><div class="cond-label">Contrato marco</div><div class="cond-value mono">CONT-HEB-AC-2026</div><div class="cond-sub">Vigente hasta 31 Dic 2026</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-hd"><div class="sec-title">Notas e Instrucciones Especiales</div><div class="sec-tag">OBSERVACIONES</div></div>
+    <div class="notes-body">
+      <div>
+        <div class="note-label">Instrucciones de entrega</div>
+        <div class="note-text">Entrega única en Centro de Distribución Monterrey Norte (Dock 14). El proveedor debe presentar esta orden impresa o en formato digital al momento de la recepción. El transportista debe reportarse con el supervisor de almacén, Sr. Marcos Rodríguez, con al menos 30 minutos de anticipación a la ventana asignada.</div>
+      </div>
+      <div>
+        <div class="note-label">Alerta de inventario</div>
+        <div class="note-text alert">Inventario crítico en <strong>Coca-Cola Zero 600 ml</strong> (línea 02) y <strong>Ciel 600 ml</strong> (línea 04). Prioridad ALTA. Se requiere confirmación de disponibilidad en máximo 24 hrs hábiles. En caso de desabasto parcial, notificar de inmediato al comprador para reprogramar.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sig-strip">
+    <div class="sig-block">
+      <div class="sig-icon">AV</div>
+      <div><div class="sig-name">Ana M. Villarreal Pérez</div><div class="sig-role">Gerente de Compras · Bebidas y Lácteos · HEB México</div></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+      <div class="sig-hash">SHA: a7f3b29d…c041</div>
+      <div class="sig-verified">Firmada digitalmente · 06 Jun 2026 09:47 CST</div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
